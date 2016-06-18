@@ -72,7 +72,8 @@ SET(sources
 	MapScriptInterface.cpp 
 	MapMgr.cpp 
 	MiscHandler.cpp 
-	MovementHandler.cpp 
+	MovementHandler.cpp
+	MovementStructures.cpp
 	NPCHandler.cpp 
 	Object.cpp 
 	ObjectMgr.cpp 
@@ -223,6 +224,7 @@ SET( headers
 	MiscHandler.h
 	Monk.h
     MovementHandler.h
+	MovementStructures.h
 	NameTables.h
 	NPCHandler.h
 	Object.h
