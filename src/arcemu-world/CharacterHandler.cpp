@@ -114,34 +114,288 @@ void CapitalizeString(string & arg)
 void WorldSession::CharacterEnumProc(QueryResult* result)
 {
 	uint32 charCount = 0;
-	ByteBuffer bitBuffer;
-	ByteBuffer dataBuffer;
 
-	bitBuffer.WriteBits(0, 21);
-	bitBuffer.WriteBits(result ? result->GetRowCount() : 0, 16);
+	WorldPacket data(SMSG_CHAR_ENUM, 270);
+
+	ByteBuffer buffer;
 
 	if (result)
 	{
 		charCount = uint32(result->GetRowCount());
-		bitBuffer.reserve(24 * charCount / 8);
-		dataBuffer.reserve(charCount * 381);
+
+		data.WriteBits(0, 21);
+
+		data.WriteBits(charCount, 16);
 
 		do
 		{
-			Player::BuildEnumData(result, &dataBuffer, &bitBuffer);
+
+			struct player_item
+			{
+				uint32 displayid;
+				uint8 invtype;
+				uint32 enchantment; // added in 2.4
+			};
+
+			player_item items[INVENTORY_SLOT_BAG_END];
+			int8 slot;
+			int8 containerslot;
+			uint32 i;
+			ItemPrototype* proto;
+			QueryResult* res;
+			CreatureInfo* petInfo = NULL;
+			uint32 num = 0;
+			uint32 MaxAvailCharLevel = 0;
+			Field* fields;
+
+			fields = result->Fetch();
+
+			ObjectGuid guid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, 0x000);
+
+			uint8 level = fields[1].GetUInt8();
+			uint8 race = fields[2].GetUInt8();
+			uint8 Class = fields[3].GetUInt8();
+			uint8 gender = fields[4].GetUInt8();
+
+			uint8 skin = uint8(fields[5].GetUInt32() & 0xFF);
+			uint8 face = uint8((fields[5].GetUInt32() >> 8) & 0xFF);
+			uint8 hairStyle = uint8((fields[5].GetUInt32() >> 16) & 0xFF);
+			uint8 hairColor = uint8((fields[5].GetUInt32() >> 24) & 0xFF);
+			uint8 facialHair = uint8(fields[6].GetUInt32() & 0xFF);
+
+			string name = fields[7].GetString();
+			float x = fields[8].GetFloat();
+			float y = fields[9].GetFloat();
+			float z = fields[10].GetFloat();
+			uint32 mapId = uint32(fields[11].GetUInt16());
+			uint32 zone = fields[12].GetUInt16();  // zoneId
+			uint32 banned = fields[13].GetUInt32();
+
+			uint32 playerFlags = fields[14].GetUInt32();
+
+			uint32 atLoginFlags = fields[17].GetUInt32();
+			uint32 GuildId = fields[18].GetUInt32();
+			ObjectGuid guildGuid = MAKE_NEW_GUID(GuildId, 0, GuildId ? uint32(0x1FF) : 0);
+
+			uint32 charFlags = 0;
+
+			/*
+			TODO: - banned                  DONE
+			      - charflags               DONE
+				  - atloginflags            DONE
+				  - customization flags     
+				  - forced_rename_pending   DONE
+				  - show pets               DONE
+				  - slot                    I think it's fine the way it is (uint8(0))
+			*/
+
+			/*     
+			        0      1     2      3      4       5      6      7       8          9         10       11      12
+			      guid, level, race, class, gender, bytes, bytes2, name, positionX, positionY, positionZ, mapId, zoneId,
+
+			       13       14           15            16                  17
+			     banned, restState, deathstate, forced_rename_pending, player_flags, 
+	
+			             18
+			     guild_data.guildid
+			*/
+
+	        if(banned && (banned < 10 || banned > (uint32)UNIXTIME))
+			    charFlags |= CHARACTER_FLAG_LOCKED_BY_BILLING;
+			
+			if(fields[15].GetUInt32() != 0) // deathstate
+				charFlags |= CHARACTER_FLAG_GHOST;
+			
+			if(atLoginFlags & PLAYER_FLAG_HIDE_HELM)
+				charFlags |= CHARACTER_FLAG_HIDE_HELM;
+			
+			if(atLoginFlags & PLAYER_FLAG_HIDE_CLOAK)
+				charFlags |= CHARACTER_FLAG_HIDE_CLOAK;
+			
+			if(fields[16].GetUInt32() != 0) // forced_rename_pending
+				charFlags |= CHARACTER_FLAG_RENAME;
+
+			uint32 petDisplayId;
+			uint32 petLevel;
+			uint32 petFamily;
+
+			if(Class == WARLOCK || Class == HUNTER)
+			{
+				res = CharacterDatabase.Query("SELECT entry, level FROM playerpets WHERE ownerguid = %u AND MOD( active, 10 ) = 1 AND alive = TRUE;", Arcemu::Util::GUID_LOPART(guid));
+
+				if(res)
+				{
+					petLevel = res->Fetch()[1].GetUInt32();
+					petInfo = CreatureNameStorage.LookupEntry(res->Fetch()[0].GetUInt32());
+					delete res;
+				}
+				else
+					petInfo = NULL;
+			}
+			else
+				petInfo = NULL;
+
+			if(petInfo)
+			{
+				petDisplayId = uint32(petInfo->Male_DisplayID);
+			    petFamily = uint32(petInfo->Family);
+			}
+			else
+			{
+				petDisplayId = 0;
+				petLevel = 0;
+				petFamily = 0;
+			}
+
+			data.WriteBit(guildGuid[4]);
+			data.WriteBit(guid[0]);
+			data.WriteBit(guildGuid[3]);
+			data.WriteBit(guid[3]);
+			data.WriteBit(guid[7]);
+			data.WriteBit(0);
+			data.WriteBit(atLoginFlags & 0x20);
+			data.WriteBit(guid[6]);
+			data.WriteBit(guildGuid[6]);
+			data.WriteBits(uint32(name.length()), 6);
+			data.WriteBit(guid[1]);
+			data.WriteBit(guildGuid[1]);
+			data.WriteBit(guildGuid[0]);
+			data.WriteBit(guid[4]);
+			data.WriteBit(guildGuid[7]);
+			data.WriteBit(guid[2]);
+			data.WriteBit(guid[5]);
+			data.WriteBit(guildGuid[2]);
+			data.WriteBit(guildGuid[5]);
+
+			buffer << uint32(0);
+
+			buffer.WriteByteSeq(guid[1]);
+
+			buffer << uint8(0); // slot
+			buffer << uint8(hairStyle);
+
+			buffer.WriteByteSeq(guildGuid[2]);
+			buffer.WriteByteSeq(guildGuid[0]);
+			buffer.WriteByteSeq(guildGuid[6]);
+
+			buffer.append(name.c_str(), name.length());
+
+			buffer.WriteByteSeq(guildGuid[3]);
+
+			buffer << float(x);
+			buffer << uint32(0);
+			buffer << uint8(face);
+			buffer << uint8(Class);
+
+			buffer.WriteByteSeq(guildGuid[5]);
+
+			res = CharacterDatabase.Query("SELECT containerslot, slot, entry, enchantments FROM playeritems WHERE ownerguid=%u and containerslot=-1 and slot < 23", Arcemu::Util::GUID_LOPART(guid));
+
+			memset(items, 0, sizeof(items));
+
+			uint32 enchantid;
+			EnchantEntry* enc;
+
+			if (res)
+			{
+				do
+				{
+					containerslot = res->Fetch()[0].GetInt8();
+					slot = res->Fetch()[1].GetInt8();
+					if (containerslot == -1 && slot < INVENTORY_SLOT_BAG_END && slot >= EQUIPMENT_SLOT_START)
+					{
+						proto = ItemPrototypeStorage.LookupEntry(res->Fetch()[2].GetUInt32());
+						if (proto)
+						{
+							if (!(slot == EQUIPMENT_SLOT_HEAD && (playerFlags & (uint32)PLAYER_FLAG_HIDE_HELM) != 0) &&
+								!(slot == EQUIPMENT_SLOT_BACK && (playerFlags & (uint32)PLAYER_FLAG_HIDE_CLOAK) != 0))
+							{
+								items[slot].displayid = proto->DisplayInfoID;
+								items[slot].invtype = proto->InventoryType;
+								// weapon glows
+								if (slot == EQUIPMENT_SLOT_MAINHAND || slot == EQUIPMENT_SLOT_OFFHAND)
+								{
+									// get enchant visual ID
+									const char * enchant_field = res->Fetch()[3].GetString();
+									if (sscanf(enchant_field, "%u,0,0;", (unsigned int *)&enchantid) == 1 && enchantid > 0)
+									{
+										enc = dbcEnchant.LookupEntry(enchantid);
+										if (enc != NULL)
+											items[slot].enchantment = enc->visual;
+										else
+											items[slot].enchantment = 0;;
+									}
+								}
+							}
+						}
+					}
+				} while (res->NextRow());
+				delete res;
+				res = NULL;
+			}
+
+			for (i = 0; i < INVENTORY_SLOT_BAG_END; ++i) //23 * 5 bytes
+			{
+				buffer << uint32(items[i].enchantment);
+				buffer << uint8(items[i].invtype);
+				buffer << uint32(items[i].displayid);
+			}
+
+			buffer << uint32(0x0); // customization flags
+
+			buffer.WriteByteSeq(guid[3]);
+			buffer.WriteByteSeq(guid[5]);
+
+			buffer << uint32(petFamily);
+
+			buffer.WriteByteSeq(guildGuid[4]);
+
+			buffer << uint32(mapId);
+			buffer << uint8(race);
+			buffer << uint8(skin);
+
+			buffer.WriteByteSeq(guildGuid[1]);
+
+			buffer << uint8(level);
+
+			buffer.WriteByteSeq(guid[0]);
+			buffer.WriteByteSeq(guid[2]);
+
+			buffer << uint8(hairColor);
+			buffer << uint8(gender);
+			buffer << uint8(facialHair);
+
+			buffer << uint32(petLevel);
+
+			buffer.WriteByteSeq(guid[4]);
+			buffer.WriteByteSeq(guid[7]);
+
+			buffer << float(y);
+			buffer << uint32(petDisplayId);
+			buffer << uint32(0);
+
+			buffer.WriteByteSeq(guid[6]);
+
+			buffer << uint32(charFlags);
+
+			buffer.WriteByteSeq(guildGuid[7]);
+
+			buffer << uint32(zone);
+			buffer << float(z);
 
 		} while (result->NextRow());
+		data.WriteBit(1); // success
+		data.FlushBits();
+
+		data.append(buffer);
 	}
-		bitBuffer.WriteBit(1);
-		bitBuffer.FlushBits();
-	
-
-	WorldPacket data(SMSG_CHAR_ENUM, 7 + bitBuffer.size() + dataBuffer.size());
-
-	data.append(bitBuffer);
-
-	if (charCount)
-		data.append(dataBuffer);
+	else
+	{
+		data.WriteBits(0, 21);
+		data.WriteBits(0, 16);
+		data.WriteBit(1); // success
+		data.FlushBits();
+	}
 
 	SendPacket(&data);
 }

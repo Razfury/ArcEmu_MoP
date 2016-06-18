@@ -2374,10 +2374,10 @@ void WorldSession::HandleToggleCloakOpcode(WorldPacket & recv_data)
 
 	//uint32 SetBit = 0 | (1 << 11);
 
-	if(_player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_NOCLOAK))
-		_player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_NOCLOAK);
+	if(_player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_CLOAK))
+		_player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_CLOAK);
 	else
-		_player->SetFlag(PLAYER_FLAGS, PLAYER_FLAG_NOCLOAK);
+		_player->SetFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_CLOAK);
 }
 
 void WorldSession::HandleToggleHelmOpcode(WorldPacket & recv_data)
@@ -2391,10 +2391,10 @@ void WorldSession::HandleToggleHelmOpcode(WorldPacket & recv_data)
 
 	//uint32 SetBit = 0 | (1 << 10);
 
-	if(_player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_NOHELM))
-		_player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_NOHELM);
+	if(_player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_HELM))
+		_player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_HELM);
 	else
-		_player->SetFlag(PLAYER_FLAGS, PLAYER_FLAG_NOHELM);
+		_player->SetFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_HELM);
 }
 
 void WorldSession::HandleDungeonDifficultyOpcode(WorldPacket & recv_data)

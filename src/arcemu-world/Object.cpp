@@ -28,7 +28,7 @@ uint32 GuidHigh2TypeId(uint32 guid_hi)
 	switch (guid_hi)
 	{
 	case HIGHGUID_TYPE_ITEM:         return TYPEID_ITEM;
-		//case HIGHGUID_CONTAINER:    return TYPEID_CONTAINER; HIGHGUID_CONTAINER == HIGHGUID_ITEM currently
+	//case HIGHGUID_CONTAINER:	     return TYPEID_CONTAINER; HIGHGUID_CONTAINER == HIGHGUID_ITEM currently
 	case HIGHGUID_TYPE_UNIT:         return TYPEID_UNIT;
 	case HIGHGUID_TYPE_PET:          return TYPEID_UNIT;
 	case HIGHGUID_TYPE_PLAYER:       return TYPEID_PLAYER;

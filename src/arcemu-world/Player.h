@@ -328,22 +328,84 @@ enum Standing
 
 enum PlayerFlags
 {
-	PLAYER_FLAG_PARTY_LEADER = 0x01,
-	PLAYER_FLAG_AFK = 0x02,
-	PLAYER_FLAG_DND = 0x04,
-	PLAYER_FLAG_GM = 0x08,
-	PLAYER_FLAG_DEATH_WORLD_ENABLE = 0x10,
-	PLAYER_FLAG_RESTING = 0x20,
-	PLAYER_FLAG_ADMIN = 0x40,
-	PLAYER_FLAG_FREE_FOR_ALL_PVP = 0x80,
-	PLAYER_FLAG_UNKNOWN2 = 0x100,
-	PLAYER_FLAG_PVP_TOGGLE = 0x200,
-	PLAYER_FLAG_NOHELM = 0x400,
-	PLAYER_FLAG_NOCLOAK = 0x800,
-	PLAYER_FLAG_NEED_REST_3_HOURS = 0x1000,
-	PLAYER_FLAG_NEED_REST_5_HOURS = 0x2000,
-	PLAYER_FLAG_DEVELOPER = 0x8000,
-	PLAYER_FLAG_PVP = 0x40000,
+	PLAYER_FLAG_NONE                   = 0x00000000,
+	PLAYER_FLAG_GROUP_LEADER           = 0x00000001,
+	PLAYER_FLAG_AFK                    = 0x00000002,
+	PLAYER_FLAG_DND                    = 0x00000004,
+	PLAYER_FLAG_GM                     = 0x00000008,
+	PLAYER_FLAG_GHOST                  = 0x00000010,
+	PLAYER_FLAG_RESTING                = 0x00000020,
+	PLAYER_FLAG_UNK7                   = 0x00000040,       // admin?
+	PLAYER_FLAG_UNK8                   = 0x00000080,       // pre-3.0.3 PLAYER_FLAGS_FFA_PVP flag for FFA PVP state
+	PLAYER_FLAG_CONTESTED_PVP          = 0x00000100,       // Player has been involved in a PvP combat and will be attacked by contested guards
+	PLAYER_FLAG_IN_PVP                 = 0x00000200,
+	PLAYER_FLAG_HIDE_HELM              = 0x00000400,
+	PLAYER_FLAG_HIDE_CLOAK             = 0x00000800,
+	PLAYER_FLAG_PARTIAL_PLAY_TIME      = 0x00001000,       // played long time
+	PLAYER_FLAG_NO_PLAY_TIME           = 0x00002000,       // played too long time
+	PLAYER_FLAG_IS_OUT_OF_BOUNDS       = 0x00004000,       // Lua_IsOutOfBounds
+	PLAYER_FLAG_DEVELOPER              = 0x00008000,       // <Dev> chat tag, name prefix
+	PLAYER_FLAG_ENABLE_LOW_LEVEL_RAID  = 0x00010000,       // triggers lua event EVENT_ENABLE_LOW_LEVEL_RAID
+	PLAYER_FLAG_TAXI_BENCHMARK         = 0x00020000,       // taxi benchmark mode (on/off) (2.0.1)
+	PLAYER_FLAG_IN_PVP_TIMER              = 0x00040000,       // 3.0.2, pvp timer active (after you disable pvp manually)
+	PLAYER_FLAG_COMMENTATOR            = 0x00080000,
+	PLAYER_FLAG_UNK21                  = 0x00100000,
+	PLAYER_FLAG_UNK22                  = 0x00200000,
+	PLAYER_FLAG_COMMENTATOR_UBER       = 0x00400000,       // something like COMMENTATOR_CAN_USE_INSTANCE_COMMAND
+	PLAYER_FLAG_UNK24                  = 0x00800000,       // EVENT_SPELL_UPDATE_USABLE and EVENT_UPDATE_SHAPESHIFT_USABLE, disabled all abilitys on tab except autoattack
+	PLAYER_FLAG_UNK25                  = 0x01000000,       // EVENT_SPELL_UPDATE_USABLE and EVENT_UPDATE_SHAPESHIFT_USABLE, disabled all melee ability on tab include autoattack
+	PLAYER_FLAG_XP_USER_DISABLED       = 0x02000000,
+	PLAYER_FLAG_UNK27                  = 0x04000000,
+	PLAYER_FLAG_AUTO_DECLINE_GUILDS    = 0x08000000,       // Automatically declines guild invites
+	PLAYER_FLAG_GUILD_LEVELING_ENABLED = 0x10000000,       // Lua_GetGuildLevelEnabled() - enables guild leveling related UI
+	PLAYER_FLAG_VOID_STORAGE_UNLOCKED  = 0x20000000,       // unlocks void storage
+	PLAYER_FLAG_UNK30                  = 0x40000000,
+	PLAYER_FLAG_UNK31                  = 0x80000000,
+};
+
+enum CharacterFlags
+{
+    CHARACTER_FLAG_NONE                 = 0x00000000,
+    CHARACTER_FLAG_UNK1                 = 0x00000001,
+    CHARACTER_FLAG_UNK2                 = 0x00000002,
+    CHARACTER_LOCKED_FOR_TRANSFER       = 0x00000004,
+    CHARACTER_FLAG_UNK4                 = 0x00000008,
+    CHARACTER_FLAG_UNK5                 = 0x00000010,
+    CHARACTER_FLAG_UNK6                 = 0x00000020,
+    CHARACTER_FLAG_UNK7                 = 0x00000040,
+    CHARACTER_FLAG_UNK8                 = 0x00000080,
+    CHARACTER_FLAG_UNK9                 = 0x00000100,
+    CHARACTER_FLAG_UNK10                = 0x00000200,
+    CHARACTER_FLAG_HIDE_HELM            = 0x00000400,
+    CHARACTER_FLAG_HIDE_CLOAK           = 0x00000800,
+    CHARACTER_FLAG_UNK13                = 0x00001000,
+    CHARACTER_FLAG_GHOST                = 0x00002000,
+    CHARACTER_FLAG_RENAME               = 0x00004000,
+    CHARACTER_FLAG_UNK16                = 0x00008000,
+    CHARACTER_FLAG_UNK17                = 0x00010000,
+    CHARACTER_FLAG_UNK18                = 0x00020000,
+    CHARACTER_FLAG_UNK19                = 0x00040000,
+    CHARACTER_FLAG_UNK20                = 0x00080000,
+    CHARACTER_FLAG_UNK21                = 0x00100000,
+    CHARACTER_FLAG_UNK22                = 0x00200000,
+    CHARACTER_FLAG_UNK23                = 0x00400000,
+    CHARACTER_FLAG_UNK24                = 0x00800000,
+    CHARACTER_FLAG_LOCKED_BY_BILLING    = 0x01000000,
+    CHARACTER_FLAG_DECLINED             = 0x02000000,
+    CHARACTER_FLAG_UNK27                = 0x04000000,
+    CHARACTER_FLAG_UNK28                = 0x08000000,
+    CHARACTER_FLAG_UNK29                = 0x10000000,
+    CHARACTER_FLAG_UNK30                = 0x20000000,
+    CHARACTER_FLAG_UNK31                = 0x40000000,
+    CHARACTER_FLAG_UNK32                = 0x80000000
+};
+
+enum CharacterCustomizeFlags
+{
+    CHAR_CUSTOMIZE_FLAG_NONE            = 0x00000000,
+    CHAR_CUSTOMIZE_FLAG_CUSTOMIZE       = 0x00000001,       // name, gender, etc...
+    CHAR_CUSTOMIZE_FLAG_FACTION         = 0x00010000,       // name, gender, faction, etc...
+    CHAR_CUSTOMIZE_FLAG_RACE            = 0x00100000        // name, gender, race, etc...
 };
 
 enum CharterTypes
@@ -842,7 +904,6 @@ public:
 	/************************************************************************/
 	/* Skill System															*/
 	/************************************************************************/
-	static bool BuildEnumData(QueryResult* result, ByteBuffer* dataBuffer, ByteBuffer* bitBuffer);
 	void _AdvanceSkillLine(uint32 SkillLine, uint32 Count = 1);
 	void _AddSkillLine(uint32 SkillLine, uint32 Current, uint32 Max);
 	uint32 _GetSkillLineMax(uint32 SkillLine);

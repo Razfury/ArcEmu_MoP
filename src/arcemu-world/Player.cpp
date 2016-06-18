@@ -641,237 +641,6 @@ uint32 GetSpellForLanguage(uint32 SkillID)
 	return 0;
 }
 
-bool Player::BuildEnumData(QueryResult* result, ByteBuffer* dataBuffer, ByteBuffer* bitBuffer)
-{
-
-	struct player_item
-	{
-		uint32 displayid;
-		uint8 invtype;
-		uint32 enchantment; // added in 2.4
-	};
-
-	player_item items[INVENTORY_SLOT_BAG_END];
-	int8 slot;
-	int8 containerslot;
-	uint32 i;
-	ItemPrototype* proto;
-	QueryResult* res;
-	CreatureInfo* info = NULL;
-	uint32 num = 0;
-	uint32 MaxAvailCharLevel = 0;
-	Field* fields;
-	//uint32 flags;
-
-			//          0      1      2     3      4      5      6        7       8         9           10       11     12      13       14          15              16                  17               18
-			//("SELECT guid, level, race, class, gender, bytes, bytes2, name, positionX, positionY, positionZ, mapId, zoneId, banned, restState, deathstate, forced_rename_pending, player_flags, guild_data.guildid FROM characters LEFT JOIN guild_data ON characters.guid = guild_data.playerid WHERE acct=%u ORDER BY guid LIMIT 10", GetAccountId());
-
-			fields = result->Fetch();
-
-
-			ObjectGuid guid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, 0x000);
-			uint8 level = fields[1].GetUInt8();
-			uint8 race = fields[2].GetUInt8();
-			uint8 Class = fields[3].GetUInt8();
-			uint8 gender = fields[4].GetUInt8();
-			std::string name = fields[7].GetString();
-			float x = fields[8].GetFloat();
-			float y = fields[9].GetFloat();
-			float z = fields[10].GetFloat();
-			uint32 mapId = uint32(fields[11].GetUInt16());
-			uint32 zone = fields[12].GetUInt16();  // zoneId
-
-			uint32 playerFlags = fields[14].GetUInt32();
-			uint32 atLoginFlags = fields[15].GetUInt32();
-
-			uint32 _GID = fields[18].GetUInt32();
-			ObjectGuid guildGuid = MAKE_NEW_GUID(_GID, 0, _GID ? uint32(0x1FF) : 0);
-			uint8 skin = uint8(fields[5].GetUInt32() & 0xFF);
-			uint8 face = uint8((fields[5].GetUInt32() >> 8) & 0xFF);
-			uint8 hairStyle = uint8((fields[5].GetUInt32() >> 16) & 0xFF);
-			uint8 hairColor = uint8((fields[5].GetUInt32() >> 24) & 0xFF);
-			uint8 facialHair = uint8(fields[6].GetUInt32() & 0xFF);
-
-			uint32 charFlags = 0;			
-
-			/*if(atLoginFlags != 0)
-				charFlags |= 0x00002000;	//Character is dead       ////////////////////////
-			if(flags & PLAYER_FLAG_NOHELM)                            ///////   Fix       ////
-				charFlags |= 0x00000400;	//Helm not displayed      ///////   This      ////
-			if(flags & PLAYER_FLAG_NOCLOAK)                           ///////   Area      ////
-				charFlags |= 0x00000800;	//Cloak not displayed*/   ////////////////////////
-
-			uint32 petDisplayId;
-			uint32 petLevel;
-			uint32 petFamily;
-			
-			if(Class == WARLOCK || Class == HUNTER)
-			{
-				res = CharacterDatabase.Query("SELECT entry, level FROM playerpets WHERE ownerguid = %u AND MOD( active, 10 ) = 1 AND alive = TRUE;", Arcemu::Util::GUID_LOPART(guid));
-
-				if(res)
-				{
-					petLevel = res->Fetch()[1].GetUInt32();
-					info = CreatureNameStorage.LookupEntry(res->Fetch()[0].GetUInt32());
-					delete res;
-				}
-				else
-					info = NULL;
-			}
-			else
-				info = NULL;
-
-			if(info)
-			{
-			    petDisplayId = uint32(info->Male_DisplayID);
-				petFamily = uint32(info->Family);
-			}
-			else
-			{
-			    petDisplayId = 0;
-				petLevel = 0;
-				petFamily = 0;
-			}
-		    
-			bitBuffer->WriteBit(guildGuid[4]);
-			bitBuffer->WriteBit(guid[0]);
-			bitBuffer->WriteBit(guildGuid[3]);
-			bitBuffer->WriteBit(guid[3]);
-			bitBuffer->WriteBit(guid[7]);
-			bitBuffer->WriteBit(0); // Can boost ?
-			bitBuffer->WriteBit(atLoginFlags & 0x20);
-			bitBuffer->WriteBit(guid[6]);
-			bitBuffer->WriteBit(guildGuid[6]);
-			bitBuffer->WriteBits(uint32(name.length()), 6);
-			bitBuffer->WriteBit(guid[1]);
-			bitBuffer->WriteBit(guildGuid[1]);
-			bitBuffer->WriteBit(guildGuid[0]);
-			bitBuffer->WriteBit(guid[4]);
-			bitBuffer->WriteBit(guildGuid[7]);
-			bitBuffer->WriteBit(guid[2]);
-			bitBuffer->WriteBit(guid[5]);
-			bitBuffer->WriteBit(guildGuid[2]);
-			bitBuffer->WriteBit(guildGuid[5]);
-
-			// Character data
-			*dataBuffer << uint32(0);                                   // UNK02 - might be swaped with UNK03
-
-			dataBuffer->WriteByteSeq(guid[1]);
-
-			*dataBuffer << uint8(0);                                 // List order
-			*dataBuffer << uint8(hairStyle);                            // Hair style
-
-			dataBuffer->WriteByteSeq(guildGuid[2]);
-			dataBuffer->WriteByteSeq(guildGuid[0]);
-			dataBuffer->WriteByteSeq(guildGuid[6]);
-
-			dataBuffer->append(name.c_str(), name.length());            // Name
-
-			dataBuffer->WriteByteSeq(guildGuid[3]);
-
-			*dataBuffer << float(x);                                    // X
-			*dataBuffer << uint32(0);                                   // UNK00 new field - Boost fieldand the pet fields
-			*dataBuffer << uint8(face);                                 // Face
-			*dataBuffer << uint8(Class);                          // Class
-
-			dataBuffer->WriteByteSeq(guildGuid[5]);
-
-			res = CharacterDatabase.Query("SELECT containerslot, slot, entry, enchantments FROM playeritems WHERE ownerguid=%u and containerslot=-1 and slot < 23", Arcemu::Util::GUID_LOPART(guid));
-
-			memset(items, 0, sizeof(items));
-			uint32 enchantid;
-			EnchantEntry * enc;
-			if (res)
-			{
-				do
-				{
-					containerslot = res->Fetch()[0].GetInt8();
-					slot = res->Fetch()[1].GetInt8();
-					if (containerslot == -1 && slot < INVENTORY_SLOT_BAG_END && slot >= EQUIPMENT_SLOT_START)
-					{
-						proto = ItemPrototypeStorage.LookupEntry(res->Fetch()[2].GetUInt32());
-						if (proto)
-						{
-							if (!(slot == EQUIPMENT_SLOT_HEAD && (playerFlags & (uint32)PLAYER_FLAG_NOHELM) != 0) &&
-								!(slot == EQUIPMENT_SLOT_BACK && (playerFlags & (uint32)PLAYER_FLAG_NOCLOAK) != 0))
-							{
-								items[slot].displayid = proto->DisplayInfoID;
-								items[slot].invtype = proto->InventoryType;
-								// weapon glows
-								if (slot == EQUIPMENT_SLOT_MAINHAND || slot == EQUIPMENT_SLOT_OFFHAND)
-								{
-									// get enchant visual ID
-									const char * enchant_field = res->Fetch()[3].GetString();
-									if (sscanf(enchant_field, "%u,0,0;", (unsigned int *)&enchantid) == 1 && enchantid > 0)
-									{
-										enc = dbcEnchant.LookupEntry(enchantid);
-										if (enc != NULL)
-											items[slot].enchantment = enc->visual;
-										else
-											items[slot].enchantment = 0;;
-									}
-								}
-							}
-						}
-					}
-				} while (res->NextRow());
-				delete res;
-				res = NULL;
-			}
-
-			for (i = 0; i < INVENTORY_SLOT_BAG_END; ++i) //23 * 5 bytes
-			{
-				*dataBuffer << uint32(items[i].enchantment);
-				*dataBuffer << uint8(items[i].invtype);
-				*dataBuffer << uint32(items[i].displayid);
-			}
-
-			*dataBuffer << uint32(0x0);                   // Character customization flags
-
-			dataBuffer->WriteByteSeq(guid[3]);
-			dataBuffer->WriteByteSeq(guid[5]);
-
-			*dataBuffer << uint32(petFamily);                           // Pet family
-
-			dataBuffer->WriteByteSeq(guildGuid[4]);
-
-			*dataBuffer << uint32(mapId);                               // Map Id
-			*dataBuffer << uint8(race);                           // Race
-			*dataBuffer << uint8(skin);                                 // Skin
-
-			dataBuffer->WriteByteSeq(guildGuid[1]);
-
-			*dataBuffer << uint8(level);                                // Level
-
-			dataBuffer->WriteByteSeq(guid[0]);
-			dataBuffer->WriteByteSeq(guid[2]);
-
-			*dataBuffer << uint8(hairColor);                            // Hair color
-			*dataBuffer << uint8(gender);                               // Gender
-			*dataBuffer << uint8(facialHair);                           // Facial hair
-
-			*dataBuffer << uint32(petLevel);                            // Pet level
-
-			dataBuffer->WriteByteSeq(guid[4]);
-			dataBuffer->WriteByteSeq(guid[7]);
-
-			*dataBuffer << float(y);                                    // Y
-			*dataBuffer << uint32(petDisplayId);                        // Pet DisplayID
-			*dataBuffer << uint32(0);                                   // UNK03 - might be swaped with UNK02 and the pet fields
-
-			dataBuffer->WriteByteSeq(guid[6]);
-
-			*dataBuffer << uint32(charFlags);                           // Character flags
-
-			dataBuffer->WriteByteSeq(guildGuid[7]);
-
-			*dataBuffer << uint32(zone);                                // Zone id
-			*dataBuffer << float(z);                                    // Z
-
-			return true;
-
-}
-
 ///====================================================================
 ///  Create
 ///  params: p_newChar
@@ -2594,8 +2363,8 @@ void Player::SaveToDB(bool bNewCharacter /* =false */)
 	uint32 player_flags = m_uint32Values[PLAYER_FLAGS];
 
 	// Remove un-needed and problematic player flags from being saved :p
-	if (player_flags & PLAYER_FLAG_PARTY_LEADER)
-		player_flags &= ~PLAYER_FLAG_PARTY_LEADER;
+	if (player_flags & PLAYER_FLAG_GROUP_LEADER)
+		player_flags &= ~PLAYER_FLAG_GROUP_LEADER;
 
 	if (player_flags & PLAYER_FLAG_AFK)
 		player_flags &= ~PLAYER_FLAG_AFK;
@@ -2606,11 +2375,11 @@ void Player::SaveToDB(bool bNewCharacter /* =false */)
 	if (player_flags & PLAYER_FLAG_GM)
 		player_flags &= ~PLAYER_FLAG_GM;
 
-	if (player_flags & PLAYER_FLAG_PVP_TOGGLE)
-		player_flags &= ~PLAYER_FLAG_PVP_TOGGLE;
+	if (player_flags & PLAYER_FLAG_IN_PVP)
+		player_flags &= ~PLAYER_FLAG_IN_PVP;
 
-	if (player_flags & PLAYER_FLAG_FREE_FOR_ALL_PVP)
-		player_flags &= ~PLAYER_FLAG_FREE_FOR_ALL_PVP;
+	if (player_flags & PLAYER_FLAG_UNK8)
+		player_flags &= ~PLAYER_FLAG_UNK8;
 
 	ss << player_flags << ","
 		<< m_uint32Values[PLAYER_FIELD_BYTES] << ",";
@@ -4692,7 +4461,7 @@ void Player::BuildPlayerRepop()
 	StopMirrorTimer(1);
 	StopMirrorTimer(2);
 
-	SetFlag(PLAYER_FLAGS, PLAYER_FLAG_DEATH_WORLD_ENABLE);
+	SetFlag(PLAYER_FLAGS, PLAYER_FLAG_GHOST);
 
 	SetMovement(MOVE_UNROOT, 1);
 	SetMovement(MOVE_WATER_WALK, 1);
@@ -4826,7 +4595,7 @@ void Player::ResurrectPlayer()
 	uint32 AuraIds[] = { 20584, 9036, 8326, 0 };
 	RemoveAuras(AuraIds); // Cebernic: removeaura just remove once(bug?).
 
-	RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_DEATH_WORLD_ENABLE);
+	RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_GHOST);
 	setDeathState(ALIVE);
 	UpdateVisibility();
 	if (m_resurrecter && IsInWorld()
@@ -8848,7 +8617,7 @@ void Player::UpdatePvPArea()
 	// This is where all the magic happens :P
 	if ((at->category == AREAC_ALLIANCE_TERRITORY && IsTeamAlliance()) || (at->category == AREAC_HORDE_TERRITORY && IsTeamHorde()))
 	{
-		if (!HasFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE) && !m_pvpTimer)
+		if (!HasFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP) && !m_pvpTimer)
 		{
 			// I'm flagged and I just walked into a zone of my type. Start the 5min counter.
 			ResetPvPTimer();
@@ -8876,7 +8645,7 @@ void Player::UpdatePvPArea()
 			AreaTable* at2 = dbcArea.LookupEntryForced(at->ZoneId);
 			if (at2 && ((at2->category == AREAC_ALLIANCE_TERRITORY && IsTeamAlliance()) || (at2->category == AREAC_HORDE_TERRITORY && IsTeamHorde())))
 			{
-				if (!HasFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE) && !m_pvpTimer)
+				if (!HasFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP) && !m_pvpTimer)
 				{
 					// I'm flagged and I just walked into a zone of my type. Start the 5min counter.
 					ResetPvPTimer();
@@ -8926,12 +8695,12 @@ void Player::UpdatePvPArea()
 
 			if (sWorld.GetRealmType() == REALM_PVE)
 			{
-				if (HasFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE))
+				if (HasFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP))
 				{
 					if (!IsPvPFlagged())
 						SetPvPFlag();
 				}
-				else if (!HasFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE) && IsPvPFlagged() && !m_pvpTimer)
+				else if (!HasFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP) && IsPvPFlagged() && !m_pvpTimer)
 				{
 					ResetPvPTimer();
 				}
@@ -8998,8 +8767,8 @@ void Player::PvPToggle()
 			// Means that we typed /pvp while we were "cooling down". Stop the timer.
 			StopPvPTimer();
 
-			SetFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE);
-			RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP);
+			SetFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
+			RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
 
 			if (!IsPvPFlagged())
 				SetPvPFlag();
@@ -9025,14 +8794,14 @@ void Player::PvPToggle()
 					// Start the "cooldown" timer.
 					ResetPvPTimer();
 				}
-				RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE);
-				SetFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP);
+				RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
+				SetFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
 			}
 			else
 			{
 				// Move into PvP state.
-				SetFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE);
-				RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP);
+				SetFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
+				RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
 
 				StopPvPTimer();
 				SetPvPFlag();
@@ -9061,8 +8830,8 @@ void Player::PvPToggle()
 				// Means that we typed /pvp while we were "cooling down". Stop the timer.
 				StopPvPTimer();
 
-				SetFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE);
-				RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP);
+				SetFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
+				RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
 
 				if (!IsPvPFlagged())
 					SetPvPFlag();
@@ -9074,14 +8843,14 @@ void Player::PvPToggle()
 					// Start the "cooldown" timer.
 					ResetPvPTimer();
 
-					RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE);
-					SetFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP);
+					RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
+					SetFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
 				}
 				else
 				{
 					// Move into PvP state.
-					SetFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE);
-					RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP);
+					SetFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
+					RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
 
 					StopPvPTimer();
 					SetPvPFlag();
@@ -9100,8 +8869,8 @@ void Player::PvPToggle()
 						// Means that we typed /pvp while we were "cooling down". Stop the timer.
 						StopPvPTimer();
 
-						SetFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE);
-						RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP);
+						SetFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
+						RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
 
 						if (!IsPvPFlagged())
 							SetPvPFlag();
@@ -9113,15 +8882,15 @@ void Player::PvPToggle()
 							// Start the "cooldown" timer.
 							ResetPvPTimer();
 
-							RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE);
-							SetFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP);
+							RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
+							SetFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
 
 						}
 						else
 						{
 							// Move into PvP state.
-							SetFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE);
-							RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP);
+							SetFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
+							RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
 
 							StopPvPTimer();
 							SetPvPFlag();
@@ -9131,15 +8900,15 @@ void Player::PvPToggle()
 				}
 			}
 
-			if (!HasFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE))
+			if (!HasFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP))
 			{
-				SetFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE);
-				RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP);
+				SetFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
+				RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
 			}
 			else
 			{
-				RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP_TOGGLE);
-				SetFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP);
+				RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
+				SetFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
 			}
 		}
 	}
@@ -9275,11 +9044,11 @@ void Player::CompleteLoading()
 
 	// this needs to be after the cast of passive spells, because it will cast ghost form, after the remove making it in ghost alive, if no corpse.
 	//death system checkout
-	if (GetHealth() <= 0 && !HasFlag(PLAYER_FLAGS, PLAYER_FLAG_DEATH_WORLD_ENABLE))
+	if (GetHealth() <= 0 && !HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GHOST))
 	{
 		setDeathState(CORPSE);
 	}
-	else if (HasFlag(PLAYER_FLAGS, PLAYER_FLAG_DEATH_WORLD_ENABLE))
+	else if (HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GHOST))
 	{
 		// Check if we have an existing corpse.
 		Corpse* corpse = objmgr.GetCorpseByOwner(GetLowGUID());
@@ -12295,7 +12064,7 @@ void Player::SetPvPFlag()
 	StopPvPTimer();
 
 	SetByteFlag(UNIT_FIELD_BYTES_2, 1, U_FIELD_BYTES_FLAG_PVP);
-	SetFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP);
+	SetFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
 
 	summonhandler.SetPvPFlags();
 
@@ -12315,7 +12084,7 @@ void Player::RemovePvPFlag()
 {
 	StopPvPTimer();
 	RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, U_FIELD_BYTES_FLAG_PVP);
-	RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_PVP);
+	RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_IN_PVP);
 
 	summonhandler.RemovePvPFlags();
 
@@ -12336,7 +12105,7 @@ void Player::SetFFAPvPFlag()
 {
 	StopPvPTimer();
 	SetByteFlag(UNIT_FIELD_BYTES_2, 1, U_FIELD_BYTES_FLAG_FFA_PVP);
-	SetFlag(PLAYER_FLAGS, PLAYER_FLAG_FREE_FOR_ALL_PVP);
+	SetFlag(PLAYER_FLAGS, PLAYER_FLAG_UNK8);
 
 	summonhandler.SetFFAPvPFlags();
 
@@ -12352,7 +12121,7 @@ void Player::RemoveFFAPvPFlag()
 {
 	StopPvPTimer();
 	RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, U_FIELD_BYTES_FLAG_FFA_PVP);
-	RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_FREE_FOR_ALL_PVP);
+	RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_UNK8);
 
 	summonhandler.RemoveFFAPvPFlags();
 
