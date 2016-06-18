@@ -570,15 +570,10 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket & recv_data)
 
 	if (objmgr.GetPlayer((uint32)playerGuid) != NULL || m_loggingInPlayer || _player)
 	{
-		// A character with that name already exists 0x3E
-		uint8 respons = E_CHAR_LOGIN_DUPLICATE_CHARACTER;
-		OutPacket(SMSG_CHARACTER_LOGIN_FAILED, 1, &respons);
+		uint8 response = E_CHAR_LOGIN_DUPLICATE_CHARACTER;
+		OutPacket(SMSG_CHARACTER_LOGIN_FAILED, 1, &response);
 		return;
 	}
-
-	// we make sure the guid is the correct one
-	//printf("guid: %d\n", Arcemu::Util::GUID_LOPART(pGuid));
-	LOG_ERROR("lOGGING IN GUID : %u", playerGuid);
 
 	AsyncQuery* q = new AsyncQuery(new SQLClassCallbackP0<WorldSession>(this, &WorldSession::LoadPlayerFromDBProc));
 	q->AddQuery("SELECT guid,class FROM characters WHERE guid = %u AND forced_rename_pending = 0", playerGuid); // 0
@@ -642,6 +637,9 @@ void WorldSession::LoadPlayerFromDBProc(QueryResultVector & results)
 	case DRUID:
 		plr = new Druid(playerGuid);
 		break;
+	case MONK:
+		plr = new Monk(playerGuid);
+		break;
 	}
 
 	if (plr == NULL)
@@ -700,13 +698,9 @@ void WorldSession::FullLogin(Player* plr)
 		}
 	}
 
-	//printf("COPYING TO MOVEMENT ARRAY\n");
-
 	// copy to movement array
 	movement_packet[0] = m_MoverWoWGuid.GetNewGuidMask();
 	memcpy(&movement_packet[1], m_MoverWoWGuid.GetNewGuid(), m_MoverWoWGuid.GetNewGuidLen());
-
-	//printf("STARTING WORLD PRELOAD\n");
 
 	// world preload
 	uint32 VMapId;
@@ -750,14 +744,7 @@ void WorldSession::FullLogin(Player* plr)
 	
 	SendPacket(&data);
 
-	//printf("SMSG_LOGIN_VERIFY_WORLD\n");
-
-	//StackWorldPacket<20> datab(SMSG_FEATURE_SYSTEM_STATUS);
-
-
-	//datab.Initialize(SMSG_FEATURE_SYSTEM_STATUS);
-
-	WorldPacket datax(SMSG_FEATURE_SYSTEM_STATUS, 4 + 4 + 4 + 1 + 4 + 2 + 4 + 4 + 4 + 4 + 4 + 4 + 4); // 5.4.8
+	WorldPacket datax(SMSG_FEATURE_SYSTEM_STATUS, 4 + 4 + 4 + 1 + 4 + 2 + 4 + 4 + 4 + 4 + 4 + 4 + 4);
 
 	bool feedbackSystem = true;
 	bool excessiveWarning = false;
@@ -797,13 +784,9 @@ void WorldSession::FullLogin(Player* plr)
 
 	SendPacket(&datax);
 
-	//printf("SMSG_FEATURE_SYSTEM_STATUS\n");
-
-
 	WorldPacket dataldm(SMSG_LEARNED_DANCE_MOVES, 4 + 4); // trinitycore 4.3.4
 	dataldm << uint64(0);
 	SendPacket(&dataldm);
-	//printf("SMSG_LEARNED_MOVES\n");
 
 	plr->UpdateAttackSpeed();
 

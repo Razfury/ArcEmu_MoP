@@ -20,8 +20,6 @@
 // Class WorldSocket - Main network code functions, handles
 // reading/writing of all packets.
 
-//!!! todo: cleanup in packets, remove useless comments
-
 #include "StdAfx.h"
 #include "AuthCodes.h"
 
@@ -291,45 +289,45 @@ void WorldSocket::OnConnect()
 
 void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
 {
-    WorldPacket addonsData;
+	WorldPacket addonsData;
 
-    recvPacket->read<uint32>();
-    recvPacket->read<uint32>();
+	recvPacket->read<uint32>();
+	recvPacket->read<uint32>();
 	*recvPacket >> AuthDigest[18];
 	*recvPacket >> AuthDigest[14];
 	*recvPacket >> AuthDigest[3];
 	*recvPacket >> AuthDigest[4];
 	*recvPacket >> AuthDigest[0];
-    recvPacket->read<uint32>();
+	recvPacket->read<uint32>();
 	*recvPacket >> AuthDigest[11];
-    *recvPacket >> mClientSeed;
+	*recvPacket >> mClientSeed;
 	*recvPacket >> AuthDigest[19];
-    recvPacket->read<uint8>();
-    recvPacket->read<uint8>();
+	recvPacket->read<uint8>();
+	recvPacket->read<uint8>();
 	*recvPacket >> AuthDigest[2];
 	*recvPacket >> AuthDigest[9];
 	*recvPacket >> AuthDigest[12];
-    recvPacket->read<uint64>();
-    recvPacket->read<uint32>();
+	recvPacket->read<uint64>();
+	recvPacket->read<uint32>();
 	*recvPacket >> AuthDigest[16];
 	*recvPacket >> AuthDigest[5];
 	*recvPacket >> AuthDigest[6];
 	*recvPacket >> AuthDigest[8];
-	mClientBuild = recvPacket->read<uint16>();
+	*recvPacket >> mClientBuild;
 	*recvPacket >> AuthDigest[17];
 	*recvPacket >> AuthDigest[7];
 	*recvPacket >> AuthDigest[13];
 	*recvPacket >> AuthDigest[15];
 	*recvPacket >> AuthDigest[1];
 	*recvPacket >> AuthDigest[10];
-    *recvPacket >> addonSize;
+	*recvPacket >> addonSize;
 
 	addonsData.resize(addonSize);
 	recvPacket->read((uint8*)addonsData.contents(), addonSize);
 
 	recvPacket->ReadBit();
+	
 	uint32 accountNameLength = recvPacket->ReadBits(11);
-
 	account = recvPacket->ReadString(accountNameLength);
 
 	// Send out a request for this account.
@@ -358,9 +356,8 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 
 	if (error != 0 || pAuthenticationPacket == NULL)
 	{
-		LOG_ERROR("Something happened wrong @ the logon server\n");
+		//LOG_ERROR("Something happened wrong @ the logon server \n");
 		// something happened wrong @ the logon server
-		//OutPacket(SMSG_AUTH_RESPONSE, 1, "\x0D");
 		SendAuthResponseError(AUTH_FAILED);
 		return;
 	}
@@ -408,9 +405,7 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 		// we must send authentication failed here.
 		// the stupid newb can relog his client.
 		// otherwise accounts dupe up and disasters happen.
-		//OutPacket(SMSG_AUTH_RESPONSE, 1, "\x15");
-		//printf("Auth failed\n");
-		SendAuthResponseError(AUTH_UNKNOWN_ACCOUNT); // auth failed
+		SendAuthResponseError(AUTH_UNKNOWN_ACCOUNT);
 		return;
 	}
 
@@ -519,7 +514,6 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 	else
 	{
 		SendAuthResponseError(AUTH_REJECT);
-		//OutPacket(SMSG_AUTH_RESPONSE, 1, "\x0E"); // AUTH_REJECT = 14
 		Disconnect();
 	}
 
@@ -564,7 +558,7 @@ void WorldSocket::SendAuthResponse(uint8 code, bool queued, uint32 queuePos)
 
 	if (!classResult || !raceResult)
 	{
-		LOG_ERROR("Unable to retrieve class or race data. Make sure you applied the Auth_Update SQL");
+		LOG_ERROR("You need to apply \"mop_race_class_combinations.sql\" from \"sql\character_updates\" before you can log in!");
 		return;
 	}
 
@@ -793,7 +787,6 @@ void WorldSocket::HandleWoWConnection(WorldPacket* recvPacket)
 
 	if (ClientToServerMsg != "D OF WARCRAFT CONNECTION - CLIENT TO SERVER")
 	{
-		LOG_ERROR("You will never connect with that packet... \n");
 		return;
 	}
 	else
