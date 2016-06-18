@@ -10170,34 +10170,29 @@ void Player::_AddSkillLine(uint32 SkillLine, uint32 Curr_sk, uint32 Max_sk)
 #endif
 }
 
-//!!! todo: update skill fields, so we can get skill_langs to work !!!
 void Player::_UpdateSkillFields()
 {
-	sLog.outError("UpdateSkillFields updating....");
-	uint16 f = PLAYER_SKILL_RANK_0;     // field
-	uint16 m = PLAYER_SKILL_MAX_RANK_0; // maximum (not used currently)
-
+	uint32 f = PLAYER_SKILL_LINEID_0;
+	
 	/* Set the valid skills */
-	for (SkillMap::iterator itr = m_skills.begin(); itr != m_skills.end();)
+	for(SkillMap::iterator itr = m_skills.begin(); itr != m_skills.end();)
 	{
-		if (!itr->first)
+		if(!itr->first)
 		{
-			sLog.outError("UpdateSkillFields itr->first....");
 			SkillMap::iterator it2 = itr++;
 			m_skills.erase(it2);
 			continue;
 		}
 
 		ARCEMU_ASSERT(f <= PLAYER_CHARACTER_POINTS);
-		if (itr->second.Skill->type == SKILL_TYPE_PROFESSION)
+		if(itr->second.Skill->type == SKILL_TYPE_PROFESSION)
 		{
-			sLog.outError("UpdateSkillFields itr->second.Skill->type == SKILL_TYPE_PROFESSION....");
 			SetUInt32Value(f++, itr->first | 0x10000);
 #ifdef ENABLE_ACHIEVEMENTS
 			m_achievementMgr.UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_SKILL_LEVEL, itr->second.Skill->id, itr->second.CurrentValue, 0);
 #endif
 		}
-		else if (itr->second.Skill->type == SKILL_TYPE_SECONDARY)
+		else if(itr->second.Skill->type == SKILL_TYPE_SECONDARY)
 		{
 			SetUInt32Value(f++, itr->first | 0x40000);
 #ifdef ENABLE_ACHIEVEMENTS
@@ -10218,11 +10213,11 @@ void Player::_UpdateSkillFields()
 	}
 
 	/* Null out the rest of the fields */
-	//for (; f < PLAYER_CHARACTER_POINTS; ++f)
-	//{
-	//	if (m_uint32Values[f] != 0)
-	//		SetUInt32Value(f, 0);
-	//}
+	for(; f < PLAYER_CHARACTER_POINTS; ++f)
+	{
+		if(m_uint32Values[f] != 0)
+			SetUInt32Value(f, 0);
+	}
 }
 
 bool Player::_HasSkillLine(uint32 SkillLine)

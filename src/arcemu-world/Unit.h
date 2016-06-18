@@ -1234,6 +1234,8 @@ class SERVER_DECL Unit : public Object
 		void SetExtraUnitMovementFlags(uint16 f) { m_movementInfo.flags2 = f; }
 		bool IsSplineEnabled() const;
 
+		uint32 GetMovementCounter() const { return m_movementCounter; }
+
 
 		void EventRemoveAura(uint32 SpellId) { RemoveAura(SpellId); }
 

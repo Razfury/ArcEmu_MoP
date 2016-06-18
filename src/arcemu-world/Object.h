@@ -903,6 +903,7 @@ class SERVER_DECL Object : public EventableObject
 		float m_swimSpeed;
 		float m_backSwimSpeed;
 		float m_turnRate;
+		float m_pitchRate;
 		float m_flySpeed;
 		float m_backFlySpeed;
 
