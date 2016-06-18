@@ -92,8 +92,9 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
         case CMSG_MESSAGECHAT_BATTLEGROUND: type = CHAT_MSG_BATTLEGROUND;   break;
         case CMSG_MESSAGECHAT_RAID_WARNING: type = CHAT_MSG_RAID_WARNING;   break;
     }
-	//recv_data >> type;
-	recv_data >> lang;
+
+	if (type != CHAT_MSG_EMOTE && type != CHAT_MSG_AFK && type != CHAT_MSG_DND)
+		recv_data >> lang;
 
 	if(lang >= NUM_LANGUAGES)
 		return;
@@ -151,13 +152,15 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
 	std::string msg, to = "", channel = "", tmp;
 	msg.reserve(256);
+	uint32 textLength = 0;
 
 	// Process packet
 	switch(type)
 	{
 		case CHAT_MSG_SAY:
             {
-                msg = recv_data.ReadString(recv_data.ReadBits(9));
+				textLength = recv_data.ReadBits(8);
+                msg = recv_data.ReadString(textLength);
             }
 			break;
 		default:
@@ -220,7 +223,8 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
 				if(GetPlayer()->m_modlanguage >= 0)
 				{
-					data = sChatHandler.FillMessageData(CHAT_MSG_SAY, GetPlayer()->m_modlanguage,  msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
+					data =	sChatHandler.BuildChatPacket(*data, CHAT_MSG_SAY, GetPlayer()->m_modlanguage, _player->GetGUID(), 0, msg, _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0, _player->GetName(), "", NULL, false, "", "");					
+					//data = sChatHandler.FillMessageData(CHAT_MSG_SAY, GetPlayer()->m_modlanguage,  msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
 					GetPlayer()->SendMessageToSet(data, true);
 				}
 				else
@@ -231,7 +235,8 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 					if(lang == 0 && ! CanUseCommand('c') && ! sWorld.interfaction_chat)
 						return;
 
-					data = sChatHandler.FillMessageData(CHAT_MSG_SAY, lang, msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
+					data =	sChatHandler.BuildChatPacket(*data, CHAT_MSG_SAY, GetPlayer()->m_modlanguage, _player->GetGUID(), 0, msg, _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0, _player->GetName(), "", NULL, false, "", "");
+					//data = sChatHandler.FillMessageData(CHAT_MSG_SAY, lang, msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
 
 					GetPlayer()->SendMessageToSet(data, true);
 				}
