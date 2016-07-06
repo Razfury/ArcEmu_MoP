@@ -1236,6 +1236,29 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
+    ObjectGuid buttonStream;
+    uint8 slotId;
+
+    recv_data >> slotId;
+
+    buttonStream[7] = recv_data.ReadBit();
+    buttonStream[0] = recv_data.ReadBit();
+    buttonStream[5] = recv_data.ReadBit();
+    buttonStream[2] = recv_data.ReadBit();
+    buttonStream[1] = recv_data.ReadBit();
+    buttonStream[6] = recv_data.ReadBit();
+    buttonStream[3] = recv_data.ReadBit();
+    buttonStream[4] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(buttonStream[6]);
+    recv_data.ReadByteSeq(buttonStream[7]);
+    recv_data.ReadByteSeq(buttonStream[3]);
+    recv_data.ReadByteSeq(buttonStream[5]);
+    recv_data.ReadByteSeq(buttonStream[2]);
+    recv_data.ReadByteSeq(buttonStream[1]);
+    recv_data.ReadByteSeq(buttonStream[4]);
+    recv_data.ReadByteSeq(buttonStream[0]);
+
 	LOG_DEBUG("WORLD: Received CMSG_SET_ACTION_BUTTON");
 	uint8 button, misc, type;
 	uint16 action;
@@ -1753,7 +1776,7 @@ void WorldSession::HandleTutorialClear(WorldPacket & recv_data)
 	CHECK_INWORLD_RETURN
 
 	for(uint32 iI = 0; iI < 8; iI++)
-		GetPlayer()->SetTutorialInt(iI, 0xFFFFFFFF);
+        GetPlayer()->SetTutorialInt(iI, 0xFFFFFFFF);
 }
 
 void WorldSession::HandleTutorialReset(WorldPacket & recv_data)
@@ -2110,7 +2133,6 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket & recv_data)
 		pGameObject->SetByte(GAMEOBJECT_BYTES_1, 0, 0);
 		pLoot = &pGameObject->loot;
 	}
-
 
 	if(!pLoot)
 		return;

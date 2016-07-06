@@ -2070,9 +2070,10 @@ void Player::addSpell(uint32 spell_id)
 	mSpells.insert(spell_id);
 	if (IsInWorld())
 	{
-		WorldPacket data(SMSG_LEARNED_SPELL, 6);
+		WorldPacket data(SMSG_LEARNED_SPELL, 8);
+        data.WriteBits(1, 22);
+        data.WriteBit(0);
 		data << uint32(spell_id);
-		data << uint32(0);
 		m_session->SendPacket(&data);
 	}
 
@@ -3014,7 +3015,6 @@ void Player::LoadFromDBProc(QueryResultVector & results)
 	m_isResting = get_next_field.GetUInt8();
 	m_restState = get_next_field.GetUInt8();
 	m_restAmount = get_next_field.GetUInt32();
-
 
 	std::string tmpStr = get_next_field.GetString();
 	m_playedtime[0] = (uint32)atoi((const char*)strtok((char*)tmpStr.c_str(), " "));
@@ -4943,16 +4943,75 @@ void Player::CleanupChannels()
 
 void Player::SendInitialActions()
 {
-	WorldPacket data(SMSG_ACTION_BUTTONS, (PLAYER_ACTION_BUTTON_COUNT * 4) + 1);
+	WorldPacket data(SMSG_ACTION_BUTTONS, (PLAYER_ACTION_BUTTON_COUNT * 8) + 1);
 
-	//data << uint8(0);         // VLack: 3.1, some bool - 0 or 1. seems to work both ways
+    uint8 buttons[PLAYER_ACTION_BUTTON_COUNT][8];
+    ActionButtonPACKET* buttonsTab = (ActionButtonPACKET*)buttons;
 
-	for (uint32 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
-	{
-		data << m_specs[m_talentActiveSpec].mActions[i].Action;
-		data << m_specs[m_talentActiveSpec].mActions[i].Type;
-		data << m_specs[m_talentActiveSpec].mActions[i].Misc; //VLack: on 3.1.3, despite the format of CMSG_SET_ACTION_BUTTON, here Type have to be sent before Misc
-	}
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+    {
+        if (m_specs[m_talentActiveSpec].mActions[i].Action == 0 && 
+            m_specs[m_talentActiveSpec].mActions[i].Type == 0 &&
+            m_specs[m_talentActiveSpec].mActions[i].Misc == 0)
+        {
+            buttonsTab[i].id = 0;
+            buttonsTab[i].unk = 0;
+            continue;
+        }
+
+        buttonsTab[i].id = m_specs[m_talentActiveSpec].mActions[i].Action;
+        buttonsTab[i].unk = m_specs[m_talentActiveSpec].mActions[i].Type;
+    }
+
+    // Bits
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteBit(buttons[i][4]);
+
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteBit(buttons[i][5]);
+
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteBit(buttons[i][3]);
+
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteBit(buttons[i][1]);
+
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteBit(buttons[i][6]);
+
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteBit(buttons[i][7]);
+
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteBit(buttons[i][0]);
+
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteBit(buttons[i][2]);
+
+    // Data
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteByteSeq(buttons[i][0]);
+
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteByteSeq(buttons[i][1]);
+
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteByteSeq(buttons[i][4]);
+
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteByteSeq(buttons[i][6]);
+
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteByteSeq(buttons[i][7]);
+
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteByteSeq(buttons[i][2]);
+
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteByteSeq(buttons[i][5]);
+
+    for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; ++i)
+        data.WriteByteSeq(buttons[i][3]);
 
 	data << uint8(0); // state? can be 0, 1, 2
 

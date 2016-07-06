@@ -434,8 +434,6 @@ void WorldSession::LoadAccountDataProc(QueryResult* result)
 
 void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 {
-	CHECK_PACKET_SIZE(recv_data, 10);
-
 	uint8 hairStyle;
 	uint8 face;
 	uint8 facialHair;
@@ -619,7 +617,6 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleCharDeleteOpcode(WorldPacket & recv_data)
 {
-	//CHECK_PACKET_SIZE(recv_data, 8);
 	std::string fail = "\x48";
 	
 	ObjectGuid guid;
@@ -728,11 +725,29 @@ uint8 WorldSession::DeleteCharacter(uint32 guid)
 
 void WorldSession::HandleCharRenameOpcode(WorldPacket & recv_data)
 {
-	WorldPacket data(SMSG_CHAR_RENAME, recv_data.size() + 1);
+    ObjectGuid guid;
 
-	uint64 guid;
-	string name;
-	recv_data >> guid >> name;
+    guid[6] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
+    uint32 Namelen = recv_data.ReadBits(6); // Name size
+    guid[1] = recv_data.ReadBit();
+    guid[5] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    guid[2] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[5]);
+    std::string newName = recv_data.ReadString(Namelen);  // New Name
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[3]);
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[0]);
+
+    WorldPacket data(SMSG_CHAR_RENAME, 1 + 8 + newName.size() + 1);
 
 	PlayerInfo* pi = objmgr.GetPlayerInfo((uint32)guid);
 	if (pi == 0) return;
@@ -748,53 +763,74 @@ void WorldSession::HandleCharRenameOpcode(WorldPacket & recv_data)
 
 	// Check name for rule violation.
 
-	LoginErrorCode err = VerifyName(name.c_str(), name.length());
+	LoginErrorCode err = VerifyName(newName.c_str(), newName.length());
 	if (err != E_CHAR_NAME_SUCCESS)
 	{
 		data << uint8(err);
-		data << guid << name;
+        //data << guid << newName;
 		SendPacket(&data);
 		return;
 	}
 
-	QueryResult* result2 = CharacterDatabase.Query("SELECT COUNT(*) FROM banned_names WHERE name = '%s'", CharacterDatabase.EscapeString(name).c_str());
+	QueryResult* result2 = CharacterDatabase.Query("SELECT COUNT(*) FROM banned_names WHERE name = '%s'", CharacterDatabase.EscapeString(newName).c_str());
 	if (result2)
 	{
 		if (result2->Fetch()[0].GetUInt32() > 0)
 		{
 			// That name is banned!
 			data << uint8(E_CHAR_NAME_PROFANE);
-			data << guid << name;
+			//data << guid << newName;
 			SendPacket(&data);
 		}
 		delete result2;
 	}
 
 	// Check if name is in use.
-	if (objmgr.GetPlayerInfoByName(name.c_str()) != NULL)
+    if (objmgr.GetPlayerInfoByName(newName.c_str()) != NULL)
 	{
 		data << uint8(E_CHAR_CREATE_NAME_IN_USE);
-		data << guid << name;
+		//data << guid << newName;
 		SendPacket(&data);
 		return;
 	}
 
 	// correct capitalization
-	CapitalizeString(name);
-	objmgr.RenamePlayerInfo(pi, pi->name, name.c_str());
+    CapitalizeString(newName);
+    objmgr.RenamePlayerInfo(pi, pi->name, newName.c_str());
 
-	sPlrLog.writefromsession(this, "a rename was pending. renamed character %s (GUID: %u) to %s.", pi->name, pi->guid, name.c_str());
+    sPlrLog.writefromsession(this, "a rename was pending. renamed character %s (GUID: %u) to %s.", pi->name, pi->guid, newName.c_str());
 
 	// If we're here, the name is okay.
 	free(pi->name);
-	pi->name = strdup(name.c_str());
-	CharacterDatabase.WaitExecute("UPDATE characters SET name = '%s' WHERE guid = %u", name.c_str(), (uint32)guid);
+    pi->name = strdup(newName.c_str());
+    CharacterDatabase.WaitExecute("UPDATE characters SET name = '%s' WHERE guid = %u", newName.c_str(), (uint32)guid);
 	CharacterDatabase.WaitExecute("UPDATE characters SET forced_rename_pending = 0 WHERE guid = %u", (uint32)guid);
 
-	data << uint8(E_RESPONSE_SUCCESS) << guid << name;
+    data << uint8(E_RESPONSE_SUCCESS);
+   /* data.WriteBit(guid[6]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[5]);
+
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[7]);
+    data << newName;*/
+
+    data << uint64(guid);
+    data << newName;
+
 	SendPacket(&data);
 }
-
 
 void WorldSession::HandlePlayerLoginOpcode(WorldPacket & recv_data)
 {
@@ -820,7 +856,6 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket & recv_data)
 	recv_data.ReadByteSeq(playerGuid[4]);
 	recv_data.ReadByteSeq(playerGuid[7]);
 	recv_data.ReadByteSeq(playerGuid[3]);
-	
 
 	if (objmgr.GetPlayer((uint32)playerGuid) != NULL || m_loggingInPlayer || _player)
 	{
@@ -989,13 +1024,12 @@ void WorldSession::FullLogin(Player* plr)
 		VZ = plr->GetPositionZ();
 	}
 
-	WorldPacket data(SMSG_LOGIN_VERIFY_WORLD, 20); // 5.4.8
+	WorldPacket data(SMSG_LOGIN_VERIFY_WORLD, 20);
 	data << VX;
 	data << VO;
 	data << VY;
 	data << VMapId;	
 	data << VZ;
-	
 	SendPacket(&data);
 
 	WorldPacket datax(SMSG_FEATURE_SYSTEM_STATUS, 4 + 4 + 4 + 1 + 4 + 2 + 4 + 4 + 4 + 4 + 4 + 4 + 4);
@@ -1009,9 +1043,9 @@ void WorldSession::FullLogin(Player* plr)
 	datax << uint8(2);
 	datax << uint32(0);
 
-	datax.WriteBit(1);
+	datax.WriteBit(0);
 	datax.WriteBit(1);                   // ingame shop status (0 - "The Shop is temporarily unavailable.")
-	datax.WriteBit(1);
+	datax.WriteBit(0);
 	datax.WriteBit(0);                   // Recruit a Friend button
 	datax.WriteBit(0);                   // server supports voice chat
 	datax.WriteBit(1);                   // show ingame shop icon
@@ -1033,14 +1067,15 @@ void WorldSession::FullLogin(Player* plr)
 		datax << uint32(0);
 		datax << uint32(1);
 		datax << uint32(10);
-		datax << uint32(60000);
+        datax << uint32(60000);
 	}
 
 	SendPacket(&datax);
 
-	WorldPacket dataldm(SMSG_LEARNED_DANCE_MOVES, 4 + 4); // trinitycore 4.3.4
-	dataldm << uint64(0);
-	SendPacket(&dataldm);
+    // unknown - 5.4.8 18414
+	//WorldPacket dataldm(SMSG_LEARNED_DANCE_MOVES, 4 + 4); // trinitycore 4.3.4
+	//dataldm << uint64(0);
+	//SendPacket(&dataldm);
 
 	plr->UpdateAttackSpeed();
 
@@ -1104,13 +1139,12 @@ void WorldSession::FullLogin(Player* plr)
 			{
 				plr->SetMapId(pTrans->GetMapId());
 
-				StackWorldPacket<20> dataw(SMSG_NEW_WORLD); // 15595
+				StackWorldPacket<20> dataw(SMSG_NEW_WORLD);
 				dataw << c_tposx;
+                dataw << pTrans->GetMapId();
+                dataw << c_tposy;
+                dataw << c_tposz;
 				dataw << plr->GetOrientation();
-				dataw << c_tposz;
-				dataw << pTrans->GetMapId();
-				dataw << c_tposy;
-
 				SendPacket(&dataw);
 
 				// shit is sent in worldport ack.
@@ -1131,7 +1165,7 @@ void WorldSession::FullLogin(Player* plr)
 	{
 		uint32 introid = plr->info->introid;
 
-		OutPacket(SMSG_TRIGGER_CINEMATIC, 4, &introid); // 4.3.4
+		OutPacket(SMSG_TRIGGER_CINEMATIC, 4, &introid);
 
 		// what the fuck is this anyway?
 		/*if(sWorld.m_AdditionalFun)    //cebernic: tells people who 's newbie :D
@@ -1142,46 +1176,42 @@ void WorldSession::FullLogin(Player* plr)
 
 	}
 
-
 	LOG_DETAIL("WORLD: Created new player for existing players (%s)", plr->GetName());
 
 	// Login time, will be used for played time calc
 	plr->m_playedtime[2] = uint32(UNIXTIME);
 
-	// disabled
 	//Issue a message telling all guild members that this player has signed on
-	/*if(plr->IsInGuild())
+	if(plr->IsInGuild())
 	{
-	Guild* pGuild = plr->m_playerInfo->guild;
-	if(pGuild)
-	{
-	WorldPacket data(SMSG_GUILD_EVENT, 50); // do we need that much? // shoud work on 4.3.4
+	    Guild* pGuild = plr->m_playerInfo->guild;
+	    if (pGuild)
+	    {
+	        WorldPacket data(SMSG_GUILD_EVENT, 50);
 
-	data << uint8(GUILD_EVENT_MOTD);
-	data << uint8(1);
+	        data << uint8(GUILD_EVENT_MOTD);
+	        data << uint8(1);
 
-	if(pGuild->GetMOTD())
-	data << pGuild->GetMOTD();
-	else
-	data << uint8(0);
+	        if(pGuild->GetMOTD())
+	            data << pGuild->GetMOTD();
+	        else
+	            data << uint8(0);
 
-	SendPacket(&data);
+	        SendPacket(&data);
 
-	pGuild->LogGuildEvent(GUILD_EVENT_HASCOMEONLINE, 1, plr->GetName());
+            pGuild->LogGuildEvent(GUILD_EVENT_HASCOMEONLINE, 1, plr->GetName());
+	    }
 	}
-	}*/
 
-	// !!!! UNCOMMENT THESE ONCE THEY WORK PROPERLY !!!!
-	// don't send this, it's a sandbox, they're not updated
 	// Send online status to people having this char in friendlist
-	//_player->Social_TellFriendsOnline(); // this should work on 4.3.4
+	_player->Social_TellFriendsOnline();
 	// send friend list (for ignores)
-	//_player->Social_SendFriendList(7); // this should work on 4.3.4
+	_player->Social_SendFriendList(7);
 
-	plr->SendDungeonDifficulty(); // 15595
-	plr->SendRaidDifficulty();    // 15595
+	plr->SendDungeonDifficulty(); 
+	plr->SendRaidDifficulty();
 
-	//plr->SendEquipmentSetList(); // not sure 4.3.4
+	plr->SendEquipmentSetList();
 
 #ifndef GM_TICKET_MY_MASTER_COMPATIBLE
 	GM_Ticket* ticket = objmgr.GetGMTicketByPlayer(_player->GetGUID());

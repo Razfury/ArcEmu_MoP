@@ -536,7 +536,7 @@ void WorldSocket::Authenticate()
 	cdata << uint32(18414);
 	SendPacket(&cdata);
 
-	//sAddonMgr.SendAddonInfoPacket(pAuthenticationPacket, static_cast< uint32 >(pAuthenticationPacket->rpos()), mSession);
+	sAddonMgr.SendAddonInfoPacket(pAuthenticationPacket, static_cast< uint32 >(pAuthenticationPacket->rpos()), mSession);
 	mSession->_latency = _latency;
 
 	delete pAuthenticationPacket;

@@ -571,16 +571,13 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleCharDeleteOpcode;
 	WorldPacketHandlers[CMSG_CHAR_DELETE].status = STATUS_AUTHED;
 
-	WorldPacketHandlers[CMSG_CHAR_RENAME].handler =
-	    &WorldSession::HandleCharRenameOpcode;
+	WorldPacketHandlers[CMSG_CHAR_RENAME].handler = &WorldSession::HandleCharRenameOpcode;
 	WorldPacketHandlers[CMSG_CHAR_RENAME].status = STATUS_AUTHED;
 
-	WorldPacketHandlers[CMSG_PLAYER_LOGIN].handler =
-	    &WorldSession::HandlePlayerLoginOpcode;
+	WorldPacketHandlers[CMSG_PLAYER_LOGIN].handler = &WorldSession::HandlePlayerLoginOpcode;
 	WorldPacketHandlers[CMSG_PLAYER_LOGIN].status = STATUS_AUTHED;
 
-	WorldPacketHandlers[CMSG_OBJECT_UPDATE_FAILED].handler =
-		&WorldSession::HandleObjectUpdateFailedOpcode;
+	WorldPacketHandlers[CMSG_OBJECT_UPDATE_FAILED].handler = &WorldSession::HandleObjectUpdateFailedOpcode;
 	WorldPacketHandlers[CMSG_OBJECT_UPDATE_FAILED].status = STATUS_AUTHED;
 
 	WorldPacketHandlers[CMSG_REALM_NAME_QUERY].handler =
@@ -709,8 +706,7 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleAcknowledgementOpcodes;
 
 	// Action Buttons
-	WorldPacketHandlers[CMSG_SET_ACTION_BUTTON].handler =
-	    &WorldSession::HandleSetActionButtonOpcode;
+	WorldPacketHandlers[CMSG_SET_ACTION_BUTTON].handler = &WorldSession::HandleSetActionButtonOpcode;
 	WorldPacketHandlers[CMSG_REPOP_REQUEST].handler =
 	    &WorldSession::HandleRepopRequestOpcode;
 
