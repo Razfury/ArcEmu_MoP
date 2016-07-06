@@ -1111,13 +1111,13 @@ void WorldSession::HandleUpdateAccountData(WorldPacket & recv_data)
 	if (!sWorld.m_useAccountData)
 		return;
 
-	recv_data >> decompressedSize;
 	recv_data >> timestamp;
-	recv_data >> compressedSize;
+    recv_data >> decompressedSize;
+	//recv_data >> compressedSize;
+    type = recv_data.ReadBits(3);
 
 	if (decompressedSize == 0)                               // erase
 	{
-		type = recv_data.ReadBits(3);
 		recv_data.rfinish();
 
 		SetAccountData(type, "", 0, decompressedSize);
@@ -1148,7 +1148,6 @@ void WorldSession::HandleUpdateAccountData(WorldPacket & recv_data)
 	//	return;
 	//}
 
-	type = recv_data.ReadBits(3);
 	if (type > NUM_ACCOUNT_DATA_TYPES)
 	{
 		sLog.outError("type larger that NUM_ACCOUNT_DATA_TYPES Type : %u", type);
@@ -1161,7 +1160,6 @@ void WorldSession::HandleUpdateAccountData(WorldPacket & recv_data)
 	std::string adata;
 	dest >> adata;
 	adata = adataa;
-
 
 	SetAccountData(type, adataa, timestamp, decompressedSize);
 
@@ -1178,7 +1176,8 @@ void WorldSession::HandleRequestAccountData(WorldPacket & recv_data)
 	uint32 id;
 	if(!sWorld.m_useAccountData)
 		return;
-	recv_data >> id;
+	
+    id = recv_data.ReadBits(3);
 
 	if(id > 8)
 	{
@@ -1188,35 +1187,49 @@ void WorldSession::HandleRequestAccountData(WorldPacket & recv_data)
 	}
 
 	AccountDataEntry* res = GetAccountData(id);
-	WorldPacket data ;
+	WorldPacket data;
 	data.SetOpcode(SMSG_UPDATE_ACCOUNT_DATA);
-	data << id;
-	// if red does not exists if ID == 7 and if there is no data send 0
-	if(!res || !res->data)  // if error, send a NOTHING packet
+
+    ObjectGuid guid;
+    data.WriteBits(id, 3);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[6]);
+    
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[5]);
+    data << uint32(res->sz);         // decompressed length
+		
+    uLongf destsize;
+	if(res->sz > 200)
 	{
-		data << (uint32)0;
-	}
-	else
-	{
-		data << res->sz;
-		uLongf destsize;
-		if(res->sz > 200)
+	    data.resize(res->sz + 800);  // give us plenty of room to work with..
+
+		if((compress(const_cast<uint8*>(data.contents()) + (sizeof(uint32) * 2), &destsize, (const uint8*)res->data, res->sz)) != Z_OK)
 		{
-			data.resize(res->sz + 800);  // give us plenty of room to work with..
-
-			if((compress(const_cast<uint8*>(data.contents()) + (sizeof(uint32) * 2), &destsize, (const uint8*)res->data, res->sz)) != Z_OK)
-			{
-				LOG_ERROR("Error while compressing ACCOUNT_DATA");
-				return;
-			}
-
-			data.resize(destsize + 8);
+			LOG_ERROR("Error while compressing ACCOUNT_DATA");
+			return;
 		}
-		else
-			data.append(res->data, res->sz);
+
+		data.resize(destsize + 8);
 	}
 
-	SendPacket(&data);
+    data << uint32(destsize);
+    data.append(res->data);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[2]);
+    data << uint32(res->Time);
+
+    SendPacket(&data);
 }
 
 void WorldSession::HandleSetActionButtonOpcode(WorldPacket & recv_data)
@@ -2540,8 +2553,6 @@ void WorldSession::HandleSetTaxiBenchmarkOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleRealmSplitOpcode(WorldPacket & recv_data)
 {
-	CHECK_PACKET_SIZE(recv_data, 4);
-
 	LOG_DEBUG("WORLD: Received CMSG_REALM_SPLIT");
 
 	uint32 unk;
@@ -2555,7 +2566,8 @@ void WorldSession::HandleRealmSplitOpcode(WorldPacket & recv_data)
 	// 0x0 realm normal
 	// 0x1 realm split
 	// 0x2 realm split pending
-	data << split_date;
+    data.WriteBits(split_date.size(), 7);
+	data.WriteString(split_date);
 	SendPacket(&data);
 }
 
@@ -2615,4 +2627,58 @@ void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket)
 	recvPacket.ReadByteSeq(guid[4]);
 
 	LOG_ERROR("FAILED TO UPDATE OBJECT : %u", guid);	
+}
+
+void WorldSession::HandleRequestHotfixOpcode(WorldPacket & recv_data)
+{
+    uint32 type, count;
+    recv_data >> type;
+
+    count = recv_data.ReadBits(21);
+
+    ObjectGuid* guids = new ObjectGuid[count];
+
+    for (uint32 i = 0; i < count; ++i)
+    {
+        guids[i][6] = recv_data.ReadBit();
+        guids[i][3] = recv_data.ReadBit();
+        guids[i][0] = recv_data.ReadBit();
+        guids[i][1] = recv_data.ReadBit();
+        guids[i][4] = recv_data.ReadBit();
+        guids[i][5] = recv_data.ReadBit();
+        guids[i][7] = recv_data.ReadBit();
+        guids[i][2] = recv_data.ReadBit();
+    }
+
+    uint32 entry;
+
+    for (uint32 i = 0; i < count; ++i)
+    {
+        recv_data.ReadByteSeq(guids[i][1]);
+        recv_data >> entry;
+        recv_data.ReadByteSeq(guids[i][5]);
+        recv_data.ReadByteSeq(guids[i][5]);
+        recv_data.ReadByteSeq(guids[i][6]);
+        recv_data.ReadByteSeq(guids[i][4]);
+        recv_data.ReadByteSeq(guids[i][7]);
+        recv_data.ReadByteSeq(guids[i][2]);
+        recv_data.ReadByteSeq(guids[i][3]);
+
+        //! TODO
+        switch (type)
+        {
+        //case DB2_REPLY_ITEM:
+          //  SendItemDb2Reply(entry);
+          //  break;
+        //case DB2_REPLY_SPARSE:
+          //  SendItemSparseDb2Reply(entry);
+           // break;
+        default:
+            Log.Error("MiscHandler", "CMSG_REQUEST_HOTFIX: Received unknown hotfix type: %u", type);
+            recv_data.clear();
+            break;
+        }
+    }
+
+    delete[] guids;
 }

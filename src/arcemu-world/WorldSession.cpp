@@ -587,8 +587,7 @@ void WorldSession::InitPacketHandlerTable()
 		&WorldSession::HandleRealmNameQueryOpcode;
 	WorldPacketHandlers[CMSG_REALM_NAME_QUERY].status = STATUS_AUTHED;
 	
-	WorldPacketHandlers[CMSG_REALM_SPLIT].handler =
-	    &WorldSession::HandleRealmSplitOpcode;
+	WorldPacketHandlers[CMSG_REALM_SPLIT].handler = &WorldSession::HandleRealmSplitOpcode;
 	WorldPacketHandlers[CMSG_REALM_SPLIT].status = STATUS_AUTHED;
 
 	// 4.3.4 login
@@ -604,12 +603,9 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleCorpseQueryOpcode;
 	WorldPacketHandlers[CMSG_NAME_QUERY].handler =
 	    &WorldSession::HandleNameQueryOpcode;
-	WorldPacketHandlers[CMSG_QUERY_TIME].handler =
-	    &WorldSession::HandleQueryTimeOpcode;
-	WorldPacketHandlers[CMSG_CREATURE_QUERY].handler =
-	    &WorldSession::HandleCreatureQueryOpcode;
-	WorldPacketHandlers[CMSG_GAMEOBJECT_QUERY].handler =
-	    &WorldSession::HandleGameObjectQueryOpcode;
+	WorldPacketHandlers[CMSG_QUERY_TIME].handler = &WorldSession::HandleQueryTimeOpcode;
+	WorldPacketHandlers[CMSG_CREATURE_QUERY].handler = &WorldSession::HandleCreatureQueryOpcode;
+	WorldPacketHandlers[CMSG_GAMEOBJECT_QUERY].handler = &WorldSession::HandleGameObjectQueryOpcode;
 	WorldPacketHandlers[CMSG_PAGE_TEXT_QUERY].handler =
 	    &WorldSession::HandlePageTextQueryOpcode;
 	WorldPacketHandlers[CMSG_ITEM_NAME_QUERY].handler =
@@ -670,8 +666,7 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleMovementOpcodes;
 	WorldPacketHandlers[MSG_MOVE_STOP_ASCEND].handler =
 	    &WorldSession::HandleMovementOpcodes;
-	WorldPacketHandlers[CMSG_MOVE_TIME_SKIPPED].handler =
-	    &WorldSession::HandleMoveTimeSkippedOpcode;
+	WorldPacketHandlers[CMSG_MOVE_TIME_SKIPPED].handler = &WorldSession::HandleMoveTimeSkippedOpcode;
 	WorldPacketHandlers[CMSG_MOVE_NOT_ACTIVE_MOVER].handler =
 	    &WorldSession::HandleMoveNotActiveMoverOpcode;
 	WorldPacketHandlers[CMSG_SET_ACTIVE_MOVER].handler =
@@ -771,11 +766,10 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleAreaTriggerOpcode;
 
 	// Account Data
-	WorldPacketHandlers[CMSG_UPDATE_ACCOUNT_DATA].handler = &WorldSession::HandleUpdateAccountData; // should work on 4.3.4
+	WorldPacketHandlers[CMSG_UPDATE_ACCOUNT_DATA].handler = &WorldSession::HandleUpdateAccountData;
 	WorldPacketHandlers[CMSG_UPDATE_ACCOUNT_DATA].status  = STATUS_AUTHED;
 
-	WorldPacketHandlers[CMSG_REQUEST_ACCOUNT_DATA].handler =
-	    &WorldSession::HandleRequestAccountData;
+	WorldPacketHandlers[CMSG_REQUEST_ACCOUNT_DATA].handler = &WorldSession::HandleRequestAccountData;
 	WorldPacketHandlers[CMSG_TOGGLE_PVP].handler =
 	    &WorldSession::HandleTogglePVPOpcode;
 
@@ -804,8 +798,10 @@ void WorldSession::InitPacketHandlerTable()
 	WorldPacketHandlers[SMSG_BARBER_SHOP_RESULT].handler =
 	    &WorldSession::HandleBarberShopResult;
 
+    WorldPacketHandlers[CMSG_REQUEST_HOTFIX].handler = &WorldSession::HandleRequestHotfixOpcode;
+
     // Chat
-    WorldPacketHandlers[CMSG_MESSAGECHAT_SAY].handler                       = &WorldSession::HandleMessagechatOpcode;
+    /*WorldPacketHandlers[CMSG_MESSAGECHAT_SAY].handler                       = &WorldSession::HandleMessagechatOpcode;
     WorldPacketHandlers[CMSG_MESSAGECHAT_YELL].handler                      = &WorldSession::HandleMessagechatOpcode;
     WorldPacketHandlers[CMSG_MESSAGECHAT_CHANNEL].handler                   = &WorldSession::HandleMessagechatOpcode;
     WorldPacketHandlers[CMSG_MESSAGECHAT_WHISPER].handler                   = &WorldSession::HandleMessagechatOpcode;
@@ -817,7 +813,7 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_MESSAGECHAT_PARTY].handler                     = &WorldSession::HandleMessagechatOpcode;
     WorldPacketHandlers[CMSG_MESSAGECHAT_RAID].handler                      = &WorldSession::HandleMessagechatOpcode;
     WorldPacketHandlers[CMSG_MESSAGECHAT_RAID_WARNING].handler              = &WorldSession::HandleMessagechatOpcode;
-    WorldPacketHandlers[CMSG_MESSAGECHAT_BATTLEGROUND].handler              = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_BATTLEGROUND].handler              = &WorldSession::HandleMessagechatOpcode;*/
 
 	// Channels
 	WorldPacketHandlers[CMSG_JOIN_CHANNEL].handler =
@@ -1294,8 +1290,7 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandlePVPLogDataOpcode;
 	WorldPacketHandlers[MSG_INSPECT_HONOR_STATS].handler =
 	    &WorldSession::HandleInspectHonorStatsOpcode;
-	WorldPacketHandlers[CMSG_SET_ACTIONBAR_TOGGLES].handler =
-	    &WorldSession::HandleSetActionBarTogglesOpcode;
+	WorldPacketHandlers[CMSG_SET_ACTIONBAR_TOGGLES].handler = &WorldSession::HandleSetActionBarTogglesOpcode;
 	WorldPacketHandlers[CMSG_MOVE_SPLINE_DONE].handler =
 	    &WorldSession::HandleMoveSplineCompleteOpcode;
 
@@ -1352,8 +1347,7 @@ void WorldSession::InitPacketHandlerTable()
 	WorldPacketHandlers[CMSG_PET_CAST_SPELL].handler =
 	    &WorldSession::HandlePetCastSpell;
 
-	WorldPacketHandlers[CMSG_WORLD_STATE_UI_TIMER_UPDATE].handler =
-	    &WorldSession::HandleWorldStateUITimerUpdate;
+	WorldPacketHandlers[CMSG_WORLD_STATE_UI_TIMER_UPDATE].handler = &WorldSession::HandleWorldStateUITimerUpdate;
 	WorldPacketHandlers[CMSG_SET_TAXI_BENCHMARK_MODE].handler =
 	    &WorldSession::HandleSetTaxiBenchmarkOpcode;
 

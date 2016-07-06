@@ -433,6 +433,8 @@ class SERVER_DECL WorldSession
 		void HandleInspectOpcode(WorldPacket & recv_data);
 		void HandleGameobjReportUseOpCode(WorldPacket & recv_data);  // CMSG_GAMEOBJ_REPORT_USE
 
+        void HandleRequestHotfixOpcode(WorldPacket & recv_data);
+
 		// 4.3.4 15595
 		void HandleUITimeRequestOpcode(WorldPacket & recv_data); // empty opcode
 		void HandleTimeSyncRespOpcode(WorldPacket & recv_data);

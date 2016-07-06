@@ -26,16 +26,20 @@ void WorldSession::HandleChannelJoin(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname, pass;
 	uint32 dbc_id = 0;
-	uint16 crap;		// crap = some sort of channel type?
 	uint32 i;
 	Channel* chn;
+    uint32 channelLength, passLength;
 
-	recvPacket >> dbc_id >> crap;
-	recvPacket >> channelname;
-	recvPacket >> pass;
+    recvPacket >> dbc_id;
+    uint8 unknown1 = recvPacket.ReadBit();                  // unknown bit
+    channelLength = recvPacket.ReadBits(7);
+    passLength = recvPacket.ReadBits(7);
+    uint8 unknown2 = recvPacket.ReadBit();                  // unknown bit
+
+    channelname = recvPacket.ReadString(channelLength);
+    pass = recvPacket.ReadString(passLength);
 
 	if(!stricmp(channelname.c_str(), "LookingForGroup") && !sWorld.m_lfgForNonLfg)
 	{
@@ -65,13 +69,14 @@ void WorldSession::HandleChannelLeave(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname;
 	uint32 code = 0;
 	Channel* chn;
 
 	recvPacket >> code;
-	recvPacket >> channelname;
+
+    uint32 length = recvPacket.ReadBits(7);
+    channelname = recvPacket.ReadString(length);
 
 	chn = channelmgr.GetChannel(channelname.c_str(), _player);
 	if(chn == NULL)
@@ -84,11 +89,11 @@ void WorldSession::HandleChannelList(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname;
 	Channel* chn;
 
-	recvPacket >> channelname;
+    uint32 length = recvPacket.ReadBits(7);
+    std::string channelName = recvPacket.ReadString(length);
 
 	chn = channelmgr.GetChannel(channelname.c_str(), _player);
 	if(chn != NULL)

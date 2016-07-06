@@ -161,10 +161,9 @@ void WorldSession::SendNameQueryOpcode(ObjectGuid guid)
 //////////////////////////////////////////////////////////////
 void WorldSession::HandleQueryTimeOpcode(WorldPacket & recv_data)
 {
-
 	WorldPacket data(SMSG_QUERY_TIME_RESPONSE, 4 + 4);
 	data << (uint32)UNIXTIME;
-	data << (uint32)0; //VLack: 3.1; thanks Stewart for reminding me to have the correct structure even if it seems the old one still works.
+	data << (uint32)0;
 	SendPacket(&data);
 
 }
@@ -244,83 +243,106 @@ void WorldSession::HandleGameObjectQueryOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recv_data, 12);
 	WorldPacket data(SMSG_GAMEOBJECT_QUERY_RESPONSE, sizeof(GameObjectInfo) + 250 * 6); // not sure
 
 	uint32 entryID;
-	uint64 guid;
+	ObjectGuid guid;
 	GameObjectInfo* goinfo;
 
 
 	recv_data >> entryID;
-	recv_data >> guid;
+	
+    guid[5] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[6] = recv_data.ReadBit();
+    guid[2] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    guid[1] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[3]);
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[0]);
 
 	LOG_DETAIL("WORLD: CMSG_GAMEOBJECT_QUERY '%u'", entryID);
 
 	goinfo = GameObjectNameStorage.LookupEntry(entryID);
-	if(goinfo == NULL)
+	if (goinfo == NULL)
 		return;
 
-	LocalizedGameObjectName* lgn = (language > 0) ? sLocalizationMgr.GetLocalizedGameObjectName(entryID, language) : NULL;
+    LocalizedGameObjectName* lgn = (language > 0) ? sLocalizationMgr.GetLocalizedGameObjectName(entryID, language) : NULL;
 
-	data << entryID;                // unique identifier of the GO template
-	data << goinfo->Type;           // type of the gameobject
-	data << goinfo->DisplayID;      // displayid/modelid of the gameobject
+    data.WriteBit(1); // goinfo != NULL
+    data << entryID;
+    size_t pos = data.wpos();
+    
+    data << uint32(0);
 
-	// Name of the gameobject
-	if(lgn)
-		data << lgn->Name;
-	else
-		data << goinfo->Name;
+    data << goinfo->Type;
+    data << goinfo->DisplayID;
+    
+    if (lgn)
+        data << lgn->Name;
+    else
+        data << goinfo->Name;
 
-	data << uint8(0);              // name2, always seems to be empty
-	data << uint8(0);              // name3, always seems to be empty
-	data << uint8(0);              // name4, always seems to be empty
-	data << goinfo->Category;       // Category string of the GO, like "attack", "pvp", "point", etc
-	data << goinfo->Castbartext;    // text displayed when using the go, like "collecting", "summoning" etc
-	data << goinfo->Unkstr;
-	data << goinfo->SpellFocus;     // spellfocus id, ex.: spell casted when interacting with the GO
-	data << goinfo->sound1;
-	data << goinfo->sound2;
-	data << goinfo->sound3;
-	data << goinfo->sound4;
-	data << goinfo->sound5;
-	data << goinfo->sound6;
-	data << goinfo->sound7;
-	data << goinfo->sound8;
-	data << goinfo->sound9;
-	data << goinfo->Unknown1;
-	data << goinfo->Unknown2;
-	data << goinfo->Unknown3;
-	data << goinfo->Unknown4;
-	data << goinfo->Unknown5;
-	data << goinfo->Unknown6;
-	data << goinfo->Unknown7;
-	data << goinfo->Unknown8;
-	data << goinfo->Unknown9;
-	data << goinfo->Unknown10;
-	data << goinfo->Unknown11;
-	data << goinfo->Unknown12;
-	data << goinfo->Unknown13;
-	data << goinfo->Unknown14;
-	data << uint32(0);         // 15
-	data << uint32(0);         // 16
-	data << uint32(0);         // 17
-	data << uint32(0);         // 18
-	data << uint32(0);         // 19
-	data << uint32(0);         // 20
-	data << uint32(0);         // 21
-	data << uint32(0);         // 22
+    data << uint8(0);
+    data << uint8(0);
+    data << uint8(0);
+    data << goinfo->Category;
+    data << goinfo->Castbartext;
+    data << goinfo->Unkstr;
+    data << goinfo->SpellFocus;     // spellfocus id, ex.: spell casted when interacting with the GO
+    data << goinfo->sound1;
+    data << goinfo->sound2;
+    data << goinfo->sound3;
+    data << goinfo->sound4;
+    data << goinfo->sound5;
+    data << goinfo->sound6;
+    data << goinfo->sound7;
+    data << goinfo->sound8;
+    data << goinfo->sound9;
+    data << goinfo->Unknown1;
+    data << goinfo->Unknown2;
+    data << goinfo->Unknown3;
+    data << goinfo->Unknown4;
+    data << goinfo->Unknown5;
+    data << goinfo->Unknown6;
+    data << goinfo->Unknown7;
+    data << goinfo->Unknown8;
+    data << goinfo->Unknown9;
+    data << goinfo->Unknown10;
+    data << goinfo->Unknown11;
+    data << goinfo->Unknown12;
+    data << goinfo->Unknown13;
+    data << goinfo->Unknown14;
+    data << uint32(0);         // 15
+    data << uint32(0);         // 16
+    data << uint32(0);         // 17
+    data << uint32(0);         // 18
+    data << uint32(0);         // 19
+    data << uint32(0);         // 20
+    data << uint32(0);         // 21
+    data << uint32(0);         // 22
 
-	data << float(goinfo->Size);       // scaling of the GO
+    data << float(goinfo->Size);       // scaling of the GO
 
-	// questitems that the go can contain
-	for(uint32 i = 0; i < 6; ++i)
-	{
-		data << uint32(goinfo->QuestItems[i]);
-	}
+    data << uint8(6); // MAX_GAMEOBJECT_QUEST_ITEMS
 
-	data << uint32(0);
+    // questitems that the go can contain
+    for (uint32 i = 0; i < 6; ++i)
+    {
+        data << uint32(goinfo->QuestItems[i]);
+    }
+
+    data << int32(0);
+    data.put(pos, uint32(data.wpos() - (pos + 4)));
 
 	SendPacket(&data);
 }

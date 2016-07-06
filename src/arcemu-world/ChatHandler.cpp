@@ -67,7 +67,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	//CHECK_PACKET_SIZE(recv_data, 9);
 	WorldPacket* data = NULL;
 
 	uint32 type;
@@ -154,7 +153,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 	msg.reserve(256);
 	uint32 textLength = 0;
 
-	// Process packet
 	switch(type)
 	{
 		case CHAT_MSG_SAY:
@@ -223,7 +221,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
 				if(GetPlayer()->m_modlanguage >= 0)
 				{
-					data =	sChatHandler.BuildChatPacket(*data, CHAT_MSG_SAY, GetPlayer()->m_modlanguage, _player->GetGUID(), 0, msg, _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0, _player->GetName(), "", NULL, false, "", "");					
+					//data =	sChatHandler.BuildChatPacket(*data, CHAT_MSG_SAY, GetPlayer()->m_modlanguage, _player->GetGUID(), 0, msg, _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0, _player->GetName(), "", NULL, false, "", "");					
 					//data = sChatHandler.FillMessageData(CHAT_MSG_SAY, GetPlayer()->m_modlanguage,  msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
 					GetPlayer()->SendMessageToSet(data, true);
 				}
@@ -235,7 +233,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 					if(lang == 0 && ! CanUseCommand('c') && ! sWorld.interfaction_chat)
 						return;
 
-					data =	sChatHandler.BuildChatPacket(*data, CHAT_MSG_SAY, GetPlayer()->m_modlanguage, _player->GetGUID(), 0, msg, _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0, _player->GetName(), "", NULL, false, "", "");
+//					data =	sChatHandler.BuildChatPacket(*data, CHAT_MSG_SAY, GetPlayer()->m_modlanguage, _player->GetGUID(), 0, msg, _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0, _player->GetName(), "", NULL, false, "", "");
 					//data = sChatHandler.FillMessageData(CHAT_MSG_SAY, lang, msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
 
 					GetPlayer()->SendMessageToSet(data, true);

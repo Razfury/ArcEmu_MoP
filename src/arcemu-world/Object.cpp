@@ -129,129 +129,94 @@ void Object::_Create(uint32 mapid, float x, float y, float z, float ang)
 	m_lastMapUpdatePosition.ChangeCoords(x, y, z, ang);
 }
 
+//!!! This method needs improvements + cleanup
+
 uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer* data, Player* target)
 {
-	    /*
-	TODO: cleanup + more documentation
-	      implement more TYPEIDs
-		  use flag names instead of their actual values
-	
-	Documentation:
-	==============
-	  We set the flags here because other cores
-	  (such as mangos/tc) have them already set,
-	  and we do not.
+    uint8  updateType = UPDATETYPE_CREATE_OBJECT;
+    uint16 flags = m_updateFlag;
 
-	  flags: update flags
-	  flags2: movement flags
-	  updatetype values: 1 - UPDATETYPE_CREATE_OBJECT
-	                     2 - UPDATETYPE_CREATE_OBJECT2
-	    */
+    /** lower flag1 **/
+    if (target == this)                                      // building packet for yourself
+        flags |= UPDATEFLAG_SELF;
 
-	uint16 flags = 0; // updateflags
-	uint32 flags2 = 0; // flags2 will be 0, values will change in _BuildMovementUpdate
+    switch (m_objectTypeId)
+    {
+    case TYPEID_PLAYER:
+    case TYPEID_UNIT:
+    case TYPEID_DYNAMICOBJECT:
+    case TYPEID_AREATRIGGER:
+        updateType = UPDATETYPE_CREATE_OBJECT;
+        break;
+        //case HIGHGUID_TYPE_UNIT:
+        //case TYPEID_UNIT:
+        //{
+        //	if (TempSummon const* summon = ToUnit()->ToTempSummon())
+        //		if (IS_PLAYER_GUID(summon->GetSummonerGUID()))
+        //			updateType = UPDATETYPE_CREATE_OBJECT;
 
-	uint8 updatetype = 1; // UPDATETYPE_CREATE_OBJECT
+        //	break;
+        //}
+        //case HIGHGUID_TYPE_CORPSE:
+        //{
+        //	if (IS_PLAYER_GUID(ToCorpse()->GetOwnerGUID()))
+        //		updateType = UPDATETYPE_CREATE_OBJECT2;
+        //	break;
+        //}
+    case TYPEID_GAMEOBJECT:
+    {
+        updateType = UPDATETYPE_CREATE_OBJECT2;
+        break;
+    }
+    default:
+        break;
+    }
 
-	switch(m_objectTypeId)
-	{
-	case TYPEID_CORPSE:
-	case TYPEID_DYNAMICOBJECT:
-	case TYPEID_AREATRIGGER:
-		flags = UPDATEFLAG_HAS_POSITION; // UPDATEFLAG_HAS_STATIONARY_POSITION
-		updatetype = 2;
-		break;
-
-	case TYPEID_GAMEOBJECT:
-		flags = UPDATEFLAG_HAS_POSITION | UPDATEFLAG_ROTATION;
-		updatetype = 2;
-		break;
-
-	case TYPEID_UNIT:
-	case TYPEID_PLAYER:
-		flags = UPDATEFLAG_LIVING;
-		updatetype = 2;
-		break;
-	}
-
-
-	/*if(IsGameObject())
-	{
-//		switch( GetByte(GAMEOBJECT_BYTES_1,GAMEOBJECT_BYTES_TYPEID) )
-		switch(m_uint32Values[GAMEOBJECT_BYTES_1])
-		{
-			/*case GAMEOBJECT_TYPE_MO_TRANSPORT:
-				{
-					if(GetTypeFromGUID() != HIGHGUID_TYPE_TRANSPORTER)
-						return 0;   // bad transporter
-					else
-						flags = 0x0352;
-				}
-				break;
-
-			case GAMEOBJECT_TYPE_TRANSPORT: // 1
-				{
-					flags |= 0x0002 | 0x0040 | 0x0200; // UPDATEFLAG_TRANSPORT | UPDATEFLAG_HAS_STATIONARY_POSITION | UPDATEFLAG_ROTATION
-				}
-				break;
-
-			case GAMEOBJECT_TYPE_TRAP:
-			case GAMEOBJECT_TYPE_DUEL_ARBITER:
-			case GAMEOBJECT_TYPE_FLAGSTAND:
-			case GAMEOBJECT_TYPE_FLAGDROP:
-				updatetype = 2; // UPDATETYPE_CREATE_OBJECT2
-				break;
-
-			default:
-				break;
-		}
-		//The above 3 checks FAIL to identify transports, thus their flags remain 0x58, and this is BAAAAAAD! Later they don't get position x,y,z,o updates, so they appear randomly by a client-calculated path, they always face north, etc... By: VLack
-		//if(flags != 0x0352 && IsGameObject() && TO< GameObject* >(this)->GetInfo()->Type == GAMEOBJECT_TYPE_TRANSPORT && !(TO< GameObject* >(this)->GetOverrides() & GAMEOBJECT_OVERRIDE_PARENTROT))
-			//flags = 0x0352;
-	}*/
-
-	 /*if(GetTypeFromGUID() == HIGHGUID_TYPE_VEHICLE)
+    if (flags & UPDATEFLAG_HAS_POSITION)
+    {
+        // UPDATETYPE_CREATE_OBJECT2 for some gameobject types...
+        if (IsGameObject())
         {
-			flags |= UPDATEFLAG_VEHICLE;
-			updatetype = 2; // UPDATETYPE_CREATE_OBJECT_SELF
-	     }*/
+            switch (GetByte(GAMEOBJECT_BYTES_1, 0))
+            {
+            case GAMEOBJECT_TYPE_TRAP:
+            case GAMEOBJECT_TYPE_DUEL_ARBITER:
+            case GAMEOBJECT_TYPE_FLAGSTAND:
+            case GAMEOBJECT_TYPE_FLAGDROP:
+                updateType = UPDATETYPE_CREATE_OBJECT2;
+                break;
+            default:
+                break;
+            }
+        }
+    }
 
-	 
-	if(target == this)
-	{
-		// player creating self
-		flags |= UPDATEFLAG_SELF;  // UPDATEFLAG_SELF
-		updatetype = 2; // UPDATEFLAG_CREATE_OBJECT_SELF
-	}
+    if (IsUnit())
+        if (TO_UNIT(this)->GetTargetGUID())
+            flags |= UPDATEFLAG_HAS_TARGET;
 
-	if(IsUnit())
-	{
-		if(TO_UNIT(this)->GetTargetGUID())
-			flags |= UPDATEFLAG_HAS_TARGET; // UPDATEFLAG_HAS_ATTACKING_TARGET
-	}
+    *data << updateType;
 
-	*data << updatetype;
+    // we shouldn't be here, under any circumstances, unless we have a wowguid..
+    ASSERT(m_wowGuid.GetNewGuidLen());
+    *data << m_wowGuid;
 
-	// we shouldn't be here, under any circumstances, unless we have a wowguid..
-	ASSERT(m_wowGuid.GetNewGuidLen());
-	*data << m_wowGuid;
+    *data << m_objectTypeId;
 
-	*data << m_objectTypeId;
+    _BuildMovementUpdate(data, flags, 0, target);
 
-	_BuildMovementUpdate(data, flags, 0, target);
+    // we have dirty data, or are creating for ourself.
+    UpdateMask updateMask;
+    updateMask.SetCount(m_valuesCount);
+    _SetCreateBits(&updateMask, target);
 
-	// we have dirty data, or are creating for ourself.
-	UpdateMask updateMask;
-	updateMask.SetCount(m_valuesCount);
-	_SetCreateBits(&updateMask, target);
+    // this will cache automatically if needed
+    _BuildValuesUpdate(data, &updateMask, target);
 
-	// this will cache automatically if needed
-	_BuildValuesUpdate(data, &updateMask, target);
-
-	/// @TODO Implement dynamic update fields
-	*data << uint8(0);
-	// update count: 1 ;)
-	return 1;
+    /// @TODO Implement dynamic update fields
+    *data << uint8(0);
+    // update count: 1 ;)
+    return 1;
 }
 
 WorldPacket* Object::BuildFieldUpdatePacket(uint32 index, uint32 value)
@@ -393,7 +358,6 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
 	data->WriteBit(hasTransportPosition);
 	data->WriteBit(0);
 	data->WriteBit(hasStationaryPosition);
-
 
 	Player* pThis = TO< Player* >(this);
 
@@ -595,7 +559,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
 			if (hasFallDirection)
 			{
 				*data << float(self->m_movementInfo.jump.xyspeed);
-					*data << float(self->m_movementInfo.jump.cosAngle);
+				*data << float(self->m_movementInfo.jump.cosAngle);
 				*data << float(self->m_movementInfo.jump.sinAngle);
 			}
 
@@ -603,7 +567,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
 			*data << float(self->m_movementInfo.jump.zspeed);
 		}
 
-		data->WriteByteSeq(guid[1]);
+        data->WriteByteSeq(guid[1]);
 		*data << m_turnRate;
 
 		if (self->m_movementInfo.time)
