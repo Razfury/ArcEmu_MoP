@@ -2772,7 +2772,7 @@ void Unit::RegeneratePower(bool isinterrupted)
 				{
 					if(!CombatStatus.IsInCombat())
 					{
-						uint32 cur = GetUInt32Value(UNIT_FIELD_POWER + 5);
+						uint32 cur = GetUInt32Value(UNIT_FIELD_POWER + 6);
 						SetPower(POWER_TYPE_RUNIC_POWER, cur - 20);
 					}
 				}
@@ -5518,7 +5518,7 @@ uint32 Unit::ManaShieldAbsorb(uint32 dmg)
 
 	uint32 cost = (potential * (100 + effectbonus)) / 50;
 
-	SetUInt32Value(UNIT_FIELD_POWER + 1, mana - cost);
+	SetUInt32Value(UNIT_FIELD_POWER, mana - cost);
 	m_manashieldamt -= potential;
 	if(!m_manashieldamt)
 		RemoveAura(m_manaShieldId);
@@ -7796,11 +7796,9 @@ void Unit::SetPower(uint32 type, int32 value)
 	SetUInt32Value(UNIT_FIELD_POWER + type, value);
 }
 
-// DISABLED - NOT UPDATED
 void Unit::SendPowerUpdate(bool self)
 {
 	uint32 amount = GetUInt32Value(UNIT_FIELD_POWER + GetPowerType());
-
 	ObjectGuid guid = GetGUID();
 
 	WorldPacket data(SMSG_POWER_UPDATE, 8 + 4 + 1 + 4);
@@ -7813,7 +7811,6 @@ void Unit::SendPowerUpdate(bool self)
 	data.WriteBit(guid[0]);
 	data.WriteBit(guid[1]);
 	data.WriteBits(1, 21); // 1 update
-
 	data.WriteByteSeq(guid[7]);
 	data.WriteByteSeq(guid[0]);
 	data.WriteByteSeq(guid[5]);
@@ -7821,42 +7818,51 @@ void Unit::SendPowerUpdate(bool self)
 	data.WriteByteSeq(guid[1]);
 	data.WriteByteSeq(guid[2]);
 	data.WriteByteSeq(guid[4]);
-
 	data << uint8(GetPowerType());
 	data << int32(amount);
-
 	data.WriteByteSeq(guid[6]);
 
-	SendMessageToSet(&data, GetTypeId() == TYPEID_PLAYER);
+	SendMessageToSet(&data, true);
 
-	WorldPacket* pkt = BuildFieldUpdatePacket(UNIT_FIELD_POWER + GetPowerType(), amount);
-	SendMessageToSet(pkt, false);
-	delete pkt;
-
-	/*uint32 updateCount = 1;
-    uint8 PowerType = (power == -1 ? GetPowerType() : power);
-
-    WorldPacket data(SMSG_POWER_UPDATE, 20);
-    data << GetNewGUID();
-    data << uint32(updateCount); // iteration count
-    for (int32 i = 0; i < updateCount; ++i)
-    {
-        data << uint8(PowerType);
-        data << GetUInt32Value(UNIT_FIELD_POWER1+PowerType);
-    }
-    SendMessageToSet(&data, true);*/
+	//WorldPacket* pkt = BuildFieldUpdatePacket(UNIT_FIELD_POWER + GetPowerType(), amount);
+	//SendMessageToSet(pkt, false);
+	//delete pkt;
 }
 
-// DISABLED - NOT UPDATED
 void Unit::UpdatePowerAmm()
 {
-	/*if(!IsPlayer())
-		return;
-	WorldPacket data(SMSG_POWER_UPDATE, 14);
-	FastGUIDPack(data, GetGUID());
-	data << uint8(GetPowerType());
-	data << GetUInt32Value(UNIT_FIELD_POWER1 + GetPowerType());
-	SendMessageToSet(&data, true);*/
+    if (!IsPlayer())
+        return;
+
+    uint32 amount = GetUInt32Value(UNIT_FIELD_POWER + GetPowerType());
+    ObjectGuid guid = GetGUID();
+
+    WorldPacket data(SMSG_POWER_UPDATE, 8 + 4 + 1 + 4);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[1]);
+    data.WriteBits(1, 21); // 1 update
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[4]);
+    data << uint8(GetPowerType());
+    data << int32(amount);
+    data.WriteByteSeq(guid[6]);
+
+    SendMessageToSet(&data, true);
+
+    //WorldPacket* pkt = BuildFieldUpdatePacket(UNIT_FIELD_POWER + GetPowerType(), amount);
+    //SendMessageToSet(pkt, false);
+    //delete pkt;
 }
 
 void Unit::SetDualWield(bool enabled)

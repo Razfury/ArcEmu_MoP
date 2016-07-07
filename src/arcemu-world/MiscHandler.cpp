@@ -632,20 +632,74 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
 	uint32 class_mask;
 	uint32 race_mask;
 	uint32 zone_count;
-	uint32* zones = 0;
+	//uint32* zones = 0;
 	uint32 name_count;
-	string* names = 0;
-	string chatname;
-	string guildname;
+	//string* names = 0;
+	//string chatname;
+	//string guildname;
 	bool cname = false;
 	bool gname = false;
 	uint32 i;
+    bool showEnemies, exactName, requestServerInfo, showArenaPlayers;
+    uint8 playerLen, guildLen, realmNameLen, guildRealmNameLen;
+    std::string guildRealmName, playerName, realmName, guildName;
+    uint32 zoneIds[10]; // 10 is client limit
 
-	recv_data >> min_level >> max_level;
-	recv_data >> chatname >> guildname >> race_mask >> class_mask;
-	recv_data >> zone_count;
+    recv_data >> class_mask >> race_mask;
+    recv_data >> max_level >> min_level;
+    showEnemies = recv_data.ReadBit();
+    exactName = recv_data.ReadBit();
+    requestServerInfo = recv_data.ReadBit();
+    guildRealmNameLen = recv_data.ReadBits(9);
+    showArenaPlayers = recv_data.ReadBit();
+    playerLen = recv_data.ReadBits(6);
+    zone_count = recv_data.ReadBits(4);
+    realmNameLen = recv_data.ReadBits(9);
+    guildLen = recv_data.ReadBits(7);
+    name_count = recv_data.ReadBits(3);
 
-	if(zone_count > 0 && zone_count < 10)
+    uint8* wordLens = new uint8[name_count];
+    std::string* words = new std::string[name_count];
+
+    for (uint8 i = 0; i < name_count; i++)
+        wordLens[i] = recv_data.ReadBits(7);
+
+    recv_data.FlushBits();
+
+    //std::wstring words[4];
+    for (uint32 i = 0; i < name_count; ++i)
+    {
+        //std::string temp;
+        recv_data >> words[i];
+        //recv_data >> temp; // user entered string, it used as universal search pattern(guild+player name)?
+
+        //if (!Utf8toWStr(temp, wWords[i]))
+          //  continue;
+
+        //wstrToLower(wWords[i]);
+    }
+
+    guildRealmName = recv_data.ReadString(guildRealmNameLen);
+
+    for (uint32 i = 0; i < zone_count; ++i)
+        recv_data >> zoneIds[i]; // zone id, 0 if zone is unknown
+
+    playerName = recv_data.ReadString(playerLen);
+    realmName = recv_data.ReadString(realmNameLen);
+    guildName = recv_data.ReadString(guildLen);
+
+    uint32 virtualRealmAddress = 0;
+    int32 faction = 0, locale = 0;
+
+    if (requestServerInfo)
+    {
+        recv_data >> locale;
+        recv_data >> virtualRealmAddress;
+        recv_data >> faction;
+    }
+
+
+	/*if(zone_count > 0 && zone_count < 10)
 	{
 		zones = new uint32[zone_count];
 
@@ -668,12 +722,12 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
 	else
 	{
 		name_count = 0;
-	}
+	}*/
 
-	if(chatname.length() > 0)
+	if(realmName.length() > 0)
 		cname = true;
 
-	if(guildname.length() > 0)
+	if(guildName.length() > 0)
 		gname = true;
 
 	LOG_DEBUG("WORLD: Recvd CMSG_WHO Message with %u zones and %u names", zone_count, name_count);
@@ -690,9 +744,13 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
 	Player* plr;
 	uint32 lvl;
 	bool add;
+
+    ByteBuffer bytesData;
 	WorldPacket data;
 	data.SetOpcode(SMSG_WHO);
-	data << uint64(0);
+
+    size_t pos = data.bitwpos();
+    data.WriteBits(sent_count, 6);
 
 	objmgr._playerslock.AcquireReadLock();
 	iend = objmgr._players.end();
@@ -721,13 +779,13 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
 		add = true;
 
 		// Chat name
-		if(cname && chatname != *plr->GetNameString())
-			continue;
+		//if(cname && chatname != *plr->GetNameString())
+			//continue;
 
 		// Guild name
 		if(gname)
 		{
-			if(!plr->GetGuild() || strcmp(plr->GetGuild()->GetGuildName(), guildname.c_str()) != 0)
+			if(!plr->GetGuild() || strcmp(plr->GetGuild()->GetGuildName(), guildName.c_str()) != 0)
 				continue;
 		}
 
@@ -748,7 +806,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
 			add = false;
 			for(i = 0; i < zone_count; ++i)
 			{
-				if(zones[i] == plr->GetZoneId())
+				if(zoneIds[i] == plr->GetZoneId())
 				{
 					add = true;
 					break;
@@ -770,7 +828,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
 			add = false;
 			for(i = 0; i < name_count; ++i)
 			{
-				if(!strnicmp(names[i].c_str(), plr->GetName(), names[i].length()))
+                if (!strnicmp(words[i].c_str(), plr->GetName(), words[i].length()))
 				{
 					add = true;
 					break;
@@ -781,33 +839,91 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
 		if(!add)
 			continue;
 
-		// if we're here, it means we've passed all testing
-		// so add the names :)
-		data << plr->GetName();
-		if(plr->m_playerInfo->guild)
-			data << plr->m_playerInfo->guild->GetGuildName();
-		else
-			data << uint8(0);	   // Guild name
+        ObjectGuid playerGuid = plr->GetGUID();
+        ObjectGuid accountId = GetAccountId();
+        ObjectGuid guildGuid = plr->m_playerInfo->guild ? plr->GetGuild()->GetGuildId() : 0;
 
-		data << plr->getLevel();
-		data << uint32(plr->getClass());
-		data << uint32(plr->getRace());
-		data << plr->getGender();
-		data << uint32(plr->GetZoneId());
+        data.WriteBit(accountId[2]);
+        data.WriteBit(playerGuid[2]);
+        data.WriteBit(accountId[7]);
+        data.WriteBit(guildGuid[5]);
+        data.WriteBits(guildName.size(), 7);
+        data.WriteBit(accountId[1]);
+        data.WriteBit(accountId[5]);
+        data.WriteBit(guildGuid[7]);
+        data.WriteBit(playerGuid[5]);
+        data.WriteBit(false);
+        data.WriteBit(guildGuid[1]);
+        data.WriteBit(playerGuid[6]);
+        data.WriteBit(guildGuid[2]);
+        data.WriteBit(playerGuid[4]);
+        data.WriteBit(guildGuid[0]);
+        data.WriteBit(guildGuid[3]);
+        data.WriteBit(accountId[6]);
+        data.WriteBit(false);
+        data.WriteBit(playerGuid[1]);
+        data.WriteBit(guildGuid[4]);
+        data.WriteBit(accountId[0]);
+
+        for (uint8 i = 0; i < 5; ++i) // MAX_DECLINED_NAME_CASES
+            data.WriteBits(0, 7);
+
+        data.WriteBit(playerGuid[3]);
+        data.WriteBit(guildGuid[6]);
+        data.WriteBit(playerGuid[0]);
+        data.WriteBit(accountId[4]);
+        data.WriteBit(accountId[3]);
+        data.WriteBit(playerGuid[7]);
+        data.WriteBits(playerName.size(), 6);
+
+        bytesData.WriteByteSeq(playerGuid[1]);
+        bytesData << uint32(1); // realm id
+        bytesData.WriteByteSeq(playerGuid[7]);
+        bytesData << uint32(1); // realm id
+        bytesData.WriteByteSeq(playerGuid[4]);
+        bytesData.WriteString(playerName);
+        bytesData.WriteByteSeq(guildGuid[1]);
+        bytesData.WriteByteSeq(playerGuid[0]);
+        bytesData.WriteByteSeq(guildGuid[2]);
+        bytesData.WriteByteSeq(guildGuid[0]);
+        bytesData.WriteByteSeq(guildGuid[4]);
+        bytesData.WriteByteSeq(playerGuid[3]);
+        bytesData.WriteByteSeq(guildGuid[6]);
+        bytesData << uint32(GetAccountId());
+        bytesData.WriteString(guildName);
+        bytesData.WriteByteSeq(guildGuid[3]);
+        bytesData.WriteByteSeq(accountId[4]);
+        bytesData << uint8(plr->getClass());
+        bytesData.WriteByteSeq(accountId[7]);
+        bytesData.WriteByteSeq(playerGuid[6]);
+        bytesData.WriteByteSeq(playerGuid[2]);
+
+        bytesData.WriteByteSeq(accountId[2]);
+        bytesData.WriteByteSeq(accountId[3]);
+        bytesData << uint8(plr->getRace());
+        bytesData.WriteByteSeq(guildGuid[7]);
+        bytesData.WriteByteSeq(accountId[1]);
+        bytesData.WriteByteSeq(accountId[5]);
+        bytesData.WriteByteSeq(accountId[6]);
+        bytesData.WriteByteSeq(playerGuid[5]);
+        bytesData.WriteByteSeq(accountId[0]);
+        bytesData << uint8(plr->getGender());
+        bytesData.WriteByteSeq(guildGuid[5]);
+        bytesData << uint8(plr->getLevel());
+        bytesData << int32(plr->GetZoneId());
+
 		++sent_count;
 	}
 	objmgr._playerslock.ReleaseReadLock();
-	data.wpos(0);
-	data << sent_count;
-	data << sent_count;
 
-	SendPacket(&data);
+    data.FlushBits();
+    data.PutBits(pos, sent_count, 6);
+    data.append(bytesData);
 
-	// free up used memory
-	if(zones)
-		delete [] zones;
-	if(names)
-		delete [] names;
+    SendPacket(&data);
+
+    delete[] words;
+    delete[] wordLens;
 }
 
 void WorldSession::HandleLogoutRequestOpcode(WorldPacket & recv_data)
@@ -1106,14 +1222,13 @@ void WorldSession::HandleUpdateAccountData(WorldPacket & recv_data)
 {
 	LOG_DETAIL("WORLD: Received CMSG_UPDATE_ACCOUNT_DATA");
 
-	uint32 timestamp, type, decompressedSize, compressedSize;
+	uint32 timestamp, type, decompressedSize;
 
 	if (!sWorld.m_useAccountData)
 		return;
 
 	recv_data >> timestamp;
     recv_data >> decompressedSize;
-	//recv_data >> compressedSize;
     type = recv_data.ReadBits(3);
 
 	if (decompressedSize == 0)                               // erase
@@ -1159,7 +1274,7 @@ void WorldSession::HandleUpdateAccountData(WorldPacket & recv_data)
 	char* adataa;
 	std::string adata;
 	dest >> adata;
-	adata = adataa;
+	adata = adataa; // todo
 
 	SetAccountData(type, adataa, timestamp, decompressedSize);
 

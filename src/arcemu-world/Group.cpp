@@ -1054,15 +1054,15 @@ void Group::HandleUpdateFieldChange(uint32 Index, Player* pPlayer)
 			Flags = GROUP_UPDATE_FLAG_MAXHEALTH;
 			break;
 
+		case UNIT_FIELD_POWER + 0:
+		case UNIT_FIELD_POWER + 1:
 		case UNIT_FIELD_POWER + 2:
 		case UNIT_FIELD_POWER + 3:
-		case UNIT_FIELD_POWER + 4:
-		//case UNIT_FIELD_POWER + 5:
-		case UNIT_FIELD_POWER + 6: //runicpower in cata?
+		case UNIT_FIELD_POWER + 6: //runicpower don't really think it's correct
 			Flags = GROUP_UPDATE_FLAG_POWER;
 			break;
 
-		case UNIT_FIELD_MAXPOWER + 1:
+		case UNIT_FIELD_MAXPOWER + 1: // this either
 		case UNIT_FIELD_MAXPOWER + 2:
 		case UNIT_FIELD_MAXPOWER + 3:
 		case UNIT_FIELD_MAXPOWER + 4:

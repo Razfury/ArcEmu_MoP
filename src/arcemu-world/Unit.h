@@ -1954,27 +1954,27 @@ class SERVER_DECL Unit : public Object
 
 		void ModPower(uint32 index, int32 value)
 		{
-			int32 power = static_cast< int32 >(m_uint32Values[ UNIT_FIELD_POWER + 1 + index ]);
-			int32 maxpower = static_cast< int32 >(m_uint32Values[ UNIT_FIELD_MAXPOWER + 1 + index ]);
+			int32 power = static_cast< int32 >(m_uint32Values[ UNIT_FIELD_POWER + index ]);
+			int32 maxpower = static_cast< int32 >(m_uint32Values[ UNIT_FIELD_MAXPOWER + index ]);
 
 			if(value <= power)
-				SetUInt32Value(UNIT_FIELD_POWER + 1 + index, 0);
+				SetUInt32Value(UNIT_FIELD_POWER + index, 0);
 			else
-				SetUInt32Value(UNIT_FIELD_POWER + 1 + index, power + value);
+				SetUInt32Value(UNIT_FIELD_POWER + index, power + value);
 
 			if((value + power) > maxpower)
-				SetUInt32Value(UNIT_FIELD_POWER + 1 + index, maxpower);
+				SetUInt32Value(UNIT_FIELD_POWER + index, maxpower);
 			else
-				SetUInt32Value(UNIT_FIELD_POWER + 1 + index, power + value);
+				SetUInt32Value(UNIT_FIELD_POWER + index, power + value);
 		}
 
-		uint32 GetPower(uint32 index) { return GetUInt32Value(UNIT_FIELD_POWER + 1 + index); }
+		uint32 GetPower(uint32 index) { return GetUInt32Value(UNIT_FIELD_POWER + index); }
 
-		void SetMaxPower(uint32 index, uint32 value) { SetUInt32Value(UNIT_FIELD_MAXPOWER + 1 + index, value); }
+		void SetMaxPower(uint32 index, uint32 value) { SetUInt32Value(UNIT_FIELD_MAXPOWER + index, value); }
 
-		void ModMaxPower(uint32 index, int32 value) { ModUnsigned32Value(UNIT_FIELD_MAXPOWER + 1 + index, value); }
+		void ModMaxPower(uint32 index, int32 value) { ModUnsigned32Value(UNIT_FIELD_MAXPOWER + index, value); }
 
-		uint32 GetMaxPower(uint32 index) { return GetUInt32Value(UNIT_FIELD_MAXPOWER + 1 + index); }
+		uint32 GetMaxPower(uint32 index) { return GetUInt32Value(UNIT_FIELD_MAXPOWER + index); }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

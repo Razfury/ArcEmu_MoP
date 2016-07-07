@@ -11929,12 +11929,34 @@ GetSession()->SendPacket(&data);
 void Player::UpdatePowerAmm()
 {
 	sLog.outError("Player::UpdatePowerAmm()");
-	WorldPacket data(SMSG_POWER_UPDATE, 5);
-	FastGUIDPack(data, GetGUID());
-	data << uint8(GetPowerType());
-	data << GetUInt32Value(UNIT_FIELD_POWER + 1 + GetPowerType());
-	SendMessageToSet(&data, true);
+
+    uint32 amount = GetUInt32Value(UNIT_FIELD_POWER + GetPowerType());
+    ObjectGuid guid = GetGUID();
+
+    WorldPacket data(SMSG_POWER_UPDATE, 8 + 4 + 1 + 4);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[1]);
+    data.WriteBits(1, 21); // 1 update
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[4]);
+    data << uint8(GetPowerType());
+    data << int32(amount);
+    data.WriteByteSeq(guid[6]);
+
+    SendMessageToSet(&data, true);
 }
+
 // Initialize Glyphs or update them after level change
 void Player::UpdateGlyphs()
 {

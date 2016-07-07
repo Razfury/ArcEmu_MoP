@@ -1231,10 +1231,10 @@ void Object::SetUInt32Value(const uint32 index, const uint32 value)
 
 		switch (index)
 		{
+		case UNIT_FIELD_POWER + 0:
 		case UNIT_FIELD_POWER + 1:
-		case UNIT_FIELD_POWER + 2:
-		case UNIT_FIELD_POWER + 4:
-		case UNIT_FIELD_POWER + 5:
+		case UNIT_FIELD_POWER + 3:
+		//case UNIT_FIELD_POWER + 5:
 			TO< Unit* >(this)->SendPowerUpdate(true);
 			break;
 		default:
@@ -1245,11 +1245,11 @@ void Object::SetUInt32Value(const uint32 index, const uint32 value)
 	{
 		switch (index)
 		{
+		case UNIT_FIELD_POWER + 0:
 		case UNIT_FIELD_POWER + 1:
 		case UNIT_FIELD_POWER + 2:
 		case UNIT_FIELD_POWER + 3:
 		case UNIT_FIELD_POWER + 4:
-		case UNIT_FIELD_POWER + 5:
 			TO_CREATURE(this)->SendPowerUpdate(false);
 			break;
 		default:
