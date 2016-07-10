@@ -11316,7 +11316,7 @@ void Player::_FlyhackCheck()
 
 void Player::Social_AddFriend(const char* name, const char* note)
 {
-	WorldPacket data(SMSG_FRIEND_STATUS, 10);
+	WorldPacket data(SMSG_FRIEND_STATUS, 9);
 	map<uint32, char*>::iterator itr;
 
 	// lookup the player
@@ -11400,7 +11400,7 @@ void Player::Social_AddFriend(const char* name, const char* note)
 
 void Player::Social_RemoveFriend(uint32 guid)
 {
-	WorldPacket data(SMSG_FRIEND_STATUS, 10);
+	WorldPacket data(SMSG_FRIEND_STATUS, 9);
 
 	// are we ourselves?
 	if (guid == GetLowGUID())
@@ -11457,7 +11457,7 @@ void Player::Social_SetNote(uint32 guid, const char* note)
 
 void Player::Social_AddIgnore(const char* name)
 {
-	WorldPacket data(SMSG_FRIEND_STATUS, 10);
+	WorldPacket data(SMSG_FRIEND_STATUS, 9);
 	PlayerInfo* info;
 
 	// lookup the player
@@ -11496,7 +11496,7 @@ void Player::Social_AddIgnore(const char* name)
 
 void Player::Social_RemoveIgnore(uint32 guid)
 {
-	WorldPacket data(SMSG_FRIEND_STATUS, 10);
+	WorldPacket data(SMSG_FRIEND_STATUS, 9);
 
 	// are we ourselves?
 	if (guid == GetLowGUID())
@@ -11573,35 +11573,38 @@ void Player::Social_TellFriendsOffline()
 	m_cache->ReleaseLock64(CACHE_SOCIAL_HASFRIENDLIST);
 }
 
-void Player::Social_SendFriendList(uint32 flag)
+void Player::Social_SendFriendList(uint32 flag) // todo remove argument
 {
 	WorldPacket data(SMSG_CONTACT_LIST, 500);
 	Player* plr;
 	PlayerCache* cache;
 
-
-	data << flag;
+    data << uint32(7);
 	data << uint32(m_cache->GetSize64(CACHE_SOCIAL_FRIENDLIST) + m_cache->GetSize64(CACHE_SOCIAL_IGNORELIST));
+
 	m_cache->AcquireLock64(CACHE_SOCIAL_FRIENDLIST);
 	for (PlayerCacheMap::iterator itr = m_cache->Begin64(CACHE_SOCIAL_FRIENDLIST); itr != m_cache->End64(CACHE_SOCIAL_FRIENDLIST); ++itr)
 	{
 		// guid
 		data << uint64(itr->first);
 
-		// friend/ignore flag.
-		// 1 - friend
-		// 2 - ignore
-		// 3 - muted?
-		data << uint32(1);
+        data << uint32(0); // realm id
+        data << uint32(0); // realm id
 
-		// player note
-		if (itr->second != NULL)
-		{
-			char* note = (char*)itr->second;
-			data << note;
-		}
-		else
-			data << uint8(0);
+        // friend/ignore flag.
+        // 1 - friend
+        // 2 - ignore
+        // 3 - muted?
+        data << uint32(1);
+
+        // player note
+        if (itr->second != NULL)
+        {
+            char* note = (char*)itr->second;
+            data << note;
+        }
+        else
+            data << uint8(0);
 
 		// online/offline flag
 		plr = objmgr.GetPlayer((uint32)itr->first);
@@ -11619,6 +11622,7 @@ void Player::Social_SendFriendList(uint32 flag)
 		if (cache != NULL)
 			cache->DecRef();
 	}
+
 	m_cache->ReleaseLock64(CACHE_SOCIAL_FRIENDLIST);
 
 	m_cache->AcquireLock64(CACHE_SOCIAL_IGNORELIST);
@@ -11627,6 +11631,10 @@ void Player::Social_SendFriendList(uint32 flag)
 	{
 		// guid
 		data << uint64(ignoreitr->first);
+
+        data << uint32(0);
+        data << uint32(0);
+
 		// ignore flag - 2
 		data << uint32(2);
 		// no note

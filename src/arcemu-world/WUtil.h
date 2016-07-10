@@ -23,7 +23,6 @@
 
 namespace Arcemu
 {
-
 	// Common Arcemu world stuff
 	class SERVER_DECL Util
 	{
@@ -39,6 +38,7 @@ namespace Arcemu
 			static uint32 MAKE_GAME_TIME();
 	};
 }
+
 #define ARCEMU_ASSERT( EXPR ) Arcemu::Util::ArcemuAssert( EXPR ); ANALYSIS_ASSUME( EXPR )
 
 #endif

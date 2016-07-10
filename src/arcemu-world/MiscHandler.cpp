@@ -666,11 +666,12 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
 
     recv_data.FlushBits();
 
-    //std::wstring words[4];
+    //std::wstring wWords[4];
     for (uint32 i = 0; i < name_count; ++i)
     {
-        //std::string temp;
         recv_data >> words[i];
+
+        //std::string temp;
         //recv_data >> temp; // user entered string, it used as universal search pattern(guild+player name)?
 
         //if (!Utf8toWStr(temp, wWords[i]))
@@ -697,32 +698,6 @@ void WorldSession::HandleWhoOpcode(WorldPacket & recv_data)
         recv_data >> virtualRealmAddress;
         recv_data >> faction;
     }
-
-
-	/*if(zone_count > 0 && zone_count < 10)
-	{
-		zones = new uint32[zone_count];
-
-		for(i = 0; i < zone_count; ++i)
-			recv_data >> zones[i];
-	}
-	else
-	{
-		zone_count = 0;
-	}
-
-	recv_data >> name_count;
-	if(name_count > 0 && name_count < 10)
-	{
-		names = new string[name_count];
-
-		for(i = 0; i < name_count; ++i)
-			recv_data >> names[i];
-	}
-	else
-	{
-		name_count = 0;
-	}*/
 
 	if(realmName.length() > 0)
 		cname = true;
@@ -1231,7 +1206,7 @@ void WorldSession::HandleUpdateAccountData(WorldPacket & recv_data)
     recv_data >> decompressedSize;
     type = recv_data.ReadBits(3);
 
-	if (decompressedSize == 0)                               // erase
+	if (decompressedSize == 0) // erase
 	{
 		recv_data.rfinish();
 
