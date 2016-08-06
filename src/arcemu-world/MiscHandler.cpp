@@ -1848,7 +1848,7 @@ void WorldSession::HandleTutorialFlag(WorldPacket & recv_data)
 	uint32 wInt = (iFlag / 32);
 	uint32 rInt = (iFlag % 32);
 
-	if(wInt >= 7)
+    if (wInt >= MAX_ACCOUNT_TUTORIAL_VALUES)
 	{
 		Disconnect();
 		return;
@@ -1865,7 +1865,7 @@ void WorldSession::HandleTutorialClear(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	for(uint32 iI = 0; iI < 8; iI++)
+    for (uint32 iI = 0; iI < MAX_ACCOUNT_TUTORIAL_VALUES; iI++)
         GetPlayer()->SetTutorialInt(iI, 0xFFFFFFFF);
 }
 
@@ -1873,8 +1873,8 @@ void WorldSession::HandleTutorialReset(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	for(uint32 iI = 0; iI < 8; iI++)
-		GetPlayer()->SetTutorialInt(iI, 0x00000000);
+    for (uint32 iI = 0; iI < MAX_ACCOUNT_TUTORIAL_VALUES; iI++)
+        GetPlayer()->SetTutorialInt(iI, 0x00000000);
 }
 
 void WorldSession::HandleSetSheathedOpcode(WorldPacket & recv_data)

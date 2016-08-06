@@ -168,16 +168,11 @@ void WorldSession::HandleSwapItemOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recv_data, 4);
-
 	int8 DstInvSlot = 0, DstSlot = 0, SrcInvSlot = 0, SrcSlot = 0;
 
 	recv_data >> DstInvSlot >> DstSlot >> SrcInvSlot >> SrcSlot;
 
-	LOG_DETAIL("ITEM: swap, DstInvSlot %i DstSlot %i SrcInvSlot %i SrcSlot %i", DstInvSlot, DstSlot, SrcInvSlot, SrcSlot);
-
 	_player->GetItemInterface()->SwapItems(DstInvSlot, DstSlot, SrcInvSlot, SrcSlot);
-
 }
 
 void WorldSession::HandleSwapInvItemOpcode(WorldPacket & recv_data)
@@ -187,8 +182,6 @@ void WorldSession::HandleSwapInvItemOpcode(WorldPacket & recv_data)
 	uint8 srcslot, dstslot;
 
 	recv_data >> srcslot >> dstslot;
-
-	LOG_ERROR("ITEM: swap, src slot: %u dst slot: %u", (uint32)srcslot, (uint32)dstslot);
 
 	if(dstslot == srcslot) // player trying to add item to the same slot
 	{
@@ -434,7 +427,6 @@ void WorldSession::HandleAutoEquipItemOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recv_data, 2);
 	WorldPacket data;
 
 	int8 SrcInvSlot, SrcSlot, error = 0;
@@ -589,7 +581,6 @@ void WorldSession::HandleAutoEquipItemOpcode(WorldPacket & recv_data)
 				return;
 			}
 		}
-
 	}
 
 	if(eitem != NULL)
@@ -647,7 +638,6 @@ void WorldSession::HandleAutoEquipItemSlotOpcode(WorldPacket & recvData)
 		_player->GetItemInterface()->BuildInventoryChangeError(item, NULL, error);
 		return;
 	}
-
 
 	// Handle destination slot checking.
 	if(destSlot == slotType || hasDualWield2H)

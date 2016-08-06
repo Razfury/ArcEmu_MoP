@@ -4275,17 +4275,50 @@ void Unit::smsg_AttackStop(Unit* pVictim)
 
 void Unit::smsg_AttackStop(uint64 victimGuid)
 {
-	WorldPacket data(20);
-	data.Initialize(SMSG_ATTACKSTOP);
-	data << GetNewGUID();
-	FastGUIDPack(data, victimGuid);
-	data << uint32(0);
-	SendMessageToSet(&data, IsPlayer());
+    WorldPacket data(SMSG_ATTACKSTOP, 8 + 8);
+    ObjectGuid attackerGuid = GetGUID();
+    ObjectGuid _victimGuid = victimGuid;
+
+    data.WriteBit(_victimGuid[5]);
+    data.WriteBit(_victimGuid[6]);
+    data.WriteBit(attackerGuid[3]);
+    data.WriteBit(attackerGuid[6]);
+    data.WriteBit(attackerGuid[7]);
+    data.WriteBit(attackerGuid[2]);
+    data.WriteBit(attackerGuid[5]);
+    data.WriteBit(_victimGuid[4]);
+    data.WriteBit(1);
+    data.WriteBit(_victimGuid[3]);
+    data.WriteBit(_victimGuid[0]);
+    data.WriteBit(_victimGuid[2]);
+    data.WriteBit(_victimGuid[7]);
+    data.WriteBit(attackerGuid[4]);
+    data.WriteBit(attackerGuid[1]);
+    data.WriteBit(attackerGuid[0]);
+    data.WriteBit(_victimGuid[1]);
+
+    data.FlushBits();
+
+    data.WriteByteSeq(_victimGuid[0]);
+    data.WriteByteSeq(_victimGuid[3]);
+    data.WriteByteSeq(_victimGuid[5]);
+    data.WriteByteSeq(_victimGuid[2]);
+    data.WriteByteSeq(attackerGuid[0]);
+    data.WriteByteSeq(attackerGuid[6]);
+    data.WriteByteSeq(attackerGuid[3]);
+    data.WriteByteSeq(_victimGuid[4]);
+    data.WriteByteSeq(attackerGuid[1]);
+    data.WriteByteSeq(attackerGuid[4]);
+    data.WriteByteSeq(_victimGuid[6]);
+    data.WriteByteSeq(attackerGuid[5]);
+    data.WriteByteSeq(attackerGuid[7]);
+    data.WriteByteSeq(attackerGuid[2]);
+    data.WriteByteSeq(_victimGuid[1]);
+    data.WriteByteSeq(_victimGuid[7]);
 }
 
 void Unit::smsg_AttackStart(Unit* pVictim)
 {
-	// Send out ATTACKSTART
 	WorldPacket data(SMSG_ATTACKSTART, 8 + 8);
 
 	ObjectGuid attackerGuid = pVictim->GetGUID();
@@ -4326,6 +4359,7 @@ void Unit::smsg_AttackStart(Unit* pVictim)
 	data.WriteByteSeq(attackerGuid[1]);
 
 	SendMessageToSet(&data, true);
+
 	if(IsPlayer())
 	{
 		Player* pThis = TO< Player* >(this);
@@ -6299,7 +6333,10 @@ void Unit::SendAuraUpdate(uint32 AuraSlot, bool remove)
 
 	ARCEMU_ASSERT(aur != NULL);
 
-	WorldPacket data(SMSG_AURA_UPDATE, 30);
+	WorldPacket data(SMSG_AURA_UPDATE); //! TODO
+
+    ObjectGuid guid = GetGUID();
+    ObjectGuid targetGuid = GetTargetGUID();
 
 	if(remove)
 	{

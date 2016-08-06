@@ -296,14 +296,16 @@ AddItemResult ItemInterface::m_AddItem(Item* item, int8 ContainerSlot, int16 slo
 	if(slot < EQUIPMENT_SLOT_END && ContainerSlot == INVENTORY_SLOT_NOT_SET)
 	{
 		int VisibleBase = GetOwner()->GetVisibleBase(slot);
-		if(VisibleBase > PLAYER_VISIBLE_ITEM_1_ENTRYID + 19)
+		if(VisibleBase > PLAYER_VISIBLE_ITEM_1_ENTRYID + 24) // check this
 		{
 			LOG_DEBUG("Slot warning: slot: %d", slot);
 		}
 		else
 		{
 			m_pOwner->SetUInt32Value(VisibleBase, item->GetEntry());
-			m_pOwner->SetUInt32Value(VisibleBase + 1, item->GetEnchantmentId(0));
+            uint32 enchant_val = item->GetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1) | (item->GetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1 + 1) << 16);
+            m_pOwner->SetUInt32Value(VisibleBase + 1, enchant_val);
+			//m_pOwner->SetUInt32Value(VisibleBase + 1, item->GetEnchantmentId(0));
 		}
 	}
 

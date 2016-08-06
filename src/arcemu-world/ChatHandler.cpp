@@ -75,6 +75,8 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 	const char* pMisc = NULL;
 	const char* pMsg = NULL;
 
+    printf("GOT CHAT!!!\n");
+
     switch(recv_data.GetOpcode())
     {
         case CMSG_MESSAGECHAT_SAY:          type = CHAT_MSG_SAY;            break;
@@ -219,10 +221,13 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 					return;
 				}
 
-				if(GetPlayer()->m_modlanguage >= 0)
+                data = sChatHandler.FillMessageData(CHAT_MSG_SAY, lang, msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
+                GetPlayer()->SendMessageToSet(data, true);
+
+				/*if(GetPlayer()->m_modlanguage >= 0)
 				{
 					//data =	sChatHandler.BuildChatPacket(*data, CHAT_MSG_SAY, GetPlayer()->m_modlanguage, _player->GetGUID(), 0, msg, _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0, _player->GetName(), "", NULL, false, "", "");					
-					//data = sChatHandler.FillMessageData(CHAT_MSG_SAY, GetPlayer()->m_modlanguage,  msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
+					data = sChatHandler.FillMessageData(CHAT_MSG_SAY, GetPlayer()->m_modlanguage,  msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
 					GetPlayer()->SendMessageToSet(data, true);
 				}
 				else
@@ -234,10 +239,10 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 						return;
 
 //					data =	sChatHandler.BuildChatPacket(*data, CHAT_MSG_SAY, GetPlayer()->m_modlanguage, _player->GetGUID(), 0, msg, _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0, _player->GetName(), "", NULL, false, "", "");
-					//data = sChatHandler.FillMessageData(CHAT_MSG_SAY, lang, msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
+					data = sChatHandler.FillMessageData(CHAT_MSG_SAY, lang, msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
 
 					GetPlayer()->SendMessageToSet(data, true);
-				}
+				}*/
 				delete data;
 
 			}

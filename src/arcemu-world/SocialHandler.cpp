@@ -24,12 +24,12 @@ void WorldSession::HandleFriendListOpcode(WorldPacket & recv_data)
 {
     CHECK_INWORLD_RETURN
 
-    //uint32 flag;
-    //recv_data >> flag;
+    uint32 flag;
+    recv_data >> flag;
 
-    recv_data.read<uint32>();
+    //recv_data.read<uint32>();
 
-	_player->Social_SendFriendList(0);
+	_player->Social_SendFriendList(flag);
 }
 
 void WorldSession::HandleAddFriendOpcode(WorldPacket & recv_data)

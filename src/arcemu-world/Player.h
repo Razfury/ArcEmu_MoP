@@ -48,6 +48,9 @@ class SpeedCheatDetector;
 #define PLAYER_NORMAL_FLIGHT_SPEED 7.0f
 #define PLAYER_HONORLESS_TARGET_SPELL 2479
 #define MONSTER_NORMAL_RUN_SPEED 8.0f
+
+#define MAX_ACCOUNT_TUTORIAL_VALUES 8
+
 /* action button defines */
 #define PLAYER_ACTION_BUTTON_COUNT 132
 #define PLAYER_ACTION_BUTTON_SIZE PLAYER_ACTION_BUTTON_COUNT * sizeof(uint32)
@@ -2358,7 +2361,7 @@ protected:
 	uint32      m_AttackMsgTimer;	// "too far away" and "wrong facing" timer
 	bool        m_attacking;
 	std::string m_name;	// max 21 character name
-	uint32      m_Tutorials[8];
+    uint32      m_Tutorials[MAX_ACCOUNT_TUTORIAL_VALUES];
 
 	// Character Ban
 	uint32      m_banned;

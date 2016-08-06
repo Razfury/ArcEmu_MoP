@@ -18,10 +18,6 @@
  *
  */
 
-//
-// WorldSession.cpp
-//
-
 #include "StdAfx.h"
 
 OpcodeHandler WorldPacketHandlers[NUM_MSG_TYPES];
@@ -779,8 +775,7 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandlePlayedTimeOpcode;
 	WorldPacketHandlers[CMSG_SETSHEATHED].handler =
 	    &WorldSession::HandleSetSheathedOpcode;
-	//WorldPacketHandlers[CMSG_MESSAGECHAT].handler =
-	  //  &WorldSession::HandleMessagechatOpcode;
+	//WorldPacketHandlers[CMSG_MESSAGECHAT].handler = &WorldSession::HandleMessagechatOpcode;
 	WorldPacketHandlers[CMSG_EMOTE].handler = &WorldSession::HandleEmoteOpcode;
 	WorldPacketHandlers[CMSG_TEXT_EMOTE].handler =
 	    &WorldSession::HandleTextEmoteOpcode;
@@ -792,7 +787,7 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_REQUEST_HOTFIX].handler = &WorldSession::HandleRequestHotfixOpcode;
 
     // Chat
-    /*WorldPacketHandlers[CMSG_MESSAGECHAT_SAY].handler                       = &WorldSession::HandleMessagechatOpcode;
+    WorldPacketHandlers[CMSG_MESSAGECHAT_SAY].handler                       = &WorldSession::HandleMessagechatOpcode;
     WorldPacketHandlers[CMSG_MESSAGECHAT_YELL].handler                      = &WorldSession::HandleMessagechatOpcode;
     WorldPacketHandlers[CMSG_MESSAGECHAT_CHANNEL].handler                   = &WorldSession::HandleMessagechatOpcode;
     WorldPacketHandlers[CMSG_MESSAGECHAT_WHISPER].handler                   = &WorldSession::HandleMessagechatOpcode;
@@ -804,7 +799,7 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_MESSAGECHAT_PARTY].handler                     = &WorldSession::HandleMessagechatOpcode;
     WorldPacketHandlers[CMSG_MESSAGECHAT_RAID].handler                      = &WorldSession::HandleMessagechatOpcode;
     WorldPacketHandlers[CMSG_MESSAGECHAT_RAID_WARNING].handler              = &WorldSession::HandleMessagechatOpcode;
-    WorldPacketHandlers[CMSG_MESSAGECHAT_BATTLEGROUND].handler              = &WorldSession::HandleMessagechatOpcode;*/
+    WorldPacketHandlers[CMSG_MESSAGECHAT_BATTLEGROUND].handler              = &WorldSession::HandleMessagechatOpcode;
 
 	// Channels
 	WorldPacketHandlers[CMSG_JOIN_CHANNEL].handler =
@@ -941,14 +936,12 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleMultipleActivateTaxiOpcode;
 
 	// Item / Vendors
-	WorldPacketHandlers[CMSG_SWAP_INV_ITEM].handler =
-		&WorldSession::HandleSwapInvItemOpcode;
+	WorldPacketHandlers[CMSG_SWAP_INV_ITEM].handler = &WorldSession::HandleSwapInvItemOpcode;
 	WorldPacketHandlers[CMSG_SWAP_ITEM].handler =
 	    &WorldSession::HandleSwapItemOpcode;
 	WorldPacketHandlers[CMSG_DESTROYITEM].handler =
 	    &WorldSession::HandleDestroyItemOpcode;
-	WorldPacketHandlers[CMSG_AUTOEQUIP_ITEM].handler =
-	    &WorldSession::HandleAutoEquipItemOpcode;
+	WorldPacketHandlers[CMSG_AUTOEQUIP_ITEM].handler = &WorldSession::HandleAutoEquipItemOpcode;
 	WorldPacketHandlers[CMSG_AUTOEQUIP_ITEM_SLOT].handler =
 	    &WorldSession::HandleAutoEquipItemSlotOpcode;
 	WorldPacketHandlers[CMSG_ITEM_QUERY_SINGLE].handler =
@@ -1022,10 +1015,8 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleUnlearnTalents;
 
 	// Combat / Duel
-	WorldPacketHandlers[CMSG_ATTACKSWING].handler =
-	    &WorldSession::HandleAttackSwingOpcode;
-	WorldPacketHandlers[CMSG_ATTACKSTOP].handler =
-	    &WorldSession::HandleAttackStopOpcode;
+	WorldPacketHandlers[CMSG_ATTACKSWING].handler = &WorldSession::HandleAttackSwingOpcode;
+	WorldPacketHandlers[CMSG_ATTACKSTOP].handler = &WorldSession::HandleAttackStopOpcode;
 	WorldPacketHandlers[CMSG_DUEL_ACCEPTED].handler =
 	    &WorldSession::HandleDuelAccepted;
 	WorldPacketHandlers[CMSG_DUEL_CANCELLED].handler =
@@ -1215,12 +1206,9 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleGuildGetFullPermissions;
 
 	// Tutorials
-	WorldPacketHandlers[CMSG_TUTORIAL_FLAG].handler =
-	    &WorldSession::HandleTutorialFlag;
-	WorldPacketHandlers[CMSG_TUTORIAL_CLEAR].handler =
-	    &WorldSession::HandleTutorialClear;
-	WorldPacketHandlers[CMSG_TUTORIAL_RESET].handler =
-	    &WorldSession::HandleTutorialReset;
+	WorldPacketHandlers[CMSG_TUTORIAL_FLAG].handler  = &WorldSession::HandleTutorialFlag;
+	WorldPacketHandlers[CMSG_TUTORIAL_CLEAR].handler = &WorldSession::HandleTutorialClear;
+	WorldPacketHandlers[CMSG_TUTORIAL_RESET].handler = &WorldSession::HandleTutorialReset;
 
 	// Pets
 	WorldPacketHandlers[CMSG_PET_ACTION].handler =

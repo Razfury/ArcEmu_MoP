@@ -11573,13 +11573,13 @@ void Player::Social_TellFriendsOffline()
 	m_cache->ReleaseLock64(CACHE_SOCIAL_HASFRIENDLIST);
 }
 
-void Player::Social_SendFriendList(uint32 flag) // todo remove argument
+void Player::Social_SendFriendList(uint32 flag)
 {
 	WorldPacket data(SMSG_CONTACT_LIST, 500);
 	Player* plr;
 	PlayerCache* cache;
 
-    data << uint32(7);
+    data << uint32(flag);
 	data << uint32(m_cache->GetSize64(CACHE_SOCIAL_FRIENDLIST) + m_cache->GetSize64(CACHE_SOCIAL_IGNORELIST));
 
 	m_cache->AcquireLock64(CACHE_SOCIAL_FRIENDLIST);
