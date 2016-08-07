@@ -1055,7 +1055,6 @@ void WorldSession::HandleSetSelectionOpcode(WorldPacket & recv_data)
 	recv_data.ReadByteSeq(guid[6]);
 	recv_data.ReadByteSeq(guid[2]);
 
-
 	sLog.outError("Setting %u as target.", Arcemu::Util::GUID_LOPART(guid));
 
 	_player->SetSelection(guid);
@@ -2793,4 +2792,9 @@ void WorldSession::HandleRequestHotfixOpcode(WorldPacket & recv_data)
     }
 
     delete[] guids;
+}
+
+void WorldSession::HandleReturnToGraveyardOpcode(WorldPacket & recv_data)
+{
+    _player->RepopAtGraveyard(_player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ(), _player->GetMapId());
 }

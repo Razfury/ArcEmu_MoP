@@ -737,6 +737,7 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleStandStateChangeOpcode;
 	WorldPacketHandlers[CMSG_CANCEL_MOUNT_AURA].handler =
 	    &WorldSession::HandleDismountOpcode;
+    WorldPacketHandlers[CMSG_RETURN_TO_GRAVEYARD].handler = &WorldSession::HandleReturnToGraveyardOpcode;
 
 	// Friends
 	WorldPacketHandlers[CMSG_CONTACT_LIST].handler = &WorldSession::HandleFriendListOpcode;

@@ -431,7 +431,6 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 	sha.UpdateData((uint8*)&K, 40);
 	sha.Finalize();
 		
-
 	if (memcmp(sha.GetDigest(), AuthDigest, 20))
 	{	
 		SendAuthResponseError(AUTH_UNKNOWN_ACCOUNT);
@@ -452,8 +451,8 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
 	pSession->m_lastPing = (uint32)UNIXTIME;
 	pSession->language = sLocalizationMgr.GetLanguageId(lang);
 
-	//if(recvData.rpos() != recvData.wpos())
-	//recvData >> pSession->m_muted;
+    if(recvData.rpos() != recvData.wpos())
+        recvData >> pSession->m_muted;
 
 	for (i = 0; i < 8; ++i)
 		pSession->SetAccountData(i, NULL, true, 0);

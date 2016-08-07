@@ -810,9 +810,9 @@ class SERVER_DECL WorldSession
 		void HandleSetTaxiBenchmarkOpcode(WorldPacket & recv_data);
 		void HandleMirrorImageOpcode(WorldPacket & recv_data);
 
-		// 4.3.4
 		void HandleReadyForAccountDataTimesOpcode(WorldPacket & recv_data);
 		void HandleLoadScreenOpcode(WorldPacket & recv_data);
+        void HandleReturnToGraveyardOpcode(WorldPacket & recv_data);
 
 	public:
 

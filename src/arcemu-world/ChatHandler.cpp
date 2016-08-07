@@ -70,12 +70,10 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 	WorldPacket* data = NULL;
 
 	uint32 type;
-	int32 lang;
+	int32 lang = LANG_UNIVERSAL;
 
 	const char* pMisc = NULL;
 	const char* pMsg = NULL;
-
-    printf("GOT CHAT!!!\n");
 
     switch(recv_data.GetOpcode())
     {

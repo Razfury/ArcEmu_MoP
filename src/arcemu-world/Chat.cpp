@@ -1256,7 +1256,7 @@ WorldPacket* ChatHandler::FillMessageData(uint32 type, uint32 language, const ch
         //data->WriteBits(channelName.length(), 7);
 
     //if (message.length())
-        data->WriteBits(messageLength, 12);
+        data->WriteBits(2, 12);
 
     data->WriteBit(!false); // hasReceiverName
 
@@ -1333,9 +1333,9 @@ WorldPacket* ChatHandler::FillMessageData(uint32 type, uint32 language, const ch
 
     //if (language)
         *data << uint8(language);
-
+        std::string msg = "hi";
     //if (message.length())
-        data->WriteString(message);
+        data->WriteString(msg);
 
     //if (hasReceiverName)
         //data->WriteString(receiverName);
