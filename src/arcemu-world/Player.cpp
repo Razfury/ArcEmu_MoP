@@ -4342,27 +4342,7 @@ void Player::SetMovement(uint8 pType, uint32 flag)
 void Player::SetSpeeds(uint8 type, float speed)
 {
 	WorldPacket data(50);
-
-	if (type != SWIMBACK)
-	{
-		data << GetNewGUID();
-		data << m_speedChangeCounter++;
-		if (type == RUN)
-			data << uint8(1);
-
-		data << float(speed);
-	}
-	else
-	{
-		data << GetNewGUID();
-		data << uint32(0);
-		data << uint8(0);
-		data << uint32(getMSTime());
-		data << GetPosition();
-		data << float(m_position.o);
-		data << uint32(0);
-		data << float(speed);
-	}
+    ObjectGuid guid = GetGUID();
 
 	switch (type)
 	{
@@ -4377,9 +4357,29 @@ void Player::SetSpeeds(uint8 type, float speed)
 		if (speed == m_lastRunSpeed)
 			return;
 
-		data.SetOpcode(SMSG_FORCE_RUN_SPEED_CHANGE);
+        data.SetOpcode(MSG_MOVE_SET_RUN_SPEED);
 		m_runSpeed = speed;
 		m_lastRunSpeed = speed;
+
+        data.WriteBit(guid[1]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[2]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[6]);
+        data.WriteBit(guid[0]);
+        data.FlushBits(); // needed?
+        data.WriteByteSeq(guid[1]);
+        data << uint32(0); // movement counter
+        data.WriteByteSeq(guid[7]);
+        data.WriteByteSeq(guid[3]);
+        data.WriteByteSeq(guid[0]);
+        data << float(m_runSpeed);
+        data.WriteByteSeq(guid[2]);
+        data.WriteByteSeq(guid[4]);
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[5]);
 	}
 	break;
 	case RUNBACK:
@@ -4397,9 +4397,29 @@ void Player::SetSpeeds(uint8 type, float speed)
 		if (speed == m_lastSwimSpeed)
 			return;
 
-		data.SetOpcode(SMSG_FORCE_SWIM_SPEED_CHANGE);
+        data.SetOpcode(MSG_MOVE_SET_SWIM_SPEED);
 		m_swimSpeed = speed;
 		m_lastSwimSpeed = speed;
+
+        data.WriteBit(guid[5]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[6]);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[2]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[1]);
+        data.FlushBits(); // needed?
+        data << uint32(0); // movement counter
+        data.WriteByteSeq(guid[1]);
+        data.WriteByteSeq(guid[3]);
+        data << float(m_swimSpeed);
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[7]);
+        data.WriteByteSeq(guid[0]);
+        data.WriteByteSeq(guid[5]);
+        data.WriteByteSeq(guid[2]);
+        data.WriteByteSeq(guid[4]);
 	}
 	break;
 	case SWIMBACK:
@@ -4417,9 +4437,29 @@ void Player::SetSpeeds(uint8 type, float speed)
 		if (speed == m_lastFlySpeed)
 			return;
 
-		data.SetOpcode(SMSG_FORCE_FLIGHT_SPEED_CHANGE);
+        data.SetOpcode(MSG_MOVE_SET_FLIGHT_SPEED);
 		m_flySpeed = speed;
 		m_lastFlySpeed = speed;
+
+        data << float(m_flySpeed);
+        data << uint32(0); // movement counter
+        data.WriteBit(guid[6]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[1]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[2]);
+        data.FlushBits(); // needed?
+        data.WriteByteSeq(guid[0]);
+        data.WriteByteSeq(guid[7]);
+        data.WriteByteSeq(guid[4]);
+        data.WriteByteSeq(guid[5]);
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[2]);
+        data.WriteByteSeq(guid[3]);
+        data.WriteByteSeq(guid[1]);
 	}
 	break;
 	default:
@@ -4513,7 +4553,6 @@ void Player::RepopRequestedPlayer()
 
 
 	BuildPlayerRepop();
-
 
 	// Cebernic: don't do this.
 	if (!m_bg || (m_bg && m_bg->HasStarted()))
