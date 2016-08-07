@@ -880,8 +880,8 @@ enum Opcodes
 	CMSG_MOVE_FLIGHT_ACK_OBSOLETE = 0x340,	// not used in client
 	MSG_MOVE_START_SWIM_CHEAT = 0x341,	/// TODO: investigate
 	MSG_MOVE_STOP_SWIM_CHEAT = 0x342,	/// TODO: investigate
-	SMSG_MOVE_SET_CAN_FLY = 0x343,	// implemented
-	SMSG_MOVE_UNSET_CAN_FLY = 0x344,	// implemented
+    SMSG_MOVE_SET_CAN_FLY = 0x178D,	// 18414
+    SMSG_MOVE_UNSET_CAN_FLY = 0x0162, // 18414
 	CMSG_MOVE_SET_CAN_FLY_ACK = 0x345,	// implemented
 	CMSG_MOVE_SET_FLY = 0x346,	// implemented
 	CMSG_SOCKET_GEMS = 0x347,	// implemented
@@ -902,8 +902,8 @@ enum Opcodes
 	CMSG_ARENA_TEAM_LEADER = 0x356,	// implemented
 	SMSG_ARENA_TEAM_EVENT = 0x357,	/// TODO: implement
 	CMSG_BATTLEMASTER_JOIN_ARENA = 0x358,	// implemented
-	MSG_MOVE_START_ASCEND = 0x359,	// implemented
-	MSG_MOVE_STOP_ASCEND = 0x35A,	// implemented
+	MSG_MOVE_START_ASCEND = 0x359, // !TODO
+	MSG_MOVE_STOP_ASCEND = 0x35A, // !TODO
 	SMSG_ARENA_TEAM_STATS = 0x35B,	// implemented
 	CMSG_LFG_SET_AUTOJOIN = 0x35C,	// implemented
 	CMSG_LFG_CLEAR_AUTOJOIN = 0x35D,	// implemented

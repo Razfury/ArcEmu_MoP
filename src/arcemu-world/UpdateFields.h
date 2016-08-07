@@ -310,7 +310,7 @@ enum EAreaTriggerFields
 #define UNIT_FIELD_SPIRIT                         (UNIT_FIELD_STATS + 4)
 //VLack: Don't forget to fix up these when generating this file from a new client!!!
 //#define PLAYER_VISIBLE_ITEM_LENGTH                (PLAYER_VISIBLE_ITEM_2_ENTRYID - PLAYER_FIELD_VISIBLE_ITEMS)
-#define PLAYER_VISIBLE_ITEM_LENGTH                2 // is this correct?
+#define PLAYER_VISIBLE_ITEM_LENGTH 2
 
 // crap not used?
 /*#define GAMEOBJECT_PARENTROTATION_01              OBJECT_END + 0x0005 // Size: 4, Type: FLOAT, Flags: PUBLIC

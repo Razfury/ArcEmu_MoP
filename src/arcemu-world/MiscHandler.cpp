@@ -2738,7 +2738,7 @@ void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket)
 	recvPacket.ReadByteSeq(guid[3]);
 	recvPacket.ReadByteSeq(guid[4]);
 
-	LOG_ERROR("FAILED TO UPDATE OBJECT : %u", guid);	
+	LOG_ERROR("Failed to update object for GUID: %u", guid);	
 }
 
 void WorldSession::HandleRequestHotfixOpcode(WorldPacket & recv_data)

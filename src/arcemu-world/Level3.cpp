@@ -1601,22 +1601,58 @@ bool ChatHandler::HandleFlyCommand(const char* args, WorldSession* m_session)
 
 	if(stricmp(args, "on") == 0)
 	{
-		WorldPacket fly(835, 13);
+		WorldPacket data (SMSG_MOVE_SET_CAN_FLY, 13);
 		chr->m_setflycheat = true;
-		fly << chr->GetNewGUID();
-		fly << uint32(2);
-		chr->SendMessageToSet(&fly, true);
+        ObjectGuid guid = chr->GetGUID();
+        data.WriteBit(guid[6]);
+        data.WriteBit(guid[1]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guid[2]);
+        data.FlushBits(); // needed?
+        data.WriteByteSeq(guid[4]);
+        data.WriteByteSeq(guid[2]);
+		data << uint32(2); // ?
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[3]);
+        data.WriteByteSeq(guid[1]);
+        data.WriteByteSeq(guid[0]);
+        data.WriteByteSeq(guid[7]);
+        data.WriteByteSeq(guid[5]);
+		chr->SendMessageToSet(&data, true);
+
 		BlueSystemMessage(chr->GetSession(), "Flying mode enabled.");
 		if(chr != m_session->GetPlayer())
 			sGMLog.writefromsession(m_session, "enabled flying mode for %s", chr->GetName());
 	}
 	else if(stricmp(args, "off") == 0)
 	{
-		WorldPacket fly(836, 13);
-		chr->m_setflycheat = false;
-		fly << chr->GetNewGUID();
-		fly << uint32(5);
-		chr->SendMessageToSet(&fly, true);
+        chr->m_setflycheat = false;
+        WorldPacket data(SMSG_MOVE_UNSET_CAN_FLY, 13);
+        ObjectGuid guid = chr->GetGUID();
+        data.WriteBit(guid[6]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[2]);
+        data.WriteBit(guid[1]);
+        data.FlushBits(); // needed?
+        data.WriteByteSeq(guid[4]);
+        data.WriteByteSeq(guid[5]);
+        data.WriteByteSeq(guid[7]);
+        data << uint32(5); // ?
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[2]);
+        data.WriteByteSeq(guid[3]);
+        data.WriteByteSeq(guid[1]);
+        data.WriteByteSeq(guid[0]);
+		chr->SendMessageToSet(&data, true);
+
 		BlueSystemMessage(chr->GetSession(), "Flying mode disabled.");
 		if(chr != m_session->GetPlayer())
 			sGMLog.writefromsession(m_session, "disabled flying mode for %s", chr->GetName());
