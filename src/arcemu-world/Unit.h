@@ -1236,7 +1236,6 @@ class SERVER_DECL Unit : public Object
 
 		uint32 GetMovementCounter() const { return m_movementCounter; }
 
-
 		void EventRemoveAura(uint32 SpellId) { RemoveAura(SpellId); }
 
 		//! Remove all auras

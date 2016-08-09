@@ -2558,7 +2558,7 @@ public:
 	PlayerSpec m_specs[MAX_SPEC_COUNT];
 
 public:
-	void SendTeleportAckMsg(const LocationVector & v);
+	void SendMoveTeleport();
 	void SendUpdateDataToSet(ByteBuffer* groupbuf, ByteBuffer* nongroupbuf, bool sendtoself);
 
 	bool CanBuyAt(VendorRestrictionEntry* vendor);

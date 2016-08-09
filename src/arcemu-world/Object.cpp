@@ -380,7 +380,6 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
 
 	if (hasLiving)
 	{
-
 		uint32 movementFlags = 0;
 		uint16 movementFlagsExtra = 0;
 		Unit const* self = TO_UNIT(this);

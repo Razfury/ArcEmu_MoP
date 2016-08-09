@@ -108,8 +108,28 @@ void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleMoveTeleportAckOpcode(WorldPacket & recv_data)
 {
-	WoWGuid guid;
-	recv_data >> guid;
+    ObjectGuid guid;
+    uint32 flags, time;
+    recv_data >> time >> flags;
+
+    guid[0] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[5] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+    guid[6] = recv_data.ReadBit();
+    guid[1] = recv_data.ReadBit();
+    guid[2] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[3]);
+
 	if (guid == _player->GetGUID())
 	{
 		if (sWorld.antihack_teleport && !(HasGMPermissions() && sWorld.no_antihack_on_gm) && _player->GetPlayerStatus() != TRANSFER_PENDING)
@@ -128,7 +148,7 @@ void WorldSession::HandleMoveTeleportAckOpcode(WorldPacket & recv_data)
 			return;
 		}
 
-		LOG_DEBUG("WORLD: got MSG_MOVE_TELEPORT_ACK.");
+		LOG_DEBUG("WORLD: got CMSG_MOVE_TELEPORT_ACK.");
 		GetPlayer()->SetPlayerStatus(NONE);
 		if (GetPlayer()->m_rooted <= 0)
 			GetPlayer()->SetMovement(MOVE_UNROOT, 5);

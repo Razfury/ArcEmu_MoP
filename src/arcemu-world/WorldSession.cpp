@@ -551,20 +551,17 @@ void WorldSession::InitPacketHandlerTable()
 		WorldPacketHandlers[i].handler = 0;
 	}
 	// Login
-	WorldPacketHandlers[CMSG_CHAR_ENUM].handler =
-	    &WorldSession::HandleCharEnumOpcode;
+	WorldPacketHandlers[CMSG_CHAR_ENUM].handler = &WorldSession::HandleCharEnumOpcode;
 	WorldPacketHandlers[CMSG_CHAR_ENUM].status = STATUS_AUTHED;
 
-	WorldPacketHandlers[CMSG_CHAR_CREATE].handler =
-		&WorldSession::HandleCharCreateOpcode;
+	WorldPacketHandlers[CMSG_CHAR_CREATE].handler =	&WorldSession::HandleCharCreateOpcode;
 	WorldPacketHandlers[CMSG_CHAR_CREATE].status = STATUS_AUTHED;
 
 	WorldPacketHandlers[CMSG_RANDOMIZE_CHAR_NAME].handler =
 		&WorldSession::HandleRandomizeCharNameOpcode;
 	WorldPacketHandlers[CMSG_RANDOMIZE_CHAR_NAME].status = STATUS_AUTHED;
 
-	WorldPacketHandlers[CMSG_CHAR_DELETE].handler =
-	    &WorldSession::HandleCharDeleteOpcode;
+	WorldPacketHandlers[CMSG_CHAR_DELETE].handler = &WorldSession::HandleCharDeleteOpcode;
 	WorldPacketHandlers[CMSG_CHAR_DELETE].status = STATUS_AUTHED;
 
 	WorldPacketHandlers[CMSG_CHAR_RENAME].handler = &WorldSession::HandleCharRenameOpcode;
@@ -667,8 +664,7 @@ void WorldSession::InitPacketHandlerTable()
 	WorldPacketHandlers[CMSG_MOVE_CHNG_TRANSPORT].handler =
 	    &WorldSession::HandleMovementOpcodes;
 	// ACK
-	WorldPacketHandlers[MSG_MOVE_TELEPORT_ACK].handler =
-	    &WorldSession::HandleMoveTeleportAckOpcode;
+	WorldPacketHandlers[CMSG_MOVE_TELEPORT_ACK].handler = &WorldSession::HandleMoveTeleportAckOpcode;
 	WorldPacketHandlers[CMSG_FORCE_WALK_SPEED_CHANGE_ACK].handler =
 	    &WorldSession::HandleAcknowledgementOpcodes;
 	WorldPacketHandlers[CMSG_MOVE_FEATHER_FALL_ACK].handler =

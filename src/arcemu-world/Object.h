@@ -54,7 +54,6 @@ enum HIGHGUID_TYPE
 #define MAX_INTERACTION_RANGE 5.0f
 
 // TODO: fix that type mess
-
 enum TYPE
 {
 	TYPE_OBJECT = 0x0001,
@@ -363,13 +362,13 @@ struct MovementInfo3
 	void SetMovementFlags(uint32 flag) { flags = flag; }
 	void AddMovementFlag(uint32 flag) { flags |= flag; }
 	void RemoveMovementFlag(uint32 flag) { flags &= ~flag; }
-	bool HasMovementFlag(uint32 flag) const { return flags & flag; }
+	bool HasMovementFlag(uint32 flag) const { return flags & flag != 0; }
 
 	uint16 GetExtraMovementFlags() const { return flags2; }
 	void SetExtraMovementFlags(uint16 flag) { flags2 = flag; }
 	void AddExtraMovementFlag(uint16 flag) { flags2 |= flag; }
 	void RemoveExtraMovementFlag(uint16 flag) { flags2 &= ~flag; }
-	bool HasExtraMovementFlag(uint16 flag) const { return flags2 & flag; }
+	bool HasExtraMovementFlag(uint16 flag) const { return flags2 & flag != 0; }
 
 	void SetFallTime(uint32 time) { jump.fallTime = time; }
 
@@ -609,7 +608,7 @@ class SERVER_DECL Object : public EventableObject
 			return *p;
 		}
 
-		bool isType(uint16 mask) const { return (mask & m_objectType); }
+		bool isType(uint16 mask) const { return (mask & m_objectType) != 0; }
 
 		//! Get float property
 		const float & GetFloatValue(uint32 index) const

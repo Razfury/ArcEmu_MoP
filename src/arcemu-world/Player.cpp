@@ -7171,7 +7171,17 @@ void Player::_Relocate(uint32 mapid, const LocationVector & v, bool sendpending,
 	{
 		data.SetOpcode(SMSG_TRANSFER_PENDING);
 
-		data << mapid;
+        data.WriteBit(0);       // unknown
+        data.WriteBit(transporter_info.guid != NULL);
+
+        data << uint32(mapid);
+
+        if (transporter_info.guid)
+        {
+            // Might be in wrong order
+            data << GetMapId();
+            data << transporter_info.guid;
+        }
 
 		m_session->SendPacket(&data);
 	}
@@ -7186,9 +7196,15 @@ void Player::_Relocate(uint32 mapid, const LocationVector & v, bool sendpending,
 		if (status != INSTANCE_OK)
 		{
 			data.Initialize(SMSG_TRANSFER_ABORTED);
+            uint8 arg = 0; //! TODO
+            
+            data.WriteBit(!arg);
+            data.WriteBits(status, 5);
+
+            if (arg)
+                data << uint8(arg);
 
 			data << uint32(mapid);
-			data << uint32(status);
 
 			m_session->SendPacket(&data);
 
@@ -7204,10 +7220,11 @@ void Player::_Relocate(uint32 mapid, const LocationVector & v, bool sendpending,
 		}
 
 		data.Initialize(SMSG_NEW_WORLD);
-
+        data << v.x;
 		data << uint32(mapid);
-		data << v;
-		data << float(v.o);
+		data << v.y;
+        data << v.z;
+        data << v.o;
 
 		m_session->SendPacket(&data);
 
@@ -7216,8 +7233,8 @@ void Player::_Relocate(uint32 mapid, const LocationVector & v, bool sendpending,
 	}
 	else
 	{
-		// via teleport ack msg
-		SendTeleportAckMsg(v);
+		// SMSG_MOVE_TELEPORT
+		SendMoveTeleport();
 	}
 	SetPlayerStatus(TRANSFER_PENDING);
 	m_sentTeleportPosition = v;
@@ -7227,10 +7244,8 @@ void Player::_Relocate(uint32 mapid, const LocationVector & v, bool sendpending,
 	z_axisposition = 0.0f;
 }
 
-
 // Player::AddItemsToWorld
 // Adds all items to world, applies any modifiers for them.
-
 void Player::AddItemsToWorld()
 {
 	Item* pItem;
@@ -8641,7 +8656,6 @@ void Player::SafeTeleport(MapMgr* mgr, const LocationVector & vec)
 		data << GetMapId();
 		data << transporter_info.guid;
 	}
-	data << mgr->GetMapId();
 	GetSession()->SendPacket(&data);
 
 	data.Initialize(SMSG_NEW_WORLD);
@@ -12582,25 +12596,39 @@ void Player::AddGarbageItem(Item* it)
 	m_GarbageItems.push_back(it);
 }
 
-void Player::SendTeleportAckMsg(const LocationVector & v)
+void Player::SendMoveTeleport()
 {
-
 	///////////////////////////////////////
 	//Update player on the client with TELEPORT_ACK
 	SetPlayerStatus(TRANSFER_PENDING);
 
-	WorldPacket data(MSG_MOVE_TELEPORT_ACK, 80);
-
-	data << GetNewGUID();
-	data << uint32(2);   // flags
-	data << getMSTime();
-	data << uint16(0);
-	data << float(0);
-	data << v;
-	data << v.o;
-	data << uint16(2);
-	data << uint8(0);
-
+    WorldPacket data(SMSG_MOVE_TELEPORT, 80);
+    ObjectGuid guid = GetGUID();
+    ObjectGuid tGuid = 0; // transporter_info.guid ? transporter_info.guid : 0;
+    
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(0); // has transport data
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(0);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[7]);
+    data << GetPositionZ();
+    data << GetPositionY();
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[5]);
+    data << GetPositionX();
+    data << uint32(m_movementCounter++);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[1]);
+    data << GetOrientation();
 	m_session->SendPacket(&data);
 }
 
@@ -12799,7 +12827,6 @@ void Player::DealDamage(Unit* pVictim, uint32 damage, uint32 targetEvent, uint32
 	if (DamageTakenPctModOnHP35 && HasFlag(UNIT_FIELD_AURASTATE, AURASTATE_FLAG_HEALTH35))
 		damage = damage - float2int32(damage * DamageTakenPctModOnHP35) / 100;
 
-
 	//Mage: Fiery Payback
 	/*if( FieryPaybackModHP35 == 1 ){
 
@@ -12827,7 +12854,6 @@ void Player::DealDamage(Unit* pVictim, uint32 damage, uint32 targetEvent, uint32
 			m_bg->UpdatePvPData();
 		}
 	}
-
 
 	// Duel
 	if (pVictim->IsPlayer() && DuelingWith != NULL && DuelingWith->GetGUID() == pVictim->GetGUID())

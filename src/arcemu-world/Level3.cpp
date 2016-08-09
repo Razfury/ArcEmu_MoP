@@ -930,8 +930,6 @@ bool ChatHandler::HandleNpcInfoCommand(const char* args, WorldSession* m_session
 	SystemMessage(m_session, "Charmer GUID: %u", Arcemu::Util::GUID_LOPART(crt->GetCharmedByGUID()));
 	SystemMessage(m_session, "Creator Spell: %u", Arcemu::Util::GUID_LOPART(crt->GetCreatedBySpell()));
 
-
-
 	uint32 unitflags = crt->GetUInt32Value(UNIT_FIELD_FLAGS);
 
 	SystemMessage(m_session, "Unit flags: %u", unitflags);
@@ -1612,7 +1610,7 @@ bool ChatHandler::HandleFlyCommand(const char* args, WorldSession* m_session)
         data.WriteBit(guid[7]);
         data.WriteBit(guid[5]);
         data.WriteBit(guid[2]);
-        data.FlushBits(); // needed?
+        //data.FlushBits(); // needed?
         data.WriteByteSeq(guid[4]);
         data.WriteByteSeq(guid[2]);
 		data << uint32(2); // ?
@@ -1641,7 +1639,6 @@ bool ChatHandler::HandleFlyCommand(const char* args, WorldSession* m_session)
         data.WriteBit(guid[7]);
         data.WriteBit(guid[2]);
         data.WriteBit(guid[1]);
-        data.FlushBits(); // needed?
         data.WriteByteSeq(guid[4]);
         data.WriteByteSeq(guid[5]);
         data.WriteByteSeq(guid[7]);

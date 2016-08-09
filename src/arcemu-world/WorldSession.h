@@ -805,7 +805,7 @@ class SERVER_DECL WorldSession
 
 		void HandleSetFactionInactiveOpcode(WorldPacket & recv_data);
 
-		//MISC
+		// Misc
 		void HandleWorldStateUITimerUpdate(WorldPacket & recv_data);
 		void HandleSetTaxiBenchmarkOpcode(WorldPacket & recv_data);
 		void HandleMirrorImageOpcode(WorldPacket & recv_data);

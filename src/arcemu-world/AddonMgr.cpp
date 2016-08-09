@@ -133,7 +133,7 @@ void AddonMgr::SendAddonInfoPacket(WorldPacket* source, uint32 pos, WorldSession
     uint32 addonSize;
     *source >> addonSize;
 
-    uint32 realsize;
+//    uint32 realsize;
     uLongf rsize;
 
     //*source >> realsize;
