@@ -13052,13 +13052,11 @@ void Player::DealDamage(Unit* pVictim, uint32 damage, uint32 targetEvent, uint32
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef ENABLE_ACHIEVEMENTS
-
 		if (pVictim->isCritter())
 		{
 			GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE, pVictim->GetEntry(), 1, 0);
 			GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_KILL_CREATURE_TYPE, GetHighGUID(), GetLowGUID(), 0);
 		}
-
 #endif
 
 	}
@@ -13067,7 +13065,6 @@ void Player::DealDamage(Unit* pVictim, uint32 damage, uint32 targetEvent, uint32
 		pVictim->TakeDamage(this, damage, spellId, no_remove_auras);
 	}
 }
-
 
 void Player::TakeDamage(Unit* pAttacker, uint32 damage, uint32 spellid, bool no_remove_auras)
 {

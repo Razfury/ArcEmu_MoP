@@ -125,46 +125,68 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 
 	switch(type)
 	{
-    case CHAT_MSG_EMOTE:
-    case CHAT_MSG_SAY:
-    case CHAT_MSG_YELL:
-    case CHAT_MSG_WHISPER:
-    case CHAT_MSG_CHANNEL:
-    case CHAT_MSG_PARTY:
-    case CHAT_MSG_PARTY_LEADER:
-    case CHAT_MSG_BATTLEGROUND:
-    case CHAT_MSG_BATTLEGROUND_LEADER:
-    case CHAT_MSG_RAID:
-    case CHAT_MSG_RAID_WARNING:
-    case CHAT_MSG_RAID_LEADER:
-    case CHAT_MSG_GUILD:
-    case CHAT_MSG_OFFICER:
-			{
-				if(m_muted && m_muted >= (uint32)UNIXTIME)
-				{
-					SystemMessage("Your voice is currently muted by a moderator.");
-					return;
-				}
-			}
-			break;
-	}
+        case CHAT_MSG_EMOTE:
+        case CHAT_MSG_SAY:
+        case CHAT_MSG_YELL:
+        case CHAT_MSG_WHISPER:
+        case CHAT_MSG_CHANNEL:
+        case CHAT_MSG_PARTY:
+        case CHAT_MSG_PARTY_LEADER:
+        case CHAT_MSG_BATTLEGROUND:
+        case CHAT_MSG_BATTLEGROUND_LEADER:
+        case CHAT_MSG_RAID:
+        case CHAT_MSG_RAID_WARNING:
+        case CHAT_MSG_RAID_LEADER:
+        case CHAT_MSG_GUILD:
+        case CHAT_MSG_OFFICER:
+        {
+            if(m_muted && m_muted >= (uint32)UNIXTIME)
+            {
+                SystemMessage("Your voice is currently muted by a moderator.");
+                return;
+            }
+        }
+        break;
+    }
 
 	std::string msg, to = "", channel = "", tmp;
 	msg.reserve(256);
-	uint32 textLength = 0;
+	uint32 textLength = 0, receiverLength = 0;
 
 	switch(type)
 	{
 		case CHAT_MSG_SAY:
-            {
-				textLength = recv_data.ReadBits(8);
-                msg = recv_data.ReadString(textLength);
-            }
-			break;
+        case CHAT_MSG_EMOTE:
+        case CHAT_MSG_YELL:
+        case CHAT_MSG_PARTY:
+        case CHAT_MSG_GUILD:
+        case CHAT_MSG_OFFICER:
+        case CHAT_MSG_RAID:
+        case CHAT_MSG_RAID_WARNING:
+        case CHAT_MSG_BATTLEGROUND:
+            textLength = recv_data.ReadBits(8);
+            msg = recv_data.ReadString(textLength);
+            break;
+        case CHAT_MSG_WHISPER:
+            textLength = recv_data.ReadBits(8);
+            receiverLength = recv_data.ReadBits(9);
+            msg = recv_data.ReadString(textLength);
+            to = recv_data.ReadString(receiverLength);
+            break;
+        case CHAT_MSG_CHANNEL:
+            textLength = recv_data.ReadBits(9);
+            receiverLength = recv_data.ReadBits(8);
+            msg = recv_data.ReadString(receiverLength);
+            channel = recv_data.ReadString(textLength);
+            break;
+        case CHAT_MSG_AFK:
+        case CHAT_MSG_DND:
+            textLength = recv_data.ReadBits(8);
+            msg = recv_data.ReadString(textLength);
+            break;
 		default:
 			LOG_ERROR("CHAT: unknown msg type %u, lang: %u", type, lang);
 	}
-
 
 	if(int(msg.find("|T")) > -1)
 	{
@@ -218,11 +240,11 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 					SystemMessage("Your chat message was blocked by a server-side filter.");
 					return;
 				}
+                //data = sChatHandler.BuildChatPacket(CHAT_MSG_SAY, lang, _player->GetGUID(), 0, msg, _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0, 0, _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? true : false, "", "");
+                //data = sChatHandler.FillMessageData(CHAT_MSG_SAY, lang, msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
+                //GetPlayer()->SendMessageToSet(data, true);
 
-                data = sChatHandler.FillMessageData(CHAT_MSG_SAY, lang, msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
-                GetPlayer()->SendMessageToSet(data, true);
-
-				/*if(GetPlayer()->m_modlanguage >= 0)
+				if(GetPlayer()->m_modlanguage >= 0)
 				{
 					//data =	sChatHandler.BuildChatPacket(*data, CHAT_MSG_SAY, GetPlayer()->m_modlanguage, _player->GetGUID(), 0, msg, _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0, _player->GetName(), "", NULL, false, "", "");					
 					data = sChatHandler.FillMessageData(CHAT_MSG_SAY, GetPlayer()->m_modlanguage,  msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
@@ -240,7 +262,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 					data = sChatHandler.FillMessageData(CHAT_MSG_SAY, lang, msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
 
 					GetPlayer()->SendMessageToSet(data, true);
-				}*/
+				}
 				delete data;
 
 			}
@@ -434,7 +456,6 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket & recv_data)
 					data = sChatHandler.FillMessageData(CHAT_MSG_WHISPER, lang,  msg.c_str(), _player->GetGUID(), _player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_GM) ? 4 : 0);
 					playercache->SendPacket(data);
 				}
-
 
 				//Sent the to Users id as the channel, this should be fine as it's not used for whisper
 				if(lang != -1) //DO NOT SEND if its an addon message!

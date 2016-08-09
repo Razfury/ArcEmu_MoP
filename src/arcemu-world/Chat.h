@@ -204,7 +204,6 @@ class SERVER_DECL ChatHandler : public Singleton<ChatHandler>
 		~ChatHandler();
 
 		WorldPacket* ChatHandler::BuildChatPacket(uint32 chatType, uint32 language, ObjectGuid senderGUID, ObjectGuid receiverGUID, std::string const& message, uint8 chatTag,
-                                  std::string const& senderName /*= ""*/, std::string const& receiverName /*= ""*/,
                                   uint32 achievementId /*= 0*/, bool gmMessage /*= false*/, std::string const& channelName /*= ""*/,
                                   std::string const& addonPrefix /*= ""*/);
 

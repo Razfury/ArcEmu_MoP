@@ -1610,7 +1610,6 @@ bool ChatHandler::HandleFlyCommand(const char* args, WorldSession* m_session)
         data.WriteBit(guid[7]);
         data.WriteBit(guid[5]);
         data.WriteBit(guid[2]);
-        //data.FlushBits(); // needed?
         data.WriteByteSeq(guid[4]);
         data.WriteByteSeq(guid[2]);
 		data << uint32(2); // ?
