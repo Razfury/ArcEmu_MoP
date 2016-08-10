@@ -5385,8 +5385,8 @@ MovementStatusElements const* GetMovementStatusElementsSequence(uint32 opcode)
 		return MovementSetFacing;
 	case MSG_MOVE_SET_PITCH:
 		return MovementSetPitch;
-	//case MSG_MOVE_START_ASCEND:
-	//	return MovementStartAscend;
+	case MSG_MOVE_START_ASCEND:
+		return MovementStartAscend;
 	case MSG_MOVE_START_BACKWARD:
 		return MovementStartBackward;
 	//case MSG_MOVE_START_DESCEND:
@@ -5409,8 +5409,8 @@ MovementStatusElements const* GetMovementStatusElementsSequence(uint32 opcode)
 		return MovementStartTurnRight;
 	case MSG_MOVE_STOP:
 		return MovementStop;
-	//case MSG_MOVE_STOP_ASCEND:
-	//	return MovementStopAscend;
+	case MSG_MOVE_STOP_ASCEND:
+		return MovementStopAscend;
 	//case MSG_MOVE_STOP_PITCH:
 	//	return MovementStopPitch;
 	case MSG_MOVE_STOP_STRAFE:
