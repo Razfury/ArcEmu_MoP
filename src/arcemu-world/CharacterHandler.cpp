@@ -124,81 +124,79 @@ void WorldSession::CharacterEnumProc(QueryResult* result)
 		charCount = uint32(result->GetRowCount());
 
 		data.WriteBits(0, 21);
-
 		data.WriteBits(charCount, 16);
+
+        struct player_item
+        {
+            uint32 displayid;
+            uint8 invtype;
+            uint32 enchantment; // added in 2.4
+        };
+
+        player_item items[INVENTORY_SLOT_BAG_END];
+        int8 slot;
+        int8 containerslot;
+        uint32 i;
+        ItemPrototype* proto;
+        QueryResult* res;
+        CreatureInfo* petInfo = NULL;
+        uint32 num = 0;
+        uint32 MaxAvailCharLevel = 0;
+        Field* fields;
+        has_dk = false;
+        _side = -1;
 
 		do
 		{
-
-			struct player_item
-			{
-				uint32 displayid;
-				uint8 invtype;
-				uint32 enchantment; // added in 2.4
-			};
-
-			player_item items[INVENTORY_SLOT_BAG_END];
-			int8 slot;
-			int8 containerslot;
-			uint32 i;
-			ItemPrototype* proto;
-			QueryResult* res;
-			CreatureInfo* petInfo = NULL;
-			uint32 num = 0;
-			uint32 MaxAvailCharLevel = 0;
-			Field* fields;
-
 			fields = result->Fetch();
 
-			ObjectGuid guid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, 0x000);
+            /*
+            0      1     2      3      4       5      6      7       8          9         10       11      12
+            guid, level, race, class, gender, bytes, bytes2, name, positionX, positionY, positionZ, mapId, zoneId,
 
+            13       14           15            16                  17
+            banned, restState, deathstate, forced_rename_pending, player_flags,
+
+            18
+            guild_data.guildid
+            */
+
+			ObjectGuid guid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, 0x000);
 			uint8 level = fields[1].GetUInt8();
 			uint8 race = fields[2].GetUInt8();
 			uint8 Class = fields[3].GetUInt8();
 			uint8 gender = fields[4].GetUInt8();
-
 			uint8 skin = uint8(fields[5].GetUInt32() & 0xFF);
 			uint8 face = uint8((fields[5].GetUInt32() >> 8) & 0xFF);
 			uint8 hairStyle = uint8((fields[5].GetUInt32() >> 16) & 0xFF);
 			uint8 hairColor = uint8((fields[5].GetUInt32() >> 24) & 0xFF);
 			uint8 facialHair = uint8(fields[6].GetUInt32() & 0xFF);
-
-			string name = fields[7].GetString();
+			std::string name = fields[7].GetString();
 			float x = fields[8].GetFloat();
 			float y = fields[9].GetFloat();
 			float z = fields[10].GetFloat();
 			uint32 mapId = uint32(fields[11].GetUInt16());
 			uint32 zone = fields[12].GetUInt16();  // zoneId
 			uint32 banned = fields[13].GetUInt32();
-
 			uint32 playerFlags = fields[14].GetUInt32();
-
 			uint32 atLoginFlags = fields[17].GetUInt32();
 			uint32 GuildId = fields[18].GetUInt32();
 			ObjectGuid guildGuid = MAKE_NEW_GUID(GuildId, 0, GuildId ? uint32(0x1FF) : 0);
 
+            // TODO add Cata & MoP races
+            // and make a function to get the side
+            if (_side < 0)
+            {
+                // work out the side
+                static uint8 sides[RACE_DRAENEI + 1] = { 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0 };
+                _side = sides[race];
+            }
+
+            // Death Knight starting information
+            has_level_55_char = has_level_55_char || (level >= 55);
+            has_dk = has_dk || (Class == DEATHKNIGHT);
+
 			uint32 charFlags = 0;
-
-			/*
-			TODO: - banned                  DONE
-			      - charflags               DONE
-				  - atloginflags            DONE
-				  - customization flags     
-				  - forced_rename_pending   DONE
-				  - show pets               DONE
-				  - slot                    I think it's fine the way it is (uint8(0))
-			*/
-
-			/*     
-			        0      1     2      3      4       5      6      7       8          9         10       11      12
-			      guid, level, race, class, gender, bytes, bytes2, name, positionX, positionY, positionZ, mapId, zoneId,
-
-			       13       14           15            16                  17
-			     banned, restState, deathstate, forced_rename_pending, player_flags, 
-	
-			             18
-			     guild_data.guildid
-			*/
 
 	        if(banned && (banned < 10 || banned > (uint32)UNIXTIME))
 			    charFlags |= CHARACTER_FLAG_LOCKED_BY_BILLING;
@@ -252,8 +250,8 @@ void WorldSession::CharacterEnumProc(QueryResult* result)
 			data.WriteBit(guildGuid[3]);
 			data.WriteBit(guid[3]);
 			data.WriteBit(guid[7]);
-			data.WriteBit(0);
-			data.WriteBit(atLoginFlags & 0x20);
+			data.WriteBit(0); // Can boost?
+			data.WriteBit(atLoginFlags & 0x20); // 0x20 = AT_LOGIN_FIRST
 			data.WriteBit(guid[6]);
 			data.WriteBit(guildGuid[6]);
 			data.WriteBits(uint32(name.length()), 6);
@@ -377,10 +375,10 @@ void WorldSession::CharacterEnumProc(QueryResult* result)
 			buffer.WriteByteSeq(guid[6]);
 
 			buffer << uint32(charFlags);
+            buffer << uint32(zone);
 
 			buffer.WriteByteSeq(guildGuid[7]);
 
-			buffer << uint32(zone);
 			buffer << float(z);
 
 		} while (result->NextRow());

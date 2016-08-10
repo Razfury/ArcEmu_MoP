@@ -45,7 +45,7 @@ enum HIGHGUID_TYPE
 	HIGHGUID_TYPE_GUILD = 0x1FF6,
 	//===============================================
 	HIGHGUID_TYPE_MASK = 0xFFFF0000,
-	LOWGUID_ENTRY_MASK = 0x0000FFFF,
+    LOWGUID_ENTRY_MASK = 0xFFFFFFFF,
 };
 
 #define GET_TYPE_FROM_GUID(x) ( Arcemu::Util::GUID_HIPART( (x) ) & HIGHGUID_TYPE_MASK )
@@ -82,7 +82,7 @@ enum TYPEID
 	TYPEID_SCENEOBJECT = 9
 };
 
-#define NUM_CLIENT_OBJECT_TYPES             10
+#define NUM_CLIENT_OBJECT_TYPES 10
 
 uint32 GuidHigh2TypeId(uint32 guid_hi);
 
@@ -128,7 +128,6 @@ struct TransporterInfo{
 		seat = 0;
 	}
 };
-
 
 struct Position
 {
@@ -400,8 +399,6 @@ class Group;
 class Pet;
 class Spell;
 
-
-
 //====================================================================
 //  Object
 //  Base object for every item, unit, player, corpse, container, etc
@@ -488,8 +485,6 @@ class SERVER_DECL Object : public EventableObject
 
 
 		//! Guid always comes first
-		
-		
 		ARCEMU_INLINE const uint64& GetGUID() const { return *((uint64*)m_uint32Values); }
 		void SetGUID(uint64 GUID) { SetUInt64Value(OBJECT_FIELD_GUID, GUID); }
 		void SetLowGUID(uint32 val) { m_uint32Values[0] = val; }
@@ -507,9 +502,6 @@ class SERVER_DECL Object : public EventableObject
 		ARCEMU_INLINE uint32 GetUIdFromGUID() const { return GUID_LOPART_TEST(GetGUID()); }
 		ARCEMU_INLINE uint32 GetHighGUID() const { return GUID_HIPAR_TESTT(GetGUID()); }
 		ARCEMU_INLINE uint32 GetLowGUID() const { return GUID_LOPART_TEST(GetGUID()); }
-
-
-
 
 		// type
 		const uint8 & GetTypeId() const { return m_objectTypeId; }

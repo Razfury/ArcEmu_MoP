@@ -937,11 +937,8 @@ int ChatHandler::ParseCommands(const char* text, WorldSession* session)
 	return 1;
 }
 
-WorldPacket* ChatHandler::BuildChatPacket(uint32 chatType, uint32 language, ObjectGuid senderGUID, ObjectGuid receiverGUID, std::string const& message, uint8 chatTag,
-                                  uint32 achievementId /*= 0*/, bool gmMessage /*= false*/, std::string const& channelName /*= ""*/,
-                                  std::string const& addonPrefix /*= ""*/)
+WorldPacket* ChatHandler::BuildChatPacket(uint32 chatType, uint32 language, ObjectGuid senderGUID, ObjectGuid receiverGUID, std::string const& message, uint8 chatTag)
 {
-	bool hasAchievementId = (chatType == CHAT_MSG_ACHIEVEMENT || chatType == CHAT_MSG_GUILD_ACHIEVEMENT) && achievementId;
     bool hasSenderName = false;
     bool hasReceiverName = false;
     bool hasChannelName = false;
@@ -997,19 +994,11 @@ WorldPacket* ChatHandler::BuildChatPacket(uint32 chatType, uint32 language, Obje
                 hasReceiverName = receiverName.length();
             break;*/
 
-        // channes are handled somewhere else
-        //case CHAT_MSG_CHANNEL:
-            //hasChannelName = channelName.length();
-            //hasSenderName = senderName.length();
-            //break;
         default:
-            if (gmMessage)
-                hasSenderName = senderName.length();
+           // if (chatTag == 4)
+            //    hasSenderName = senderName.length();
             break;
     }
-
-    //if (language == LANG_ADDON)
-        //hasPrefix = addonPrefix.length();
 
     ObjectGuid guildGUID = hasGuildGUID && sender && sender->GetGuildId() ? MAKE_NEW_GUID(sender->GetGuildId(), 0, HIGHGUID_TYPE_GUILD) : 0;
     ObjectGuid groupGUID = hasGroupGUID && sender && sender->GetGroup() ? sender->GetGroup()->GetID() : 0;
@@ -1065,19 +1054,13 @@ WorldPacket* ChatHandler::BuildChatPacket(uint32 chatType, uint32 language, Obje
     data->WriteBit(senderGUID[4]);
     data->WriteBit(senderGUID[6]);
 
-    data->WriteBit(!hasAchievementId);
+    data->WriteBit(!false); // hasAchievementId
     data->WriteBit(!message.length());
-
-    if (hasChannelName)
-        data->WriteBits(channelName.length(), 7);
 
     if (message.length())
         data->WriteBits(message.length(), 12);
 
     data->WriteBit(!hasReceiverName);
-
-    if (hasPrefix)
-        data->WriteBits(addonPrefix.length(), 5);
 
     data->WriteBit(1); // RealmID ?
 
@@ -1106,15 +1089,6 @@ WorldPacket* ChatHandler::BuildChatPacket(uint32 chatType, uint32 language, Obje
     data->WriteByteSeq(guildGUID[0]);
     data->WriteByteSeq(guildGUID[1]);
 
-    if (hasChannelName)
-        data->WriteString(channelName);
-
-    if (hasPrefix)
-        data->WriteString(addonPrefix);
-
-    // if (hasFakeTime)
-    //     data << float(fakeTime);
-
     data->WriteByteSeq(senderGUID[4]);
     data->WriteByteSeq(senderGUID[7]);
     data->WriteByteSeq(senderGUID[1]);
@@ -1125,9 +1099,6 @@ WorldPacket* ChatHandler::BuildChatPacket(uint32 chatType, uint32 language, Obje
     data->WriteByteSeq(senderGUID[3]);
 
     *data << uint8(chatType);
-
-    if (hasAchievementId)
-        *data << uint32(achievementId);
 
     data->WriteByteSeq(groupGUID[1]);
     data->WriteByteSeq(groupGUID[3]);
@@ -1341,9 +1312,6 @@ WorldPacket* ChatHandler::FillSystemMessageData(const char* message) const
 
     data->WriteBit(!false); // hasSenderName
     data->WriteBit(0); // HideInChatLog - only bubble shows
-
-    //if (hasSenderName)
-    //data->WriteBits(senderName.length(), 11);
 
     data->WriteBit(0); // Fake Bit
     data->WriteBit(!false); // hasChannelName
