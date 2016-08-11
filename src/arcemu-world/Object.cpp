@@ -124,13 +124,16 @@ void Object::Init()
 void Object::_Create(uint32 mapid, float x, float y, float z, float ang)
 {
 	m_mapId = mapid;
-	m_position.ChangeCoords(x, y, z, ang);
+    m_movementInfo.pos.m_positionX = x;
+    m_movementInfo.pos.m_positionX = y;
+    m_movementInfo.pos.m_positionX = z;
+    m_movementInfo.pos.SetOrientation(ang);
+	//m_position.ChangeCoords(x, y, z, ang);
 	m_spawnLocation.ChangeCoords(x, y, z, ang);
 	m_lastMapUpdatePosition.ChangeCoords(x, y, z, ang);
 }
 
 //!!! This method needs improvements + cleanup
-
 uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer* data, Player* target)
 {
     uint8  updateType = UPDATETYPE_CREATE_OBJECT;
@@ -662,10 +665,13 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
 
 	if (hasStationaryPosition)
 	{
-		*data << (float)m_position.y;
+		//*data << (float)m_position.y;
+        *data << GetPositionY();
 		*data << GetPositionZ();
-		*data << (float)m_position.o;
-		*data << (float)m_position.x;
+		//*data << (float)m_position.o;
+		//*data << (float)m_position.x;
+        *data << GetOrientation();
+        *data << GetPositionX();
 	}
 
 	/*
@@ -700,7 +706,6 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
 	// if (hasLiving && hasSpline)
 	// ...
 }
-
 
 //=======================================================================================
 //  Creates an update block with the values of this object as
@@ -889,14 +894,20 @@ bool Object::SetPosition(const LocationVector & v, bool allowPorting /* = false 
 {
 	bool updateMap = false, result = true;
 
-	if (m_position.x != v.x || m_position.y != v.y)
+	//if (m_position.x != v.x || m_position.y != v.y)
+    if (m_movementInfo.pos.GetPositionX() != v.x || m_movementInfo.pos.GetPositionY() != v.y)
 		updateMap = true;
 
-	m_position = const_cast<LocationVector &>(v);
+	//m_position = const_cast<LocationVector &>(v);
+    m_movementInfo.pos.m_positionX = v.x;
+    m_movementInfo.pos.m_positionY = v.y;
+    m_movementInfo.pos.m_positionZ = v.z;
+    m_movementInfo.pos.SetOrientation(v.o);
 
 	if (!allowPorting && v.z < -500)
 	{
-		m_position.z = 500;
+		//m_position.z = 500;
+        m_movementInfo.pos.m_positionZ = 500;
 		LOG_ERROR("setPosition: fell through map; height ported");
 
 		result = false;
@@ -982,11 +993,16 @@ bool Object::SetPosition(float newX, float newY, float newZ, float newOrientatio
 	if (m_lastMapUpdatePosition.Distance2DSq(newX, newY) > 4.0f)		/* 2.0f*/
 	updateMap = true;
 
-	m_position.ChangeCoords(newX, newY, newZ, newOrientation);
+	//m_position.ChangeCoords(newX, newY, newZ, newOrientation);
+    m_movementInfo.pos.m_positionX = newZ;
+    m_movementInfo.pos.m_positionY = newZ;
+    m_movementInfo.pos.m_positionZ = newZ;
+    m_movementInfo.pos.SetOrientation(newOrientation);
 
 	if (!allowPorting && newZ < -500)
 	{
-	m_position.z = 500;
+	//m_position.z = 500;
+        m_movementInfo.pos.m_positionZ = 500;
 	LOG_ERROR("setPosition: fell through map; height ported");
 
 	result = false;
@@ -1623,7 +1639,8 @@ bool Object::isInFront(Object* target)
 	double left = -1.0 * (M_PI / 2.0);
 	double right = (M_PI / 2.0);
 
-	return((angle >= left) && (angle <= right));
+	//return((angle >= left) && (angle <= right));
+    return true; // DEBUG
 }
 
 bool Object::isInBack(Object* target)

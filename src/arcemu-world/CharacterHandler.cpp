@@ -965,6 +965,7 @@ void WorldSession::FullLogin(Player* plr)
 	}
 
 	// Trying to log to an instance that doesn't exist anymore?
+    // TODO update to the new movement system!
 	if (!mgr)
 	{
 		if (!IS_INSTANCE(plr->m_bgEntryPointMap))

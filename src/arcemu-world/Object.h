@@ -147,7 +147,7 @@ struct Position
 	float m_positionY;
 	float m_positionZ;
 	// Better to limit access to m_orientation field, but this will be hard to achieve with many scripts using array initialization for this structure
-private:
+//private:
 	float m_orientation;
 public:
 
@@ -289,7 +289,7 @@ public:
 		// to emulate negative numbers
 		if (o < 0)
 		{
-			float mod = o *-1;
+			float mod = o * -1;
 			mod = fmod(mod, 2.0f * static_cast<float>(M_PI));
 			mod = -mod + 2.0f * static_cast<float>(M_PI);
 			return mod;
@@ -361,13 +361,13 @@ struct MovementInfo3
 	void SetMovementFlags(uint32 flag) { flags = flag; }
 	void AddMovementFlag(uint32 flag) { flags |= flag; }
 	void RemoveMovementFlag(uint32 flag) { flags &= ~flag; }
-	bool HasMovementFlag(uint32 flag) const { return flags & flag != 0; }
+	bool HasMovementFlag(uint32 flag) const { return flags & flag; }
 
 	uint16 GetExtraMovementFlags() const { return flags2; }
 	void SetExtraMovementFlags(uint16 flag) { flags2 = flag; }
 	void AddExtraMovementFlag(uint16 flag) { flags2 |= flag; }
 	void RemoveExtraMovementFlag(uint16 flag) { flags2 &= ~flag; }
-	bool HasExtraMovementFlag(uint16 flag) const { return flags2 & flag != 0; }
+	bool HasExtraMovementFlag(uint16 flag) const { return flags2 & flag; }
 
 	void SetFallTime(uint32 time) { jump.fallTime = time; }
 
@@ -534,17 +534,20 @@ class SERVER_DECL Object : public EventableObject
 		bool SetPosition2(const Position &pos, bool allowPorting = false);
 		bool SetPosition(const LocationVector & v, bool allowPorting = false);
 
-		const float & GetPositionX() const { return m_position.x; }
-		const float & GetPositionY() const { return m_position.y; }
-		const float & GetPositionZ() const { return m_position.z; }
-		const float & GetOrientation() const { return m_position.o; }
-		void SetOrientation(float o) { m_position.o = o; }
+        // these should be deleted
+        // BUT they are updated to the new movement system
+        const float & GetPositionX() const { return m_movementInfo.pos.m_positionX; }
+        const float & GetPositionY() const { return m_movementInfo.pos.m_positionY; }
+        const float & GetPositionZ() const { return m_movementInfo.pos.m_positionZ; }
+        const float & GetOrientation() const { return m_movementInfo.pos.m_orientation; }
+        void SetOrientation(float o) { m_movementInfo.pos.SetOrientation(o); }
 
 		const float & GetSpawnX() const { return m_spawnLocation.x; }
 		const float & GetSpawnY() const { return m_spawnLocation.y; }
 		const float & GetSpawnZ() const { return m_spawnLocation.z; }
 		const float & GetSpawnO() const { return m_spawnLocation.o; }
 
+        // NOT updated to the new movement system
 		const LocationVector & GetPosition() { return m_position; }
 		LocationVector & GetPositionNC() { return m_position; }
 		LocationVector* GetPositionV() { return &m_position; }
@@ -609,7 +612,7 @@ class SERVER_DECL Object : public EventableObject
 			return m_floatValues[ index ];
 		}
 
-		void  ModFloatValue(const uint32 index, const float value);
+		void ModFloatValue(const uint32 index, const float value);
 		void ModFloatValueByPCT(const uint32 index, int32 byPct);
 		void ModSignedInt32Value(uint32 index, int32 value);
 		void ModUnsigned32Value(uint32 index, int32 mod);
@@ -984,7 +987,7 @@ class SERVER_DECL Object : public EventableObject
 
 	protected:
 		Object();
-
+        
 		//void _Create (uint32 guidlow, uint32 guidhigh);
 		void _Create(uint32 mapid, float x, float y, float z, float ang);
 
@@ -1010,8 +1013,6 @@ class SERVER_DECL Object : public EventableObject
 		MapMgr* m_mapMgr;
 		//! Current map cell row and column
 		uint32 m_mapCell_x, m_mapCell_y;
-
-		
 
 		/* Main Function called by isInFront(); */
 		bool inArc(float Position1X, float Position1Y, float FOV, float Orientation, float Position2X, float Position2Y);

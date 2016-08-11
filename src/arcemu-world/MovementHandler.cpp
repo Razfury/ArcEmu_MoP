@@ -162,7 +162,11 @@ void WorldSession::HandleMoveTeleportAckOpcode(WorldPacket & recv_data)
 		}
 		if (_player->m_sentTeleportPosition.x != 999999.0f)
 		{
-			_player->m_position = _player->m_sentTeleportPosition;
+			//_player->m_position = _player->m_sentTeleportPosition;
+            _player->m_movementInfo.pos.m_positionX = _player->m_sentTeleportPosition.x;
+            _player->m_movementInfo.pos.m_positionY = _player->m_sentTeleportPosition.y;
+            _player->m_movementInfo.pos.m_positionZ = _player->m_sentTeleportPosition.z;
+            _player->m_movementInfo.pos.SetOrientation(_player->m_sentTeleportPosition.o);
 			_player->m_sentTeleportPosition.ChangeCoords(999999.0f, 999999.0f, 999999.0f);
 		}
 	}
@@ -171,7 +175,6 @@ void WorldSession::HandleMoveTeleportAckOpcode(WorldPacket & recv_data)
 
 void _HandleBreathing(MovementInfo & movement_info, Player* _player, WorldSession* pSession)
 {
-
 	// no water breathing is required
 	if (!sWorld.BreathingEnabled || _player->FlyCheat || _player->m_bUnlimitedBreath || !_player->isAlive() || _player->GodModeCheat)
 	{
@@ -340,7 +343,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 	//}
 
 	/* extract packet */
-	MovementInfo3 movementInfo;
+    MovementInfo3 movementInfo;
 	GetPlayer()->ReadMovementInfo(recv_data, &movementInfo);
 
 	// prevent tampered movement data
@@ -490,8 +493,8 @@ void WorldSession::HandleMovementOpcodes(WorldPacket & recv_data)
 	/* process position-change */
 	movementInfo.time = movementInfo.time + m_clientTimeDelay + MOVEMENT_PACKET_TIME_DELAY;
 
-	movementInfo.guid = mover->GetGUID();
-	mover->m_movementInfo = movementInfo;
+	movementInfo.guid = mover->GetGUID(); // don't we read it from the packet anyways?
+	mover->m_movementInfo = movementInfo; // TODO remove one of these in the future
 
 	/*----------------------*/
 	/* process position-change */

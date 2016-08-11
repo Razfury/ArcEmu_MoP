@@ -47,13 +47,11 @@ bool GetRecallLocation(const char* location, uint32 & map, LocationVector & v)
 			delete result;
 			return true;
 		}
-
 	}
 	while(result->NextRow());
 
 	delete result;
 	return false;
-
 }
 
 bool ChatHandler::HandleRecallGoCommand(const char* args, WorldSession* m_session)

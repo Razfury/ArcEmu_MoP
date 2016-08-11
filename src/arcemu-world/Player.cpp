@@ -704,7 +704,10 @@ bool Player::Create(WorldPacket & data)
 
 	m_mapId = info->mapId;
 	SetZoneId(info->zoneId);
-	m_position.ChangeCoords(info->positionX, info->positionY, info->positionZ);
+    m_movementInfo.pos.m_positionX = info->positionX;
+    m_movementInfo.pos.m_positionY = info->positionY;
+    m_movementInfo.pos.m_positionZ = info->positionZ;
+	//m_position.ChangeCoords(info->positionX, info->positionY, info->positionZ);
 	m_bind_pos_x = info->positionX;
 	m_bind_pos_y = info->positionY;
 	m_bind_pos_z = info->positionZ;
@@ -1620,7 +1623,7 @@ void Player::smsg_InitialSpells()
 	uint16 spellCount = (uint16)mSpells.size();
 	size_t itemCount = m_cooldownMap[0].size() + m_cooldownMap[1].size();
 	uint32 mstime = getMSTime();
-	size_t pos;
+	//size_t pos;
 
 	WorldPacket data(SMSG_INITIAL_SPELLS, 5 + (spellCount * 4) + (itemCount * 4));
 	data.WriteBit(0);
@@ -2920,10 +2923,15 @@ void Player::LoadFromDBProc(QueryResultVector & results)
 	SetUInt32Value(PLAYER_FIELD_BYTES, get_next_field.GetUInt32());
 	//m_uint32Values[0x22]=(m_uint32Values[0x22]>0x46)?0x46:m_uint32Values[0x22];
 
-	m_position.x = get_next_field.GetFloat();
-	m_position.y = get_next_field.GetFloat();
-	m_position.z = get_next_field.GetFloat();
-	m_position.o = get_next_field.GetFloat();
+	//m_position.x = get_next_field.GetFloat();
+	//m_position.y = get_next_field.GetFloat();
+	//m_position.z = get_next_field.GetFloat();
+	//m_position.o = get_next_field.GetFloat();
+
+    m_movementInfo.pos.m_positionX = get_next_field.GetFloat();
+    m_movementInfo.pos.m_positionY = get_next_field.GetFloat();
+    m_movementInfo.pos.m_positionZ = get_next_field.GetFloat();
+    m_movementInfo.pos.SetOrientation(get_next_field.GetFloat());
 
 	m_mapId = get_next_field.GetUInt32();
 	m_zoneId = get_next_field.GetUInt32();
