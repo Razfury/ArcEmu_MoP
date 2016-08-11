@@ -125,8 +125,8 @@ void Object::_Create(uint32 mapid, float x, float y, float z, float ang)
 {
 	m_mapId = mapid;
     m_movementInfo.pos.m_positionX = x;
-    m_movementInfo.pos.m_positionX = y;
-    m_movementInfo.pos.m_positionX = z;
+    m_movementInfo.pos.m_positionY = y;
+    m_movementInfo.pos.m_positionZ = z;
     m_movementInfo.pos.SetOrientation(ang);
 	//m_position.ChangeCoords(x, y, z, ang);
 	m_spawnLocation.ChangeCoords(x, y, z, ang);
@@ -994,8 +994,8 @@ bool Object::SetPosition(float newX, float newY, float newZ, float newOrientatio
 	updateMap = true;
 
 	//m_position.ChangeCoords(newX, newY, newZ, newOrientation);
-    m_movementInfo.pos.m_positionX = newZ;
-    m_movementInfo.pos.m_positionY = newZ;
+    m_movementInfo.pos.m_positionX = newX;
+    m_movementInfo.pos.m_positionY = newY;
     m_movementInfo.pos.m_positionZ = newZ;
     m_movementInfo.pos.SetOrientation(newOrientation);
 
