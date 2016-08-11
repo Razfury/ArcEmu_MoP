@@ -889,14 +889,20 @@ bool Object::SetPosition(const LocationVector & v, bool allowPorting /* = false 
 {
 	bool updateMap = false, result = true;
 
-	if (m_position.x != v.x || m_position.y != v.y)
+	//if (m_position.x != v.x || m_position.y != v.y)
+    if (m_movementInfo.pos.GetPositionX() != v.x || m_movementInfo.pos.GetPositionY() != v.y)
 		updateMap = true;
 
-	m_position = const_cast<LocationVector &>(v);
+	//m_position = const_cast<LocationVector &>(v);
+    m_movementInfo.pos.m_positionX = v.x;
+    m_movementInfo.pos.m_positionY = v.y;
+    m_movementInfo.pos.m_positionZ = v.z;
+    m_movementInfo.pos.SetOrientation(v.o);
 
 	if (!allowPorting && v.z < -500)
 	{
-		m_position.z = 500;
+		//m_position.z = 500;
+        m_movementInfo.pos.m_positionZ = 500;
 		LOG_ERROR("setPosition: fell through map; height ported");
 
 		result = false;
@@ -982,14 +988,19 @@ bool Object::SetPosition(float newX, float newY, float newZ, float newOrientatio
 	if (m_lastMapUpdatePosition.Distance2DSq(newX, newY) > 4.0f)		/* 2.0f*/
 	updateMap = true;
 
-	m_position.ChangeCoords(newX, newY, newZ, newOrientation);
+	//m_position.ChangeCoords(newX, newY, newZ, newOrientation);
+    m_movementInfo.pos.m_positionX = newX;
+    m_movementInfo.pos.m_positionY = newY;
+    m_movementInfo.pos.m_positionZ = newZ;
+    m_movementInfo.pos.SetOrientation(newOrientation);
 
 	if (!allowPorting && newZ < -500)
 	{
-	m_position.z = 500;
-	LOG_ERROR("setPosition: fell through map; height ported");
+	    //m_position.z = 500;
+        m_movementInfo.pos.m_positionZ = 500;
+	    LOG_ERROR("setPosition: fell through map; height ported");
 
-	result = false;
+	    result = false;
 	}
 
 	if (IsInWorld() && updateMap)

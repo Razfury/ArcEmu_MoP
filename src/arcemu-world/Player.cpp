@@ -7165,7 +7165,6 @@ void Player::RemovePlayerPet(uint32 pet_number)
 
 void Player::_Relocate(uint32 mapid, const LocationVector & v, bool sendpending, bool force_new_world, uint32 instance_id)
 {
-	//this func must only be called when switching between maps!
 	WorldPacket data(41);
 	if (sendpending && mapid != m_mapId && force_new_world)
 	{
@@ -7234,7 +7233,7 @@ void Player::_Relocate(uint32 mapid, const LocationVector & v, bool sendpending,
 	else
 	{
 		// SMSG_MOVE_TELEPORT
-		SendMoveTeleport();
+		SendMoveTeleport(v);
 	}
 	SetPlayerStatus(TRANSFER_PENDING);
 	m_sentTeleportPosition = v;
@@ -8511,13 +8510,11 @@ float Player::CalcRating(uint32 index)
 
 bool Player::SafeTeleport(uint32 MapID, uint32 InstanceID, float X, float Y, float Z, float O)
 {
-	printf("Safe teleport 1\n");
 	return SafeTeleport(MapID, InstanceID, LocationVector(X, Y, Z, O));
 }
 
 bool Player::SafeTeleport(uint32 MapID, uint32 InstanceID, const LocationVector & vec)
 {
-	printf("Same teleport 2\n");
 	// Checking if we have a unit whose waypoints are shown
 	// If there is such, then we "unlink" it
 	// Failing to do so leads to a crash if we try to show some other Unit's wps, after the map was shut down
@@ -12596,7 +12593,7 @@ void Player::AddGarbageItem(Item* it)
 	m_GarbageItems.push_back(it);
 }
 
-void Player::SendMoveTeleport()
+void Player::SendMoveTeleport(const LocationVector & v)
 {
 	///////////////////////////////////////
 	//Update player on the client with TELEPORT_ACK
@@ -12618,12 +12615,12 @@ void Player::SendMoveTeleport()
     data.WriteBit(0);
     data.WriteByteSeq(guid[4]);
     data.WriteByteSeq(guid[7]);
-    data << GetPositionZ();
-    data << GetPositionY();
+    data << v.z; // GetPositionZ();
+    data << v.y; // GetPositionY();
     data.WriteByteSeq(guid[2]);
     data.WriteByteSeq(guid[3]);
     data.WriteByteSeq(guid[5]);
-    data << GetPositionX();
+    data << v.x; // GetPositionX();
     data << uint32(m_movementCounter++);
     data.WriteByteSeq(guid[0]);
     data.WriteByteSeq(guid[6]);
@@ -14182,6 +14179,11 @@ void Player::ReadMovementInfo(WorldPacket& data, MovementInfo3* mi, Movement::Ex
 
 	mi->guid = guid;
 	mi->transport.guid = tguid;
+
+    m_position.x = mi->pos.m_positionX;
+    m_position.y = mi->pos.m_positionY;
+    m_position.z = mi->pos.m_positionZ;
+    m_position.o = Position::NormalizeOrientation(mi->pos.GetOrientation());
 
 	//! Anti-cheat checks. Please keep them in seperate if () blocks to maintain a clear overview.
 	//! Might be subject to latency, so just remove improper flags.

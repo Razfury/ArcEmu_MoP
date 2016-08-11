@@ -73,6 +73,7 @@ bool ChatHandler::HandleRecallGoCommand(const char* args, WorldSession* m_sessio
 	{
 		if(m_session->GetPlayer() != NULL)
 		{
+            v.o = Position::NormalizeOrientation(v.o); // we need this
 			m_session->GetPlayer()->SafeTeleport(map, 0, v);
 			return true;
 		}
