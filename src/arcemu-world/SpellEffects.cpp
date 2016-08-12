@@ -3876,7 +3876,7 @@ void Spell::SpellEffectUseGlyph(uint32 i)
 		p_caster->SetGlyph(m_glyphslot, g_new);
 		p_caster->CastSpell(p_caster, gp_new->SpellID, true);
 		p_caster->m_specs[p_caster->m_talentActiveSpec].glyphs[m_glyphslot] = static_cast< uint16 >(g_new);
-		p_caster->smsg_TalentsInfo(false);
+		p_caster->SendTalentsInfo(false);
 	}
 
 }
@@ -5310,7 +5310,7 @@ void Spell::SpellEffectLearnSpec(uint32 i)
 		return;
 
 	p_caster->m_talentSpecsCount = 2;
-	p_caster->smsg_TalentsInfo(false);
+	p_caster->SendTalentsInfo(false);
 }
 
 void Spell::SpellEffectActivateSpec(uint32 i)

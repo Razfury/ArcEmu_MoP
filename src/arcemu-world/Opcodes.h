@@ -375,7 +375,7 @@ enum Opcodes
 	SMSG_ATTACKSWING_NOTSTANDING = 0x147,	// not used in client
 	SMSG_ATTACKSWING_DEADTARGET = 0x148,	/// TODO: implement
 	SMSG_ATTACKSWING_CANT_ATTACK = 0x149,	/// TODO: implement
-	SMSG_ATTACKERSTATEUPDATE = 0x06AA, // 18414
+    SMSG_ATTACKERSTATEUPDATE = 0x06AA, // 18414
 	SMSG_VICTIMSTATEUPDATE_OBSOLETE = 0x14B,	// not used in client
 	SMSG_DAMAGE_DONE_OBSOLETE = 0x14C,	// not used in client
 	SMSG_DAMAGE_TAKEN_OBSOLETE = 0x14D,	// not used in client
@@ -509,11 +509,11 @@ enum Opcodes
 	SMSG_PLAYED_TIME = 0x6037,	// 15595
     CMSG_QUERY_TIME = 0x0640,	// 18414
     SMSG_QUERY_TIME_RESPONSE = 0x100F,	// 18414
-	SMSG_LOG_XPGAIN = 0x1D0,	// implemented
+    SMSG_LOG_XPGAIN = 0x1E9A, // 18414
 	SMSG_AURACASTLOG_OBSOLETE = 0x1D1,	// OBSOLETE
 	CMSG_RECLAIM_CORPSE = 0x1D2,	// implemented
 	CMSG_WRAP_ITEM = 0x1D3,	// implemented
-	SMSG_LEVELUP_INFO = 0x1D4,	// implemented
+    SMSG_LEVELUP_INFO = 0x1961,	// 18414
 	MSG_MINIMAP_PING = 0x1D5,	// implemented
 	SMSG_RESISTLOG = 0x1D6,	// not used in client
 	SMSG_ENCHANTMENTLOG = 0x1D7,	// implemented
@@ -874,7 +874,7 @@ enum Opcodes
 	SMSG_DEFENSE_MESSAGE = 0x33A,	// implemented
 	SMSG_INSTANCE_DIFFICULTY = 0x33B,	// implemented
 	MSG_GM_RESETINSTANCELIMIT = 0x33C,	// GM client only
-	SMSG_MOTD = 0x183B,	// 5.4.8 18414
+	SMSG_MOTD = 0x183B,	// 18414
 	SMSG_MOVE_SET_FLIGHT_OBSOLETE = 0x33E,	// not used in client
 	SMSG_MOVE_UNSET_FLIGHT_OBSOLETE = 0x33F,	// not used in client
 	CMSG_MOVE_FLIGHT_ACK_OBSOLETE = 0x340,	// not used in client
@@ -1261,7 +1261,7 @@ enum Opcodes
 	CMSG_EQUIPMENT_SET_SAVE = 0x4BD,	/// TODO: investigate, CMSG, lua: SaveEquipmentSet
 	CMSG_UNKNOWN_1214 = 0x4BE,	/// TODO: investigate, CMSG, missle?
 	SMSG_UNKNOWN_1215 = 0x4BF,	// TODO: investigate,/ SMSG, uint64, uint8, 3 x float
-	SMSG_TALENTS_INFO = 0x0A9B,	// 5.4.8 18414
+    SMSG_TALENTS_INFO = 0x0A9B,	// 18414
 	CMSG_LEARN_TALENTS_MULTIPLE = 0x4C1,	/// TODO: investigate, CMSG, lua: LearnPreviewTalents (for player?)
 	CMSG_LEARN_PREVIEW_TALENTS_PET = 0x4C2,	/// TODO: investigate, CMSG, lua: LearnPreviewTalents (for pet?)
 	UMSG_UNKNOWN_1219 = 0x4C3,	/// TODO: investigate

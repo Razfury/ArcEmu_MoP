@@ -1412,8 +1412,7 @@ Unit* MapMgr::GetUnit(const uint64 & guid)
 
 	//case HIGHGUID_TYPE_VEHICLE:
 		//return GetVehicle(GUID_LOPART_TEST(guid));
-		//break;
-	
+		//break;	
 	}
 
 	return NULL;

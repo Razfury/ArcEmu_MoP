@@ -4321,8 +4321,8 @@ void Unit::smsg_AttackStart(Unit* pVictim)
 {
 	WorldPacket data(SMSG_ATTACKSTART, 8 + 8);
 
-	ObjectGuid attackerGuid = pVictim->GetGUID();
-	ObjectGuid victimGuid = GetGUID();
+	ObjectGuid attackerGuid = GetGUID();
+	ObjectGuid victimGuid = pVictim->GetGUID();
 
 	data.WriteBit(victimGuid[7]);
 	data.WriteBit(attackerGuid[7]);

@@ -19,6 +19,7 @@
  */
 
 #include "StdAfx.h"
+
 void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
 {
 	uint32 triggerId;

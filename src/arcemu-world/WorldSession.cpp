@@ -1378,6 +1378,7 @@ void WorldSession::InitPacketHandlerTable()
 	WorldPacketHandlers[CMSG_GET_MIRRORIMAGE_DATA].handler =
 	    &WorldSession::HandleMirrorImageOpcode;
 	
+    // Vehicles
 	WorldPacketHandlers[ CMSG_DISMISS_CONTROLLED_VEHICLE ].handler = &WorldSession::HandleDismissVehicle;
 	WorldPacketHandlers[ CMSG_REQUEST_VEHICLE_EXIT ].handler = &WorldSession::HandleLeaveVehicle;
 	WorldPacketHandlers[ CMSG_REQUEST_VEHICLE_PREV_SEAT ].handler = &WorldSession::HandleChangeVehicleSeat;
@@ -1526,7 +1527,6 @@ const char* WorldSession::LocalizedBroadCast(uint32 id)
 	else
 		return wb->text;
 }
-
 
 void WorldSession::SendRefundInfo(uint64 GUID)
 {
@@ -1725,7 +1725,6 @@ void WorldSession::HandleLearnMultipleTalentsOpcode(WorldPacket & recvPacket)
 
 void WorldSession::SendMOTD()
 {
-
 	WorldPacket data(SMSG_MOTD, 100);
 
 	data.WriteBits(0, 4);
@@ -1748,7 +1747,7 @@ void WorldSession::SendMOTD()
 		pos = nextpos + 1;
 	}
 
-	if (pos<str_motd.length())
+	if (pos < str_motd.length())
 	{
 		std::string string = str_motd.substr(pos);
 		data.WriteBits(strlen(string.c_str()), 7);
@@ -1841,7 +1840,6 @@ void WorldSession::HandleEquipmentSetUse(WorldPacket & data)
 			{
 				result = 1;
 			}
-
 		}
 		else
 		{
@@ -1850,7 +1848,6 @@ void WorldSession::HandleEquipmentSetUse(WorldPacket & data)
 			        SwapItems(INVALID_BACKPACK_SLOT, dstslot, SrcBagID, SrcSlotID))
 				result = 1;
 		}
-
 	}
 
 	_player->SendEquipmentSetUseResult(result);
@@ -1885,7 +1882,6 @@ void WorldSession::HandleEquipmentSetSave(WorldPacket & data)
 		data >> GUID;
 		set->ItemGUID[i] = Arcemu::Util::GUID_LOPART(GUID.GetOldGuid());
 	}
-
 
 	bool success;
 	success =
@@ -1928,7 +1924,6 @@ void WorldSession::HandleEquipmentSetDelete(WorldPacket & data)
 	{
 		LOG_DEBUG("Equipmentset with GUID %u couldn't be deleted.", GUID);
 	}
-
 }
 
 void WorldSession::HandleQuestPOIQueryOpcode(WorldPacket & recv_data)
@@ -1950,7 +1945,7 @@ void WorldSession::HandleQuestPOIQueryOpcode(WorldPacket & recv_data)
 
 	data << uint32(count);
 
-	for(uint32 i = 0; i < count; i++)
+	for (uint32 i = 0; i < count; i++)
 	{
 		uint32 questId;
 

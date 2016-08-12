@@ -982,7 +982,7 @@ bool ChatHandler::HandleModifyTPsCommand(const char* args, WorldSession* m_sessi
 
 	Pl->m_specs[SPEC_PRIMARY].SetTP( TP1 );
 	Pl->m_specs[SPEC_SECONDARY].SetTP( TP2 );
-	Pl->smsg_TalentsInfo(false);
+	Pl->SendTalentsInfo(false);
 	return true;
 }
 

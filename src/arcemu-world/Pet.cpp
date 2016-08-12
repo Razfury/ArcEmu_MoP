@@ -2166,14 +2166,14 @@ void Pet::Die(Unit* pAttacker, uint32 damage, uint32 spellid)
 		}
 	}
 
-	smsg_AttackStop(this);
+	SendAttackStop(this);
 	SetHealth(0);
 
 	// Wipe our attacker set on death
 	CombatStatus.Vanished();
 
 	CALL_SCRIPT_EVENT(pAttacker, OnTargetDied)(this);
-	pAttacker->smsg_AttackStop(this);
+	pAttacker->SendAttackStop(this);
 
 	/* Tell Unit that it's target has Died */
 	pAttacker->addStateFlag(UF_TARGET_DIED);

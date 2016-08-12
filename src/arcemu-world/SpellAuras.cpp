@@ -2549,7 +2549,7 @@ void Aura::SpellAuraModStun(bool apply)
 					{
 						//TO< Player* >( c )->CombatModeDelay = 10;
 						TO< Player* >( c )->EventAttackStop();
-						c->smsg_AttackStop(m_target);
+						c->SendAttackStop(m_target);
 						c->RemoveAurasByInterruptFlag(AURA_INTERRUPT_ON_START_ATTACK);  // remove stealth
 					}
 				}

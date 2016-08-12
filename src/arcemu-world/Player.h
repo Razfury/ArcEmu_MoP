@@ -833,7 +833,8 @@ struct PlayerCooldown
 	uint32 SpellId;
 };
 
-class PlayerSpec{
+class PlayerSpec
+{
 public:
 	PlayerSpec(){
 		tp = 0;
@@ -1233,7 +1234,7 @@ public:
 	bool HasSpellwithNameHash(uint32 hash);
 	bool HasDeletedSpell(uint32 spell);
 	void smsg_InitialSpells();
-	void smsg_TalentsInfo(bool SendPetTalents);
+	void SendTalentsInfo(bool SendPetTalents);
 	void ActivateSpec(uint8 spec);
 	void addSpell(uint32 spell_idy);
 	void removeSpellByHashName(uint32 hash);
@@ -2084,20 +2085,20 @@ public:
 		m_specs[0].SetTP(amt);
 		m_specs[1].SetTP(amt);
 		SetUInt32Value(PLAYER_CHARACTER_POINTS, amt);
-		smsg_TalentsInfo(false);
+		SendTalentsInfo(false);
 	}
 
 	void AddTalentPointsToAllSpec(uint32 amt){
 		m_specs[0].SetTP(m_specs[0].GetTP() + amt);
 		m_specs[1].SetTP(m_specs[1].GetTP() + amt);
 		SetUInt32Value(PLAYER_CHARACTER_POINTS, GetUInt32Value(PLAYER_CHARACTER_POINTS) + amt);
-		smsg_TalentsInfo(false);
+		SendTalentsInfo(false);
 	}
 
 	void SetCurrentTalentPoints(uint32 points){
 		m_specs[m_talentActiveSpec].SetTP(points);
 		SetUInt32Value(PLAYER_CHARACTER_POINTS, points);
-		smsg_TalentsInfo(false);
+		SendTalentsInfo(false);
 	}
 
 	uint32 GetCurrentTalentPoints(){

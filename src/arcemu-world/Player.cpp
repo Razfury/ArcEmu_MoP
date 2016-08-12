@@ -292,7 +292,6 @@ Player::Player(uint32 guid)
 	bUpdateBuffer.reserve(30000);//ought to be > than enough ;)
 	mOutOfRangeIds.reserve(1000);
 
-
 	bProcessPending = false;
 	for (i = 0; i < 25; ++i)
 		m_questlog[i] = NULL;
@@ -1390,7 +1389,6 @@ void Player::_EventExploration()
 		ZoneUpdate(at->ZoneId);
 	}
 
-
 	if (at->ZoneId != 0 && m_zoneId != at->ZoneId)
 		ZoneUpdate(at->ZoneId);
 
@@ -1605,7 +1603,7 @@ void Player::GiveXP(uint32 xp, const uint64 & guid, bool allowbonus)
 #endif
 
 		//VLack: 3.1.3, as a final step, send the player's talents, this will set the talent points right too...
-		smsg_TalentsInfo(false);
+		SendTalentsInfo(false);
 	}
 
 	// Set the update bit
@@ -1705,41 +1703,57 @@ void Player::smsg_InitialSpells()
 	GetSession()->SendPacket(&data);
 }
 
-void Player::smsg_TalentsInfo(bool SendPetTalents)
+void Player::SendTalentsInfo(bool SendPetTalents)
 {
-	WorldPacket data(SMSG_TALENTS_INFO, 1000);
-	data << uint8(SendPetTalents ? 1 : 0);
-	if (SendPetTalents)
-	{
-		if (GetSummon())
-			GetSummon()->SendTalentsToOwner();
-		return;
-	}
-	else
-	{
-		//data << uint32(GetTalentPoints(SPEC_PRIMARY)); // Wrong, calculate the amount of talent points per spec
-		data << uint32(m_specs[m_talentActiveSpec].GetTP());
-		data << uint8(m_talentSpecsCount);
-		data << uint8(m_talentActiveSpec);
-		for (uint8 s = 0; s < m_talentSpecsCount; s++)
-		{
-			PlayerSpec spec = m_specs[s];
-			data << uint8(spec.talents.size());
-			std::map<uint32, uint8>::iterator itr;
-			for (itr = spec.talents.begin(); itr != spec.talents.end(); itr++)
-			{
-				data << uint32(itr->first);     // TalentId
-				data << uint8(itr->second);     // TalentRank
-			}
+    WorldPacket data(SMSG_TALENTS_INFO, 1000);
+    data << uint8(SendPetTalents ? 1 : 0);
+    if (SendPetTalents)
+    {
+        if (GetSummon())
+            GetSummon()->SendTalentsToOwner(); //! TODO
+        return;
+    }
+    else
+    {
+        size_t* wpos = new size_t[m_talentSpecsCount];
 
-			// Send Glyph info
-			data << uint8(GLYPHS_COUNT);
-			for (uint8 i = 0; i < GLYPHS_COUNT; i++)
-			{
-				data << uint16(spec.glyphs[i]);
-			}
-		}
-	}
+        data << uint8(m_talentActiveSpec);
+        data.WriteBits(m_talentSpecsCount, 19);
+
+        for (int i = 0; i < m_talentSpecsCount; i++)
+        {
+            wpos[i] = data.bitwpos();
+            data.WriteBits(0, 23);
+        }
+
+        data.FlushBits();
+
+        for (uint8 s = 0; s < m_talentSpecsCount; s++)
+        {
+            PlayerSpec spec = m_specs[s];
+
+            // Send Glyph info
+            data << uint8(GLYPHS_COUNT);
+            for (uint8 i = 0; i < GLYPHS_COUNT; i++)
+                data << uint16(spec.glyphs[i]);
+
+            //data << uint8(spec.talents.size());
+            uint32 talentCount = 0;
+            std::map<uint32, uint8>::iterator itr;
+            for (itr = spec.talents.begin(); itr != spec.talents.end(); itr++)
+            {
+                data << uint32(itr->first);     // TalentId
+                //data << uint8(itr->second);     // TalentRank
+                ++talentCount;
+            }
+
+            data.PutBits(wpos[s], talentCount, 23);
+            data << uint32(0); //! TODO talent tree / talent specialization
+        }
+
+        delete [] wpos;
+    }
+
 	GetSession()->SendPacket(&data);
 }
 
@@ -1792,7 +1806,7 @@ void Player::ActivateSpec(uint8 spec)
 		addSpell(talentInfo->RankID[itr->second]);
 	}
 	SetUInt32Value(PLAYER_CHARACTER_POINTS, m_specs[m_talentActiveSpec].GetTP());
-	smsg_TalentsInfo(false);
+	SendTalentsInfo(false);
 }
 
 void PlayerSpec::AddTalent(uint32 talentid, uint8 rankid){
@@ -6579,7 +6593,7 @@ void Player::Reset_Talents()
 	}
 
 	m_specs[m_talentActiveSpec].talents.clear();
-	smsg_TalentsInfo(false); //VLack: should we send this as Aspire? Yes...
+	SendTalentsInfo(false); //VLack: should we send this as Aspire? Yes...
 }
 
 void Player::Reset_AllTalents(){
@@ -7284,7 +7298,6 @@ void Player::AddItemsToWorld()
 
 // Player::RemoveItemsFromWorld
 // Removes all items from world, reverses any modifiers.
-
 void Player::RemoveItemsFromWorld()
 {
 	Item* pItem;
@@ -7561,7 +7574,6 @@ void Player::PushCreationData(ByteBuffer *data, uint32 updatecount)
 	// imagine the bytebuffer getting appended from 2 threads at once! :D
 	_bufferS.Acquire();
 
-
 	// unfortunately there is no guarantee that all data will be compressed at a ratio
 	// that will fit into 2^16 bytes ( stupid client limitation on server packets )
 	// so if we get more than 63KB of update data, force an update and then append it
@@ -7580,7 +7592,6 @@ void Player::PushCreationData(ByteBuffer *data, uint32 updatecount)
 	}
 
 	_bufferS.Release();
-
 }
 
 void Player::ProcessPendingUpdates()
@@ -7594,17 +7605,17 @@ void Player::ProcessPendingUpdates()
 
 	size_t bBuffer_size = (bCreationBuffer.size() > bUpdateBuffer.size() ? bCreationBuffer.size() : bUpdateBuffer.size()) + 10 + (mOutOfRangeIds.size() * 9);
 	uint8* update_buffer = new uint8[bBuffer_size];
-	size_t c = 0;
+	size_t c = 0; // size in bytes
 
 	//build out of range updates if creation updates are queued
 	if (bCreationBuffer.size() || mOutOfRangeIdCount)
 	{
 		//get map id
 		*(uint16*)&update_buffer[c] = (uint16)GetMapId();
-		c += 2;
+		c += 2; // 16 bits = 2 bytes
 
 		*(uint32*)&update_buffer[c] = ((mOutOfRangeIds.size() > 0) ? (mCreationCount + 1) : mCreationCount);
-		c += 4;
+		c += 4; // 32 bits = 4 bytes
 
 		// append any out of range updates
 		if (mOutOfRangeIdCount)
@@ -7630,7 +7641,6 @@ void Player::ProcessPendingUpdates()
 		mCreationCount = 0;
 
 		m_session->OutPacket(SMSG_UPDATE_OBJECT, (uint16)c, update_buffer);
-
 	}
 
 	if (bUpdateBuffer.size())
@@ -7788,8 +7798,6 @@ void Player::ClearSplinePackets()
 	_splineMap.clear();
 }
 
-
-
 bool Player::ExitInstance()
 {
 	if (!m_bgEntryPointX)
@@ -7844,7 +7852,6 @@ void Player::Gossip_Complete()
 	GetSession()->OutPacket(SMSG_GOSSIP_COMPLETE, 0, NULL);
 	CleanupGossipMenu();
 }
-
 
 void Player::CloseGossip()
 {
@@ -7907,7 +7914,7 @@ void Player::ZoneUpdate(uint32 ZoneId)
 		if (pUnit && DuelingWith != pUnit)
 		{
 			EventAttackStop();
-			smsg_AttackStop(pUnit);
+			SendAttackStop(pUnit);
 		}
 
 		if (m_currentSpell)
@@ -8367,8 +8374,8 @@ void Player::EndDuel(uint8 WinCondition)
 	m_session->OutPacket(SMSG_CANCEL_COMBAT);
 	DuelingWith->m_session->OutPacket(SMSG_CANCEL_COMBAT);
 
-	smsg_AttackStop(DuelingWith);
-	DuelingWith->smsg_AttackStop(this);
+	SendAttackStop(DuelingWith);
+	DuelingWith->SendAttackStop(this);
 
 	DuelingWith->m_duelCountdownTimer = 0;
 	m_duelCountdownTimer = 0;
@@ -8448,7 +8455,7 @@ void Player::ApplyLevelInfo(LevelInfo* Info, uint32 Level)
 	GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_LEVEL);
 #endif
 	//VLack: 3.1.3, as a final step, send the player's talents, this will set the talent points right too...
-	smsg_TalentsInfo(false);
+	SendTalentsInfo(false);
 
 	LOG_DETAIL("Player %s set parameters to level %u", GetName(), Level);
 }
@@ -12501,7 +12508,7 @@ void Player::LearnTalent(uint32 talentid, uint32 rank, bool isPreviewed)
 
 			SetCurrentTalentPoints(CurTalentPoints - static_cast< uint32 >(points));
 			m_specs[m_talentActiveSpec].AddTalent(talentid, uint8(rank));
-			smsg_TalentsInfo(false);
+			SendTalentsInfo(false);
 		}
 	}
 }
@@ -13220,7 +13227,7 @@ void Player::Die(Unit* pAttacker, uint32 damage, uint32 spellid)
 		}
 	}
 
-	smsg_AttackStop(pAttacker);
+	SendAttackStop(pAttacker);
 	EventAttackStop();
 
 	CALL_INSTANCE_SCRIPT_EVENT(m_mapMgr, OnPlayerDeath)(this, pAttacker);
@@ -13254,7 +13261,7 @@ void Player::Die(Unit* pAttacker, uint32 damage, uint32 spellid)
 	CombatStatus.Vanished();
 
 	CALL_SCRIPT_EVENT(pAttacker, OnTargetDied)(this);
-	pAttacker->smsg_AttackStop(this);
+	pAttacker->SendAttackStop(this);
 
 	/* Tell Unit that it's target has Died */
 	pAttacker->addStateFlag(UF_TARGET_DIED);

@@ -2184,18 +2184,23 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
 	//! Probably used for debugging purposes, as it is not known to appear on retail servers
 	if (HitStatus & HITSTATUS_UNK)
 	{
-		data << uint32(0);
-		data << float(0);
-		data << float(0);
-		data << float(0);
-		data << float(0);
-		data << float(0);
-		data << float(0);
-		data << float(0);
-		data << float(0);
-		data << float(0);
-		data << float(0);
-		data << uint32(0);
+        data << uint32(0);
+        data << float(0);
+        data << float(0);
+        data << float(0);
+        data << float(0);
+        data << float(0);
+        data << float(0);
+        data << float(0);
+        data << float(0);
+
+        for (uint8 i = 0; i < 2; ++i)
+        {
+            data << float(0);
+            data << float(0);
+        }
+
+        data << uint32(0);
 	}
 
 	if (HitStatus & (HITINFO_BLOCK | HITINFO_UNK12))

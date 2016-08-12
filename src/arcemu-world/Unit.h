@@ -1121,9 +1121,9 @@ class SERVER_DECL Unit : public Object
 		void DelayPowerRegeneration(uint32 time) { m_P_regenTimer = static_cast<uint16>(time); if(!m_interruptedRegenTime) m_interruptedRegenTime = 2000; }
 		void DeMorph();
 		uint32 ManaShieldAbsorb(uint32 dmg);
-		void smsg_AttackStart(Unit* pVictim);
-		void smsg_AttackStop(Unit* pVictim);
-		void smsg_AttackStop(uint64 victimGuid);
+		void SendAttackStart(Unit* pVictim);
+		void SendAttackStop(Unit* pVictim);
+		void SendAttackStop(uint64 victimGuid);
 
 		bool IsDazed();
 		//this function is used for creatures to get chance to daze for another unit

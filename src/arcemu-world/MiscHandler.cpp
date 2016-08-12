@@ -2624,7 +2624,7 @@ void WorldSession::HandleRemoveGlyph(WorldPacket & recv_data)
 	_player->SetGlyph(glyphNum, 0);
 	_player->RemoveAllAuras(glyph->SpellID, 0);
 	_player->m_specs[_player->m_talentActiveSpec].glyphs[glyphNum] = 0;
-	_player->smsg_TalentsInfo(false);
+	_player->SendTalentsInfo(false);
 }
 
 void WorldSession::HandleGameobjReportUseOpCode(WorldPacket & recv_data)    // CMSG_GAMEOBJ_REPORT_USE
