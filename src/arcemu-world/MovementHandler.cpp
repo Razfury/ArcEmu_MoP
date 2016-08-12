@@ -661,8 +661,6 @@ void WorldSession::HandleWorldportOpcode(WorldPacket & recv_data)
 	float x, y, z, o;
 	recv_data >> unk >> mapid >> x >> y >> z >> o;
 
-	//printf("\nTEST: %u %f %f %f %f", mapid, x, y, z, o);
-
 	if (!HasGMPermissions())
 	{
 		SendNotification("You do not have permission to use this function.");
@@ -677,7 +675,7 @@ void WorldSession::HandleTeleportToUnitOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-		uint8 unk;
+	uint8 unk;
 	Unit* target;
 	recv_data >> unk;
 

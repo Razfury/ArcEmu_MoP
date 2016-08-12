@@ -4202,7 +4202,7 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 	}
 }
 
-void Unit::smsg_AttackStop(Unit* pVictim)
+void Unit::SendAttackStop(Unit* pVictim)
 {
 	if(!pVictim)
 		return;
@@ -4210,7 +4210,7 @@ void Unit::smsg_AttackStop(Unit* pVictim)
 	WorldPacket data(SMSG_ATTACKSTOP, 8 + 8);
 
 	ObjectGuid attackerGuid = GetGUID();
-	ObjectGuid victimGuid = pVictim ? pVictim->GetGUID() : 0;
+	ObjectGuid victimGuid = pVictim->GetGUID();
 
 	data.WriteBit(victimGuid[5]);
 	data.WriteBit(victimGuid[6]);
@@ -4273,11 +4273,12 @@ void Unit::smsg_AttackStop(Unit* pVictim)
 	}
 }
 
-void Unit::smsg_AttackStop(uint64 victimGuid)
+void Unit::SendAttackStop(uint64 victimGuid)
 {
-    WorldPacket data(SMSG_ATTACKSTOP, 8 + 8);
     ObjectGuid attackerGuid = GetGUID();
     ObjectGuid _victimGuid = victimGuid;
+
+    WorldPacket data(SMSG_ATTACKSTOP, 8 + 8);
 
     data.WriteBit(_victimGuid[5]);
     data.WriteBit(_victimGuid[6]);
@@ -4317,12 +4318,16 @@ void Unit::smsg_AttackStop(uint64 victimGuid)
     data.WriteByteSeq(_victimGuid[7]);
 }
 
-void Unit::smsg_AttackStart(Unit* pVictim)
+void Unit::SendAttackStart(Unit* pVictim)
 {
-	WorldPacket data(SMSG_ATTACKSTART, 8 + 8);
+    if (!pVictim)
+        return;
 
-	ObjectGuid attackerGuid = GetGUID();
-	ObjectGuid victimGuid = pVictim->GetGUID();
+    // yes, the two GUIDs are intentionally swapped!
+	ObjectGuid attackerGuid = pVictim->GetGUID();
+	ObjectGuid victimGuid = GetGUID();
+
+    WorldPacket data(SMSG_ATTACKSTART, 8 + 8);
 
 	data.WriteBit(victimGuid[7]);
 	data.WriteBit(attackerGuid[7]);

@@ -20,17 +20,6 @@
 
 #include "StdAfx.h"
 
-void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
-{
-	uint32 triggerId;
-	uint8 unk1, unk2;
-	recv_data >> triggerId;
-	unk1 = recv_data.ReadBit();
-	unk2 = recv_data.ReadBit();
-
-	Player* player = GetPlayer();
-}
-
 enum AreaTriggerFailures
 {
     AREA_TRIGGER_FAILURE_OK				= 0,
@@ -64,6 +53,17 @@ uint32 AreaTriggerFailureMessages[] =
 	81,
 	31, // 33="You must be level 70 to enter Heroic mode." 31="You must be at least level %u to pass through here."
 };
+
+void WorldSession::HandleAreaTriggerOpcode(WorldPacket & recv_data)
+{
+    uint32 triggerId;
+    uint8 unk1, unk2;
+    recv_data >> triggerId;
+    unk1 = recv_data.ReadBit();
+    unk2 = recv_data.ReadBit();
+
+    _HandleAreaTriggerOpcode(triggerId);
+}
 
 uint32 CheckTriggerPrerequisites(AreaTrigger* pAreaTrigger, WorldSession* pSession, Player* pPlayer, MapInfo* pMapInfo)
 {
@@ -144,14 +144,15 @@ void WorldSession::_HandleAreaTriggerOpcode(uint32 id)
 		sChatHandler.BlueSystemMessage(this, "[%sSystem%s] |rEntered areatrigger: %s%u. (%s)", MSG_COLOR_WHITE, MSG_COLOR_LIGHTBLUE, MSG_COLOR_SUBWHITE, id, pAreaTrigger ? pAreaTrigger->Name : "Unknown name");
 #endif
 
-	// if in BG handle is triggers
+	// if in BG handle its triggers
 	if(_player->m_bg)
 	{
 		_player->m_bg->HookOnAreaTrigger(_player, id);
 		return;
 	}
 
-	if(pAreaTrigger == NULL) return;
+	if(pAreaTrigger == NULL)
+        return;
 
 	switch(pAreaTrigger->Type)
 	{

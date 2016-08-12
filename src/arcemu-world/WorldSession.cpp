@@ -746,8 +746,7 @@ void WorldSession::InitPacketHandlerTable()
 	// &WorldSession::HandleSetFriendNote;
 
 	// Areatrigger
-	WorldPacketHandlers[CMSG_AREATRIGGER].handler =
-	    &WorldSession::HandleAreaTriggerOpcode;
+	WorldPacketHandlers[CMSG_AREATRIGGER].handler = &WorldSession::HandleAreaTriggerOpcode;
 
 	// Account Data
 	WorldPacketHandlers[CMSG_UPDATE_ACCOUNT_DATA].handler = &WorldSession::HandleUpdateAccountData;
@@ -772,7 +771,6 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandlePlayedTimeOpcode;
 	WorldPacketHandlers[CMSG_SETSHEATHED].handler =
 	    &WorldSession::HandleSetSheathedOpcode;
-	//WorldPacketHandlers[CMSG_MESSAGECHAT].handler = &WorldSession::HandleMessagechatOpcode;
 	WorldPacketHandlers[CMSG_EMOTE].handler = &WorldSession::HandleEmoteOpcode;
 	WorldPacketHandlers[CMSG_TEXT_EMOTE].handler =
 	    &WorldSession::HandleTextEmoteOpcode;

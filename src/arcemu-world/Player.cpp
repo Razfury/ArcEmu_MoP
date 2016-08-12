@@ -7040,7 +7040,7 @@ void Player::RegenerateMana(bool is_interrupted)
 	float amt = (is_interrupted) ? GetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER) : GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER);
 	amt *= wrate * 2.0f;
 
-	if ((amt <= 1.0) && (amt > 0)) //this fixes regen like 0.98
+	if ((amt <= 1.0) && (amt > 0)) // This fixes regen like 0.98
 	{
 		if (is_interrupted)
 			return;
@@ -7061,38 +7061,34 @@ void Player::RegenerateMana(bool is_interrupted)
 	}
 }
 
+//! TODO check this if it's blizzlike (5.4.8 18414)
 void Player::RegenerateHealth(bool inCombat)
 {
-	uint32 cur = GetHealth();
-	uint32 mh = GetMaxHealth();
+	uint32 currHp = GetHealth();
+	uint32 maxHp = GetMaxHealth();
 
-	if (cur == 0) return;   // cebernic: bugfix dying but regenerated?
+    if (currHp == 0)
+        return; // cebernic: bugfix dying but regenerated?
 
-	if (cur >= mh)
+    if (currHp >= maxHp)
 		return;
 
-	//gtFloat* HPRegenBase = dbcHPRegenBase.LookupEntry(getLevel() - 1 + (getClass() - 1) * 100);
-	//gtFloat* HPRegen =  dbcHPRegen.LookupEntry(getLevel() - 1 + (getClass() - 1) * 100);
+	float amt = 0;
 
-	uint32 basespirit = m_uint32Values[UNIT_FIELD_STAT0 + 4];
-	uint32 extraspirit = 0;
-
-	if (basespirit > 50)
-	{
-		extraspirit = basespirit - 50;
-		basespirit = 50;
-	}
-
-	// there is no HPRegen!?
-	//float amt = basespirit * HPRegen->val + extraspirit * HPRegenBase->val;
-
-	float amt;
+    if (!inCombat)
+    {
+        if (getLevel() < 15)
+            amt = (0.20f * ((float)GetMaxHealth()) / getLevel());
+        else
+            amt = 0.015f * ((float)GetMaxHealth());
+    }
 
 	if (PctRegenModifier)
 		amt += (amt * PctRegenModifier) / 100;
 
-	amt *= sWorld.getRate(RATE_HEALTH);//Apply conf file rate
-	//Near values from official
+	amt *= sWorld.getRate(RATE_HEALTH); // GG funserver
+
+	// Near values from official
 	// wowwiki: Health Regeneration is increased by 33% while sitting.
 	if (m_isResting)
 		amt = amt * 1.33f;
@@ -7104,11 +7100,12 @@ void Player::RegenerateHealth(bool inCombat)
 	{
 		if (amt > 0)
 		{
-			if (amt <= 1.0f)//this fixes regen like 0.98
-				cur++;
+			if (amt <= 1.0f) // this fixes regen like 0.98
+                currHp++;
 			else
-				cur += float2int32(amt);
-			SetHealth((cur >= mh) ? mh : cur);
+                currHp += float2int32(amt);
+
+            SetHealth((currHp >= maxHp) ? maxHp : currHp);
 		}
 		else
 			DealDamage(this, float2int32(-amt), 0, 0, 0);
