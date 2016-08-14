@@ -1724,11 +1724,10 @@ void WorldSession::HandleLearnMultipleTalentsOpcode(WorldPacket & recvPacket)
 void WorldSession::SendMOTD()
 {
 	WorldPacket data(SMSG_MOTD, 100);
-
 	data.WriteBits(0, 4);
 
 	uint32 linecount = 0;
-	std::string str_motd = "Welcome to World Of Warcraft patch 5.4.8";
+    std::string str_motd = sWorld.GetMotd();
 	std::string::size_type pos, nextpos;
 	ByteBuffer stringBuffer;
 

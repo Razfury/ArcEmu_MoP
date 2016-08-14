@@ -1704,7 +1704,6 @@ bool ChatHandler::HandleDBReloadCommand(const char* args, WorldSession* m_sessio
 	return true;
 
 	*/
-
 }
 
 bool ChatHandler::HandleModifyLevelCommand(const char* args, WorldSession* m_session)
@@ -4105,9 +4104,11 @@ bool ChatHandler::HandleLevelUpCommand(const char* args, WorldSession* m_session
 
 	Player* plr = getSelectedChar(m_session, true);
 
-	if(!plr) plr = m_session->GetPlayer();
+	if(!plr)
+        plr = m_session->GetPlayer();
 
-	if(!plr) return false;
+	if(!plr)
+        return false;
 
 	sGMLog.writefromsession(m_session, "used level up command on %s, with %u levels", plr->GetName(), levels);
 
@@ -4119,7 +4120,9 @@ bool ChatHandler::HandleLevelUpCommand(const char* args, WorldSession* m_session
 	LevelInfo* inf = objmgr.GetLevelInfo(plr->getRace(), plr->getClass(), levels);
 	if(!inf)
 		return false;
+
 	plr->ApplyLevelInfo(inf, levels);
+
 	if(plr->getClass() == WARLOCK)
 	{
 		std::list<Pet*> summons = plr->GetSummons();

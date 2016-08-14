@@ -1428,7 +1428,11 @@ void Spell::SpellEffectBind(uint32 i)
 	playerTarget->SetBindPoint(playerTarget->GetPositionX(), playerTarget->GetPositionY(), playerTarget->GetPositionZ(), mapid, areaid);
 
 	data.Initialize(SMSG_BINDPOINTUPDATE);
-	data << playerTarget->GetBindPositionX() << playerTarget->GetBindPositionY() << playerTarget->GetBindPositionZ() << playerTarget->GetBindMapId() << playerTarget->GetBindZoneId();
+    data << playerTarget->GetBindPositionX();
+    data << playerTarget->GetBindPositionZ();
+    data << playerTarget->GetBindPositionY();
+    data << playerTarget->GetBindZoneId();
+    data << playerTarget->GetBindMapId();
 	playerTarget->GetSession()->SendPacket(&data);
 
 	data.Initialize(SMSG_PLAYERBOUND);

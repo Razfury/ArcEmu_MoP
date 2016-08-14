@@ -1504,7 +1504,7 @@ void Player::GiveXP(uint32 xp, const uint64 & guid, bool allowbonus)
 
 	uint32 restxp = xp;
 
-	//add reststate bonus (except for quests)
+	// add reststate bonus (except for quests)
 	if (m_restState == RESTSTATE_RESTED && allowbonus)
 	{
 		restxp = SubtractRestXP(xp);
@@ -1541,12 +1541,14 @@ void Player::GiveXP(uint32 xp, const uint64 & guid, bool allowbonus)
 
 	if (levelup)
 	{
-		m_playedtime[0] = 0; //Reset the "Current level played time"
+		m_playedtime[0] = 0; // Reset the "Current level played time"
 
 		setLevel(level);
 		LevelInfo* oldlevel = lvlinfo;
 		lvlinfo = objmgr.GetLevelInfo(getRace(), getClass(), level);
-		if (lvlinfo == NULL) return;
+		if (lvlinfo == NULL)
+            return;
+
 		CalculateBaseStats();
 
 		// Generate Level Info Packet and Send to client
@@ -1608,7 +1610,6 @@ void Player::GiveXP(uint32 xp, const uint64 & guid, bool allowbonus)
 
 	// Set the update bit
 	SetXp(newxp);
-
 }
 
 void Player::smsg_InitialSpells()
@@ -6596,7 +6597,8 @@ void Player::Reset_Talents()
 	SendTalentsInfo(false); //VLack: should we send this as Aspire? Yes...
 }
 
-void Player::Reset_AllTalents(){
+void Player::Reset_AllTalents()
+{
 	uint32 originalspec = m_talentActiveSpec;
 	Reset_Talents();
 
@@ -8442,6 +8444,19 @@ void Player::ApplyLevelInfo(LevelInfo* Info, uint32 Level)
 	// Set base fields
 	SetBaseHealth(Info->HP);
 	SetBaseMana(Info->Mana);
+
+    LevelInfo* oldlevel = objmgr.GetLevelInfo(getRace(), getClass(), PreviousLevel);
+
+    // Send levelup info to player
+    SendLevelupInfo(
+        Level,
+        Info->HP - oldlevel->HP,
+        Info->Mana - oldlevel->Mana,
+        Info->Stat[0] - oldlevel->Stat[0],
+        Info->Stat[1] - oldlevel->Stat[1],
+        Info->Stat[2] - oldlevel->Stat[2],
+        Info->Stat[3] - oldlevel->Stat[3],
+        Info->Stat[4] - oldlevel->Stat[4]);
 
 	_UpdateMaxSkillCounts();
 	UpdateStats();

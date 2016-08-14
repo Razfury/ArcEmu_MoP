@@ -1246,35 +1246,32 @@ void WorldSession::FullLogin(Player* plr)
 	// Recruiting message
 	//_player->BroadcastMessage(RECRUITING);
 	// Shows Online players, and connection peak
-	//_player->BroadcastMessage("Online Players: %s%u |rPeak: %s%u|r Accepted Connections: %s%u",
-	//                          MSG_COLOR_SEXGREEN, sWorld.GetSessionCount(), MSG_COLOR_SEXBLUE, sWorld.PeakSessionCount, MSG_COLOR_SEXBLUE, sWorld.mAcceptedConnections);
+	_player->BroadcastMessage("Online Players: %s%u |rPeak: %s%u|r Accepted Connections: %s%u",
+	                          MSG_COLOR_SEXGREEN, sWorld.GetSessionCount(), MSG_COLOR_SEXBLUE, sWorld.PeakSessionCount, MSG_COLOR_SEXBLUE, sWorld.mAcceptedConnections);
 
 	// Shows Server uptime
-	//_player->BroadcastMessage("Server Uptime: |r%s", sWorld.GetUptimeString().c_str());
+	_player->BroadcastMessage("Server Uptime: |r%s", sWorld.GetUptimeString().c_str());
 
-	// server Message Of The Day
+	// Message Of The Day (displayed at login)
 	SendMOTD();
 
-	// disabled for now
 	//Set current RestState
-	//if(plr->m_isResting)
-	// We are resting at an inn , turn on Zzz
-	//plr->ApplyPlayerRestState(true);
+	if(plr->m_isResting)
+	    plr->ApplyPlayerRestState(true); // We are resting at an inn, turn on Zzz
 
-	// disable everything that is not useful in a sandbox :D
 	//Calculate rest bonus if there is time between lastlogoff and now
-	/*if(plr->m_timeLogoff > 0 && plr->getLevel() < plr->GetMaxLevel())	// if timelogoff = 0 then it's the first login
+	if(plr->m_timeLogoff > 0 && plr->getLevel() < plr->GetMaxLevel())	// if timelogoff = 0 then it's the first login
 	{
-	uint32 currenttime = uint32(UNIXTIME);
-	uint32 timediff = currenttime - plr->m_timeLogoff;
+	    uint32 currenttime = uint32(UNIXTIME);
+	    uint32 timediff = currenttime - plr->m_timeLogoff;
 
-	//Calculate rest bonus
-	if(timediff > 0)
-	plr->AddCalculatedRestXP(timediff);
+	    //Calculate rest bonus
+	    if(timediff > 0)
+	        plr->AddCalculatedRestXP(timediff);
 	}
 
 	if(info->m_Group)
-	info->m_Group->Update();*/
+	    info->m_Group->Update();
 
 	if (enter_world && !_player->GetMapMgr())
 		plr->AddToWorld();

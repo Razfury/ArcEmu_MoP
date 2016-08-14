@@ -80,7 +80,7 @@ void Player::Gossip_SendPOI(float X, float Y, uint32 Icon, uint32 Flags, uint32 
 void Player::SendLevelupInfo(uint32 level, uint32 Hp, uint32 Mana, uint32 Stat0, uint32 Stat1, uint32 Stat2, uint32 Stat3, uint32 Stat4)
 {
 	WorldPacket data(SMSG_LEVELUP_INFO, 14 * 4);
-
+    /*
     data << uint32(Hp);
 
     data << uint32(Stat0);
@@ -95,56 +95,72 @@ void Player::SendLevelupInfo(uint32 level, uint32 Hp, uint32 Mana, uint32 Stat0,
     data << uint32(level);
     data << uint32(Mana);
 
-	for(uint8 i = 0; i < 4; ++i)
-		data << uint32(0);
+	data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+    */
+
+    data << uint32(level);
+    data << uint32(Hp);
+    data << uint32(Mana);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(Stat0);
+    data << uint32(Stat1);
+    data << uint32(Stat2);
+    data << uint32(Stat3);
+    data << uint32(Stat4);
 
 	m_session->SendPacket(&data);
 }
 
-// type => if guid != 0 ===> type = true
+// type => if guid == 0 ===> type = true
 void Player::SendLogXPGain(uint64 guid, uint32 NormalXP, uint32 RestedXP, bool type)
 {
-    Unit* pVictim = objmgr.GetPlayer(guid)->GetMapMgr()->GetUnit(guid); // I need confirmation!
-    ObjectGuid victimGuid = pVictim ? pVictim->GetGUID() : 0;
+    //Unit* pVictim = objmgr.GetPlayer(guid)->GetMapMgr()->GetUnit(guid); // I need confirmation!
+    //ObjectGuid victimGuid = pVictim ? pVictim->GetGUID() : 0;
+
+    ObjectGuid _guid = guid;
 
     WorldPacket data(SMSG_LOG_XPGAIN, 1 + 1 + 8 + 4 + 4 + 4 + 1);
 
     data.WriteBit(0); // has XP
-    data.WriteBit(victimGuid[1]);
-    data.WriteBit(victimGuid[2]);
-    data.WriteBit(victimGuid[7]);
-    data.WriteBit(victimGuid[4]);
-    data.WriteBit(victimGuid[3]);
-    data.WriteBit(0); // has group bonus
-    data.WriteBit(victimGuid[0]);
-    data.WriteBit(victimGuid[5]);
-    data.WriteBit(victimGuid[6]);
-    data.WriteBit(0); // unknown
+    data.WriteBit(_guid[1]);
+    data.WriteBit(_guid[2]);
+    data.WriteBit(_guid[7]);
+    data.WriteBit(_guid[4]);
+    data.WriteBit(_guid[3]);
+    data.WriteBit(0); // has group bonus (unk according to WPP)
+    data.WriteBit(_guid[0]);
+    data.WriteBit(_guid[5]);
+    data.WriteBit(_guid[6]);
+    data.WriteBit(0); // has group rate
 
-    data.WriteByteSeq(victimGuid[4]);
-    data.WriteByteSeq(victimGuid[2]);
+    data.WriteByteSeq(_guid[4]);
+    data.WriteByteSeq(_guid[2]);
     //data << uint8(recruitAFriend ? 1 : 0); // does NormalXP include a RaF bonus?
     data << uint8(0); // haha RaF, so funny
     data << float(1); // 1 - none 0 - 100% group bonus output
-    data.WriteByteSeq(victimGuid[7]);
-    data.WriteByteSeq(victimGuid[1]);
-    data.WriteByteSeq(victimGuid[3]);
-    data.WriteByteSeq(victimGuid[6]);
+    data.WriteByteSeq(_guid[7]);
+    data.WriteByteSeq(_guid[1]);
+    data.WriteByteSeq(_guid[3]);
+    data.WriteByteSeq(_guid[6]);
 
-    data << uint32(NormalXP + RestedXP); // given experience
+    data << uint32(NormalXP + RestedXP); // total experience
 
-    if (pVictim)
-        data << uint32(NormalXP); // experience without bonus
+    data << uint32(NormalXP); // experience without bonus
 
-    data.WriteByteSeq(victimGuid[0]);
-    data.WriteByteSeq(victimGuid[5]);
+    data.WriteByteSeq(_guid[0]);
+    data.WriteByteSeq(_guid[5]);
 
 	m_session->SendPacket(&data);
 }
 
 void Player::SendCastResult(uint32 SpellId, uint8 ErrorMessage, uint8 MultiCast, uint32 Extra)
 {
-
 	WorldPacket data(SMSG_CAST_FAILED, 80);
 
 	data << uint8(MultiCast);
@@ -572,14 +588,13 @@ void Player::SendLoot(uint64 guid, uint8 loot_type, uint32 mapid)
 
 void Player::SendInitialLogonPackets()
 {
-	WorldPacket datao(SMSG_BINDPOINTUPDATE, 5 * 4);
-	datao << float(m_bind_pos_x);
-	datao << float(m_bind_pos_y);
-	datao << float(m_bind_pos_z);
-	datao << uint32(m_bind_mapid);
-	datao << uint32(m_bind_zoneid);
-
-	m_session->SendPacket(&datao);
+	WorldPacket data(SMSG_BINDPOINTUPDATE, 5 * 4);
+    data << float(m_bind_pos_x);
+    data << float(m_bind_pos_z);
+    data << float(m_bind_pos_y);
+    data << uint32(m_bind_zoneid);
+    data << uint32(m_bind_mapid);
+    m_session->SendPacket(&data);
 
 	//Proficiencies
 	// 4.3.4
@@ -587,34 +602,31 @@ void Player::SendInitialLogonPackets()
 	SendSetProficiency(2, weapon_proficiency);
 
 	// Tutorial Flags
-	WorldPacket data(SMSG_TUTORIAL_FLAGS, 4 * 8);
+    WorldPacket data2(SMSG_TUTORIAL_FLAGS, MAX_ACCOUNT_TUTORIAL_VALUES * 4);
 
-	for(int i = 0; i < 8; i++)
-		data << uint32(m_Tutorials[i]);
+    for (int i = 0; i < MAX_ACCOUNT_TUTORIAL_VALUES; ++i)
+        data2 << uint32(m_Tutorials[i]);
 
-	m_session->SendPacket(&data);
+    m_session->SendPacket(&data2);
 
-	// don't send this, it's just a sandbox
-	//SendTalentsInfo(false); // not updated (15595)
+	SendTalentsInfo(false);
+	smsg_InitialSpells();
 
-	smsg_InitialSpells(); // not sure if updated (15595)
-
-	WorldPacket datat(SMSG_SEND_UNLEARN_SPELLS, 4);
-	datat.WriteBits(0, 22); // Count
-	datat.FlushBits();                            // count, for(count) uint32;
-	GetSession()->SendPacket(&datat);
+    WorldPacket data3(SMSG_SEND_UNLEARN_SPELLS, 4);
+    data3.WriteBits(0, 22); // Count
+    data3.FlushBits();
+    GetSession()->SendPacket(&data3);
 
 	SendInitialActions(); // 15595 not sure
 	smsg_InitialFactions(); // 15595
 
-
-	WorldPacket datatt(SMSG_LOGIN_SETTIMESPEED, 4 + 4 + 4);
-	datatt << uint32(0);
-	datatt << uint32(Arcemu::Util::MAKE_GAME_TIME());
-	datatt << uint32(0);
-	datatt << uint32(Arcemu::Util::MAKE_GAME_TIME());
-	datatt << float(0.01666667f);
-	m_session->SendPacket(&datatt);
+    WorldPacket data4(SMSG_LOGIN_SETTIMESPEED, 20);
+    data4 << uint32(0);
+    data4 << uint32(Arcemu::Util::MAKE_GAME_TIME());
+    data4 << uint32(0);
+    data4 << uint32(Arcemu::Util::MAKE_GAME_TIME());
+    data4 << float(0.01666667f);
+    m_session->SendPacket(&data4);
 
 	// cebernic for speedhack bug
 	m_lastRunSpeed = 0;
@@ -631,13 +643,11 @@ void Player::SendInitialLogonPackets()
 
 	m_session->SendPacket(&ArenaSettings);*/
 	
-
 	LOG_DETAIL("WORLD: Sent initial logon packets for %s.", GetName());
 }
 
 void Player::SendLootUpdate(Object* o)
 {
-
 	if(!IsVisible(o->GetGUID()))
 		return;
 
@@ -656,7 +666,6 @@ void Player::SendLootUpdate(Object* o)
 
 void Player::SendUpdateDataToSet(ByteBuffer* groupbuf, ByteBuffer* nongroupbuf, bool sendtoself)
 {
-
 	/////////////////////////// first case we need to send to both grouped and ungrouped players in the set /////////////////////////////
 	if(groupbuf != NULL && nongroupbuf != NULL)
 	{
@@ -705,14 +714,12 @@ void Player::SendUpdateDataToSet(ByteBuffer* groupbuf, ByteBuffer* nongroupbuf, 
 			}
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 	if(sendtoself)
 		PushUpdateData(groupbuf, 1);
 }
 
 void Player::TagUnit(Object* o)
 {
-
 	// For new players who get a create object
 	uint32 Flags = o->GetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS);
 	Flags |= U_DYN_FLAG_TAPPED_BY_PLAYER;
