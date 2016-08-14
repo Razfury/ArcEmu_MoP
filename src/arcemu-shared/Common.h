@@ -460,6 +460,20 @@ Scripting system exports/imports
 #pragma float_control(precise, on)
 #endif
 
+/*
+    DOCUMENTATION: (an attempt, at least)
+        Well shit. GUIDs are fucked up BIG TIME and after hours of backtracking...
+        GetTypeFromGUID(), GetHighGUID, GUID_HIPAR_TESTT are the same.
+        Arcemu::Util::GUID_LOPART, GET_LOWGUID_PART => GUID_LOPART_TEST
+
+        In MapMgr::GetUnit(...):
+        Arcemu::Util::GUID_LOPART(guid) has been replaced with (uint32)guid
+        Is this right?
+
+        You can figure the rest out.
+        See here and in Object.h
+*/
+
 #define GUID_HIPAR_TESTT(x) (uint32)( ( uint64(x) >> 48 ) & 0x0000FFFF )
 inline uint64 MAKE_NEW_GUID(uint32 l, uint32 e, uint32 h);
 #define _GUID_ENPART_2(x) (uint32)0
@@ -489,7 +503,7 @@ inline bool IsGuidHaveEnPart(uint64 guid)
 
 uint64 MAKE_NEW_GUID(uint32 l, uint32 e, uint32 h)
 {
-	return uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == 0xF0C0 || h == 0xF102) ? 48 : 52)));
+	return uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == 0xF101 || h == 0xF102) ? 48 : 52)));
 }
 
 // fast int abs

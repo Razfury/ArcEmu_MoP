@@ -1426,7 +1426,8 @@ Player* ChatHandler::getSelectedChar(WorldSession* m_session, bool showerror)
 	uint64 guid;
 	Player* chr;
 
-	if(m_session == NULL || m_session->GetPlayer() == NULL) return NULL;
+	if(m_session == NULL || m_session->GetPlayer() == NULL)
+        return NULL;
 
 	guid = m_session->GetPlayer()->GetSelection();
 
@@ -1454,19 +1455,20 @@ Creature* ChatHandler::getSelectedCreature(WorldSession* m_session, bool showerr
 	uint64 guid;
 	Creature* creature = NULL;
 
-	if(m_session == NULL || m_session->GetPlayer() == NULL) return NULL;
+	if(m_session == NULL || m_session->GetPlayer() == NULL)
+        return NULL;
 
 	guid = m_session->GetPlayer()->GetSelection();
 
-	switch( GET_TYPE_FROM_GUID( guid ) )
+	switch( GUID_HIPAR_TESTT( guid ) )
     {
 		case HIGHGUID_TYPE_PET:
-			creature = m_session->GetPlayer()->GetMapMgr()->GetPet(GET_LOWGUID_PART(guid));
+			creature = m_session->GetPlayer()->GetMapMgr()->GetPet(GUID_LOPART_TEST(guid));
 			break;
 
 		case HIGHGUID_TYPE_UNIT:
 		case HIGHGUID_TYPE_VEHICLE:
-			creature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+            creature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART_TEST(guid));
 			break;
 	}
 
