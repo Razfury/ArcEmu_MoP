@@ -161,7 +161,7 @@ void WorldSession::CharacterEnumProc(QueryResult* result)
             guild_data.guildid
             */
 
-			ObjectGuid guid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, 0x000);
+			ObjectGuid guid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_TYPE_PLAYER);
 			uint8 level = fields[1].GetUInt8();
 			uint8 race = fields[2].GetUInt8();
 			uint8 Class = fields[3].GetUInt8();
@@ -181,7 +181,7 @@ void WorldSession::CharacterEnumProc(QueryResult* result)
 			uint32 playerFlags = fields[14].GetUInt32();
 			uint32 atLoginFlags = fields[17].GetUInt32();
 			uint32 GuildId = fields[18].GetUInt32();
-			ObjectGuid guildGuid = MAKE_NEW_GUID(GuildId, 0, GuildId ? uint32(0x1FF) : 0);
+			ObjectGuid guildGuid = MAKE_NEW_GUID(GuildId, 0, GuildId ? uint32(HIGHGUID_TYPE_GUILD) : 0);
 
             // TODO add Cata & MoP races
             // and make a function to get the side

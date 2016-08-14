@@ -2110,7 +2110,7 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
 	uint32 count = 1;
 	uint32 counter = 0;
 	size_t maxsize = 4 + 5 + 5 + 4 + 4 + 1 + 4 + 4 + 4 + 4 + 4 + 1 + 4 + 4 + 4 + 4 + 4 * 12;
-	WorldPacket data(SMSG_ATTACKERSTATEUPDATE, maxsize);    // we guess size
+	WorldPacket data(SMSG_ATTACKERSTATEUPDATE, maxsize); // we guess size
 
 	uint32 Overkill = 0;
 
@@ -2139,7 +2139,7 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
 		data << uint32(0);
 	}
 
-	// Needs to be flushed because data.wpos() wouldnt return the correct placeholder
+	// Needs to be flushed because data.wpos() wouldn't return the correct placeholder
 	data.FlushBits();
 
 	size_t size = data.wpos();
@@ -2194,7 +2194,7 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
         data << float(0);
         data << float(0);
 
-        for (uint8 i = 0; i < 2; ++i)
+        //for (uint8 i = 0; i < 2; ++i)
         {
             data << float(0);
             data << float(0);

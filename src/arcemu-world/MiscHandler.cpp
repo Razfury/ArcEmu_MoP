@@ -1055,7 +1055,7 @@ void WorldSession::HandleSetSelectionOpcode(WorldPacket & recv_data)
 	recv_data.ReadByteSeq(guid[6]);
 	recv_data.ReadByteSeq(guid[2]);
 
-	sLog.outError("Setting %u as target.", Arcemu::Util::GUID_LOPART(guid));
+	sLog.outError("Setting %u as target.", GUID_LOPART_TEST(guid));
 
 	_player->SetSelection(guid);
 

@@ -1426,7 +1426,8 @@ Player* ChatHandler::getSelectedChar(WorldSession* m_session, bool showerror)
 	uint64 guid;
 	Player* chr;
 
-	if(m_session == NULL || m_session->GetPlayer() == NULL) return NULL;
+	if(m_session == NULL || m_session->GetPlayer() == NULL)
+        return NULL;
 
 	guid = m_session->GetPlayer()->GetSelection();
 
@@ -1454,19 +1455,20 @@ Creature* ChatHandler::getSelectedCreature(WorldSession* m_session, bool showerr
 	uint64 guid;
 	Creature* creature = NULL;
 
-	if(m_session == NULL || m_session->GetPlayer() == NULL) return NULL;
+	if(m_session == NULL || m_session->GetPlayer() == NULL)
+        return NULL;
 
 	guid = m_session->GetPlayer()->GetSelection();
 
-	switch( GET_TYPE_FROM_GUID( guid ) )
+    switch (GUID_HIPAR_TESTT(guid))
     {
 		case HIGHGUID_TYPE_PET:
-			creature = m_session->GetPlayer()->GetMapMgr()->GetPet(GET_LOWGUID_PART(guid));
+            creature = m_session->GetPlayer()->GetMapMgr()->GetPet(GUID_LOPART_TEST(guid));
 			break;
 
 		case HIGHGUID_TYPE_UNIT:
 		case HIGHGUID_TYPE_VEHICLE:
-			creature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+            creature = m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART_TEST(guid));
 			break;
 	}
 
@@ -1482,29 +1484,38 @@ Creature* ChatHandler::getSelectedCreature(WorldSession* m_session, bool showerr
 
 void ChatHandler::SystemMessage(WorldSession* m_session, const char* message, ...)
 {
-	if(!message) return;
+	if(!message)
+        return;
+
 	va_list ap;
 	va_start(ap, message);
+
 	char msg1[1024];
 	vsnprintf(msg1, 1024, message, ap);
+
 	WorldPacket* data = FillSystemMessageData(msg1);
 	if(m_session != NULL)
 		m_session->SendPacket(data);
+
 	delete data;
 }
 
 void ChatHandler::ColorSystemMessage(WorldSession* m_session, const char* colorcode, const char* message, ...)
 {
-	if(!message) return;
+	if(!message)
+        return;
 	va_list ap;
 	va_start(ap, message);
+
 	char msg1[1024];
 	vsnprintf(msg1, 1024, message, ap);
 	char msg[1024];
 	snprintf(msg, 1024, "%s%s|r", colorcode, msg1);
+
 	WorldPacket* data = FillSystemMessageData(msg);
 	if(m_session != NULL)
 		m_session->SendPacket(data);
+
 	delete data;
 }
 

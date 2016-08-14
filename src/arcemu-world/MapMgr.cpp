@@ -1393,7 +1393,6 @@ void MapMgr::AddObject(Object* obj)
 	m_objectinsertlock.Release();//>>>>>>>>>>>>
 }
 
-
 Unit* MapMgr::GetUnit(const uint64 & guid)
 {
 	switch (GUID_HIPAR_TESTT(guid))

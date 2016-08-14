@@ -1,21 +1,21 @@
 /*
- * ArcEmu MMORPG Server
- * Copyright (C) 2008-2012 <http://www.ArcEmu.org/>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+* ArcEmu MMORPG Server
+* Copyright (C) 2008-2012 <http://www.ArcEmu.org/>
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU Affero General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU Affero General Public License for more details.
+*
+* You should have received a copy of the GNU Affero General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*/
 
 #ifndef WOWSERVER_COMMON_H
 #define WOWSERVER_COMMON_H
@@ -62,10 +62,10 @@ enum TimeVariables
 {
     TIME_SECOND = 1,
     TIME_MINUTE = TIME_SECOND * 60,
-    TIME_HOUR   = TIME_MINUTE * 60,
-    TIME_DAY	= TIME_HOUR * 24,
-    TIME_MONTH	= TIME_DAY * 30,
-    TIME_YEAR	= TIME_MONTH * 12
+    TIME_HOUR = TIME_MINUTE * 60,
+    TIME_DAY = TIME_HOUR * 24,
+    TIME_MONTH = TIME_DAY * 30,
+    TIME_YEAR = TIME_MONTH * 12
 };
 
 enum MsTimeVariables
@@ -73,8 +73,8 @@ enum MsTimeVariables
     MSTIME_SECOND = 1000,
     MSTIME_6SECONDS = MSTIME_SECOND * 6,
     MSTIME_MINUTE = MSTIME_SECOND * 60,
-    MSTIME_HOUR   = MSTIME_MINUTE * 60,
-    MSTIME_DAY	  = MSTIME_HOUR * 24
+    MSTIME_HOUR = MSTIME_MINUTE * 60,
+    MSTIME_DAY = MSTIME_HOUR * 24
 };
 
 #ifdef WIN32
@@ -285,8 +285,8 @@ enum MsTimeVariables
 #endif
 
 /*
-	TEST SUPPORT FOR TR1
-	*/
+TEST SUPPORT FOR TR1
+*/
 #ifdef HAS_CXX0X
 #include <unordered_map>
 #include <unordered_set>
@@ -301,22 +301,22 @@ enum MsTimeVariables
 #define HM_NAMESPACE __gnu_cxx
 namespace __gnu_cxx
 {
-	template<> struct hash<unsigned long long>
-	{
-		size_t operator()(const unsigned long long & __x) const { return (size_t)__x; }
-	};
-	template<typename T> struct hash<T*>
-	{
-		size_t operator()(T* const & __x) const { return (size_t)__x; }
-	};
-	//support for std::strings as keys to hash maps
-	template<> struct hash< ::std::string>
-	{
-		size_t operator()(const ::std::string & keyval) const
-		{
-			return hash<const char*>()(keyval.c_str());
-		}
-	};
+    template<> struct hash<unsigned long long>
+    {
+        size_t operator()(const unsigned long long & __x) const { return (size_t)__x; }
+    };
+    template<typename T> struct hash<T*>
+    {
+        size_t operator()(T* const & __x) const { return (size_t)__x; }
+    };
+    //support for std::strings as keys to hash maps
+    template<> struct hash< ::std::string>
+    {
+        size_t operator()(const ::std::string & keyval) const
+        {
+            return hash<const char*>()(keyval.c_str());
+        }
+    };
 };
 #else
 #define HM_NAMESPACE ::stdext
@@ -460,6 +460,20 @@ Scripting system exports/imports
 #pragma float_control(precise, on)
 #endif
 
+/*
+    DOCUMENTATION: (an attempt, at least)
+    Well shit. GUIDs are fucked up BIG TIME and after hours of backtracking...
+    GetTypeFromGUID(), GetHighGUID, GUID_HIPAR_TESTT are the same.
+    Arcemu::Util::GUID_LOPART, GET_LOWGUID_PART => GUID_LOPART_TEST
+
+    In MapMgr::GetUnit(...):
+    Arcemu::Util::GUID_LOPART(guid) has been replaced with (uint32)guid
+    Is this right?
+
+    You can figure the rest out.
+    See here and in Object.h
+*/
+
 #define GUID_HIPAR_TESTT(x) (uint32)( ( uint64(x) >> 48 ) & 0x0000FFFF )
 inline uint64 MAKE_NEW_GUID(uint32 l, uint32 e, uint32 h);
 #define _GUID_ENPART_2(x) (uint32)0
@@ -469,18 +483,18 @@ inline uint64 MAKE_NEW_GUID(uint32 l, uint32 e, uint32 h);
 
 inline bool IsGuidHaveEnPart(uint64 guid)
 {
-	switch (GUID_HIPAR_TESTT(guid))
-	{
-	case 0xF110:
-	case 0xF120:
-	case 0xF130:
-	case 0xF140:
-	case 0xF150:
-	case 0x1FC0:
-		return true;
-	default:
-		return false;
-	}
+    switch (GUID_HIPAR_TESTT(guid))
+    {
+    case 0xF110:
+    case 0xF120:
+    case 0xF130:
+    case 0xF140:
+    case 0xF150:
+    case 0x1FC0:
+        return true;
+    default:
+        return false;
+    }
 }
 
 #define GUID_ENPART_TEST(x) (IsGuidHaveEnPart(x) ? _GUID_ENPART_3(x) : _GUID_ENPART_2(x))
@@ -489,38 +503,38 @@ inline bool IsGuidHaveEnPart(uint64 guid)
 
 uint64 MAKE_NEW_GUID(uint32 l, uint32 e, uint32 h)
 {
-	return uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == 0xF0C0 || h == 0xF102) ? 48 : 52)));
+    return uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == 0xF101 || h == 0xF102) ? 48 : 52)));
 }
 
 // fast int abs
 static inline int int32abs(const int value)
 {
-	return (value ^ (value >> 31)) - (value >> 31);
+    return (value ^ (value >> 31)) - (value >> 31);
 }
 
 // fast int abs and recast to unsigned
 static inline uint32 int32abs2uint32(const int value)
 {
-	return (uint32)(value ^ (value >> 31)) - (value >> 31);
+    return (uint32)(value ^ (value >> 31)) - (value >> 31);
 }
 
 /// Fastest Method of float2int32
 static inline int float2int32(const float value)
 {
 #if !defined(X64) && COMPILER == COMPILER_MICROSOFT && !defined(USING_BIG_ENDIAN)
-	int i;
-	__asm
-	{
-		fld value
-		frndint
-		fistp i
-	}
-	return i;
+    int i;
+    __asm
+    {
+        fld value
+            frndint
+            fistp i
+    }
+    return i;
 #else
-	union { int asInt[2]; double asDouble; } n;
-	n.asDouble = value + 6755399441055744.0;
+    union { int asInt[2]; double asDouble; } n;
+    n.asDouble = value + 6755399441055744.0;
 
-	return n.asInt [0];
+    return n.asInt[0];
 #endif
 }
 
@@ -528,19 +542,19 @@ static inline int float2int32(const float value)
 static inline int long2int32(const double value)
 {
 #if !defined(X64) && COMPILER == COMPILER_MICROSOFT && !defined(USING_BIG_ENDIAN)
-	int i;
-	__asm
-	{
-		fld value
-		frndint
-		fistp i
-	}
-	return i;
+    int i;
+    __asm
+    {
+        fld value
+            frndint
+            fistp i
+    }
+    return i;
 #else
-	union { int asInt[2]; double asDouble; } n;
-	n.asDouble = value + 6755399441055744.0;
+    union { int asInt[2]; double asDouble; } n;
+    n.asDouble = value + 6755399441055744.0;
 
-	return n.asInt [0];
+    return n.asInt[0];
 #endif
 }
 
@@ -555,11 +569,11 @@ static inline int long2int32(const double value)
 ARCEMU_INLINE uint32 now()
 {
 #ifdef WIN32
-	return GetTickCount();
+    return GetTickCount();
 #else
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 #endif
 }
 
@@ -571,45 +585,45 @@ ARCEMU_INLINE uint32 now()
 #include "Util.h"
 struct WayPoint
 {
-	WayPoint()
-	{
-		o = 0.0f;
-	}
-	uint32 id;
-	float x;
-	float y;
-	float z;
-	float o;
-	uint32 waittime; //ms
-	uint32 flags;
-	bool forwardemoteoneshot;
-	uint32 forwardemoteid;
-	bool backwardemoteoneshot;
-	uint32 backwardemoteid;
-	uint32 forwardskinid;
-	uint32 backwardskinid;
+    WayPoint()
+    {
+        o = 0.0f;
+    }
+    uint32 id;
+    float x;
+    float y;
+    float z;
+    float o;
+    uint32 waittime; //ms
+    uint32 flags;
+    bool forwardemoteoneshot;
+    uint32 forwardemoteid;
+    bool backwardemoteoneshot;
+    uint32 backwardemoteid;
+    uint32 forwardskinid;
+    uint32 backwardskinid;
 
 };
 
 struct spawn_timed_emotes
 {
-	uint8		type; //1 standstate, 2 emotestate, 3 emoteoneshot
-	uint32		value; //get yar list elsewhere
-	char*		msg; //maybe we wish to say smething while changing emote state
-	uint8		msg_type; //yell ? say ?
-	uint8		msg_lang; //yell ? say ?
-	uint32		expire_after; //going to nex faze in
+    uint8		type; //1 standstate, 2 emotestate, 3 emoteoneshot
+    uint32		value; //get yar list elsewhere
+    char*		msg; //maybe we wish to say smething while changing emote state
+    uint8		msg_type; //yell ? say ?
+    uint8		msg_lang; //yell ? say ?
+    uint32		expire_after; //going to nex faze in
 };
 typedef std::list<spawn_timed_emotes*> TimedEmoteList;
 
 ARCEMU_INLINE void reverse_array(uint8* pointer, size_t count)
 {
-	size_t x;
-	uint8* temp = (uint8*)malloc(count);
-	memcpy(temp, pointer, count);
-	for(x = 0; x < count; ++x)
-		pointer[x] = temp[count - x - 1];
-	free(temp);
+    size_t x;
+    uint8* temp = (uint8*)malloc(count);
+    memcpy(temp, pointer, count);
+    for (x = 0; x < count; ++x)
+        pointer[x] = temp[count - x - 1];
+    free(temp);
 }
 
 typedef std::vector<WayPoint*> WayPointMap;
@@ -622,77 +636,77 @@ uint32 DecimalToMask(uint32 dec);
 
 ARCEMU_INLINE void arcemu_TOLOWER(std::string & str)
 {
-	for(size_t i = 0; i < str.length(); ++i)
-		str[i] = (char)tolower(str[i]);
+    for (size_t i = 0; i < str.length(); ++i)
+        str[i] = (char)tolower(str[i]);
 }
 
 ARCEMU_INLINE void arcemu_TOUPPER(std::string & str)
 {
-	for(size_t i = 0; i < str.length(); ++i)
-		str[i] = (char)toupper(str[i]);
+    for (size_t i = 0; i < str.length(); ++i)
+        str[i] = (char)toupper(str[i]);
 }
 
 // returns true if the ip hits the mask, otherwise false
 inline static bool ParseCIDRBan(unsigned int IP, unsigned int Mask, unsigned int MaskBits)
 {
-	// CIDR bans are a compacted form of IP / Submask
-	// So 192.168.1.0/255.255.255.0 would be 192.168.1.0/24
-	// IP's in the 192.168l.1.x range would be hit, others not.
-	unsigned char* source_ip = (unsigned char*)&IP;
-	unsigned char* mask = (unsigned char*)&Mask;
-	int full_bytes = MaskBits / 8;
-	int leftover_bits = MaskBits % 8;
-	//int byte;
+    // CIDR bans are a compacted form of IP / Submask
+    // So 192.168.1.0/255.255.255.0 would be 192.168.1.0/24
+    // IP's in the 192.168l.1.x range would be hit, others not.
+    unsigned char* source_ip = (unsigned char*)&IP;
+    unsigned char* mask = (unsigned char*)&Mask;
+    int full_bytes = MaskBits / 8;
+    int leftover_bits = MaskBits % 8;
+    //int byte;
 
-	// sanity checks for the data first
-	if(MaskBits > 32)
-		return false;
+    // sanity checks for the data first
+    if (MaskBits > 32)
+        return false;
 
-	// this is the table for comparing leftover bits
-	static const unsigned char leftover_bits_compare[9] =
-	{
-		0x00,			// 00000000
-		0x80,			// 10000000
-		0xC0,			// 11000000
-		0xE0,			// 11100000
-		0xF0,			// 11110000
-		0xF8,			// 11111000
-		0xFC,			// 11111100
-		0xFE,			// 11111110
-		0xFF,			// 11111111 - This one isn't used
-	};
+    // this is the table for comparing leftover bits
+    static const unsigned char leftover_bits_compare[9] =
+    {
+        0x00,			// 00000000
+        0x80,			// 10000000
+        0xC0,			// 11000000
+        0xE0,			// 11100000
+        0xF0,			// 11110000
+        0xF8,			// 11111000
+        0xFC,			// 11111100
+        0xFE,			// 11111110
+        0xFF,			// 11111111 - This one isn't used
+    };
 
-	// if we have any full bytes, compare them with memcpy
-	if(full_bytes > 0)
-	{
-		if(memcmp(source_ip, mask, full_bytes) != 0)
-			return false;
-	}
+    // if we have any full bytes, compare them with memcpy
+    if (full_bytes > 0)
+    {
+        if (memcmp(source_ip, mask, full_bytes) != 0)
+            return false;
+    }
 
-	// compare the left over bits
-	if(leftover_bits > 0)
-	{
-		if((source_ip[full_bytes] & leftover_bits_compare[leftover_bits]) !=
-		        (mask[full_bytes] & leftover_bits_compare[leftover_bits]))
-		{
-			// one of the bits does not match
-			return false;
-		}
-	}
+    // compare the left over bits
+    if (leftover_bits > 0)
+    {
+        if ((source_ip[full_bytes] & leftover_bits_compare[leftover_bits]) !=
+            (mask[full_bytes] & leftover_bits_compare[leftover_bits]))
+        {
+            // one of the bits does not match
+            return false;
+        }
+    }
 
-	// all of the bits match that were testable
-	return true;
+    // all of the bits match that were testable
+    return true;
 }
 
 inline static unsigned int MakeIP(const char* str)
 {
-	unsigned int bytes[4];
-	unsigned int res;
-	if(sscanf(str, "%u.%u.%u.%u", &bytes[0], &bytes[1], &bytes[2], &bytes[3]) != 4)
-		return 0;
+    unsigned int bytes[4];
+    unsigned int res;
+    if (sscanf(str, "%u.%u.%u.%u", &bytes[0], &bytes[1], &bytes[2], &bytes[3]) != 4)
+        return 0;
 
-	res = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
-	return res;
+    res = bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
+    return res;
 }
 
 #include "DynLib.hpp"

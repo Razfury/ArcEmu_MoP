@@ -793,13 +793,12 @@ static const PetFlagNames PetFlagToName[] =
 
 static const uint32 numpetflags = sizeof(PetFlagToName) / sizeof(PetFlagNames);
 
-
 bool ChatHandler::HandleNpcInfoCommand(const char* args, WorldSession* m_session)
 {
-
-	uint32 guid = Arcemu::Util::GUID_LOPART(m_session->GetPlayer()->GetSelection());
+    uint32 guid = GUID_LOPART_TEST(m_session->GetPlayer()->GetSelection());
 	Creature* crt = getSelectedCreature(m_session);
-	if(!crt) return false;
+	if(!crt)
+        return false;
 	BlueSystemMessage(m_session, "Showing creature info for %s", crt->GetCreatureInfo()->Name);
 	SystemMessage(m_session, "GUID: %d", guid);
 	SystemMessage(m_session, "Faction: %d", crt->GetFaction());
