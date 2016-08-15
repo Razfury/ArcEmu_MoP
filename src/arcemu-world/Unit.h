@@ -1942,8 +1942,8 @@ class SERVER_DECL Unit : public Object
 		uint8 GetPowerType() { return GetByte(UNIT_FIELD_BYTES_0, 3); }
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-		void SetHealth(uint32 val) { SetUInt32Value(UNIT_FIELD_HEALTH,  val); }
-		void SetMaxHealth(uint32 val) { SetUInt32Value(UNIT_FIELD_MAXHEALTH,  val); }
+		void SetHealth(uint32 val) { SetUInt32Value(UNIT_FIELD_HEALTH, val); }
+		void SetMaxHealth(uint32 val) { SetUInt32Value(UNIT_FIELD_MAXHEALTH, val); }
 		uint32 GetHealth()    const { return GetUInt32Value(UNIT_FIELD_HEALTH); }
 		uint32 GetMaxHealth() const { return GetUInt32Value(UNIT_FIELD_MAXHEALTH); }
 		void ModHealth(int32 val) { ModUnsigned32Value(UNIT_FIELD_HEALTH, val); }

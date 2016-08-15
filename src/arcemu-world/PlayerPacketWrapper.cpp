@@ -80,7 +80,7 @@ void Player::Gossip_SendPOI(float X, float Y, uint32 Icon, uint32 Flags, uint32 
 void Player::SendLevelupInfo(uint32 level, uint32 Hp, uint32 Mana, uint32 Stat0, uint32 Stat1, uint32 Stat2, uint32 Stat3, uint32 Stat4)
 {
 	WorldPacket data(SMSG_LEVELUP_INFO, 14 * 4);
-    /*
+
     data << uint32(Hp);
 
     data << uint32(Stat0);
@@ -89,30 +89,15 @@ void Player::SendLevelupInfo(uint32 level, uint32 Hp, uint32 Mana, uint32 Stat0,
     data << uint32(Stat3);
     data << uint32(Stat4);
 
-    bool talent = false;
+    data << uint32(0);
 
-    data << bool(talent);
     data << uint32(level);
     data << uint32(Mana);
 
-	data << uint32(0);
-    data << uint32(0);
-    data << uint32(0);
-    data << uint32(0);
-    */
-
-    data << uint32(level);
-    data << uint32(Hp);
-    data << uint32(Mana);
     data << uint32(0);
     data << uint32(0);
     data << uint32(0);
     data << uint32(0);
-    data << uint32(Stat0);
-    data << uint32(Stat1);
-    data << uint32(Stat2);
-    data << uint32(Stat3);
-    data << uint32(Stat4);
 
 	m_session->SendPacket(&data);
 }

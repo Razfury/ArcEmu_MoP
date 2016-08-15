@@ -8409,46 +8409,51 @@ void Player::EventTeleportTaxi(uint32 mapid, float x, float y, float z)
 
 void Player::ApplyLevelInfo(LevelInfo* Info, uint32 Level)
 {
-	ARCEMU_ASSERT(Info != NULL);
+    ARCEMU_ASSERT(Info != NULL);
 
-	// Apply level
-	uint32 PreviousLevel = getLevel();
-	setLevel(Level);
+    LevelInfo* oldlevel = lvlinfo;
+    lvlinfo = Info;
 
-	// Set next level conditions
-	SetNextLevelXp(Info->XPToNextLevel);
+    // Apply level
+    uint32 PreviousLevel = getLevel();
+    setLevel(Level);
 
-	// Set stats
-	for (uint8 i = 0; i < 5; ++i)
-	{
-		BaseStats[i] = Info->Stat[i];
-		CalcStat(i);
-	}
+    // Set next level conditions
+    SetNextLevelXp(Info->XPToNextLevel);
 
-	// Set health / mana
-	SetHealth(Info->HP);
-	SetMaxHealth(Info->HP);
-	SetMaxPower(POWER_TYPE_MANA, Info->Mana);
-	SetPower(POWER_TYPE_MANA, Info->Mana);
+    // Set stats
+    for (uint8 i = 0; i < 5; ++i)
+    {
+        BaseStats[i] = Info->Stat[i];
+        CalcStat(i);
+    }
 
+    // Set health / mana
+    SetHealth(Info->HP);
+    SetMaxHealth(Info->HP);
+    SetMaxPower(POWER_TYPE_MANA, Info->Mana);
+    SetPower(POWER_TYPE_MANA, Info->Mana);
 
-	if (Level > PreviousLevel){
-		if (Level > 9)
-			SetTalentPointsForAllSpec(Level - 9);
-	}
-	else{
-		if (Level != PreviousLevel)
-			Reset_AllTalents();
-	}
+    if (Level > PreviousLevel)
+    {
+        if (Level > 9)
+            SetTalentPointsForAllSpec(Level - 9);
+    }
+    else
+    {
+        if (Level != PreviousLevel)
+            Reset_AllTalents();
+    }
 
-	// Set base fields
-	SetBaseHealth(Info->HP);
-	SetBaseMana(Info->Mana);
+    // Set base fields
+    SetBaseHealth(Info->HP);
+    SetBaseMana(Info->Mana);
 
-    LevelInfo* oldlevel = objmgr.GetLevelInfo(getRace(), getClass(), PreviousLevel);
-
-    // Send levelup info to player
-    SendLevelupInfo(
+    // Send levelup info to player only if the new level is bigger than the old one
+    // Otherwise client will crash
+    if (Level > PreviousLevel)
+    {
+        SendLevelupInfo(
         Level,
         Info->HP - oldlevel->HP,
         Info->Mana - oldlevel->Mana,
@@ -8457,7 +8462,7 @@ void Player::ApplyLevelInfo(LevelInfo* Info, uint32 Level)
         Info->Stat[2] - oldlevel->Stat[2],
         Info->Stat[3] - oldlevel->Stat[3],
         Info->Stat[4] - oldlevel->Stat[4]);
-
+    }
 	_UpdateMaxSkillCounts();
 	UpdateStats();
 	//UpdateChances();

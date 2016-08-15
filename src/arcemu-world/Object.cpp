@@ -2103,10 +2103,11 @@ void Object::SendSpellNonMeleeDamageLog(Object* Caster, Object* Target, uint32 S
 
 void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage* Dmg, uint32 Damage, uint32 Abs, uint32 BlockedDamage, uint32 HitStatus, uint32 VState)
 {
+    printf("SendAttackerStateUpdate!!!\n");
 	if (!Caster || !Target || !Dmg)
 		return;
 
-	ObjectGuid guid = GetGUID();
+	ObjectGuid guid = Caster->GetGUID();
 	uint32 count = 1;
 	uint32 counter = 0;
 	size_t maxsize = 4 + 5 + 5 + 4 + 4 + 1 + 4 + 4 + 4 + 4 + 4 + 1 + 4 + 4 + 4 + 4 + 4 * 12;
@@ -2117,7 +2118,7 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
 	if (Damage > Target->GetUInt32Value(UNIT_FIELD_MAXHEALTH))
 		Overkill = Damage - Target->GetUInt32Value(UNIT_FIELD_HEALTH);
 
-	bool hasUnkFlags = HitStatus & HITINFO_UNK26;
+    bool hasUnkFlags = false; // HitStatus & HITINFO_UNK26;
 	uint32 unkCounter = 0;
 
 	data.WriteBit(hasUnkFlags);
@@ -2140,49 +2141,50 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
 	}
 
 	// Needs to be flushed because data.wpos() wouldnt return the correct placeholder
-	data.FlushBits();
+	//data.FlushBits();
 
-	size_t size = data.wpos();
-	data << uint32(0);                                      // Placeholder
+	//size_t size = data.wpos();
+	data << uint32(0); // size
 
 	data << uint32(HitStatus);
 	data.append(Caster->GetNewGUID());
 	data.append(Target->GetNewGUID());
-	data << uint32(Dmg->full_damage);                     // Full damage
-	data << uint32(Overkill < 0 ? 0 : Overkill);            // Overkill
-	data << uint8(count);                                   // Sub damage count
+    data << uint32(Dmg->full_damage); // Full damage
+    data << uint32(Overkill < 0 ? 0 : Overkill); // Overkill
+    data << uint8(count); // Sub damage count
 
 	for (uint32 i = 0; i < count; ++i)
 	{
-		data << uint32(g_spellSchoolConversionTable[Dmg->school_type]);				    // Damage school
-		data << float(Dmg->full_damage);	// Damage float
-		data << uint32(Dmg->full_damage);	// Damage amount
+        data << uint32(g_spellSchoolConversionTable[Dmg->school_type]); // Damage school
+        data << float(Dmg->full_damage); // Damage float
+        data << uint32(Dmg->full_damage); // Damage amount
 	}
 
 	if (HitStatus & (HITINFO_FULL_ABSORB | HITINFO_PARTIAL_ABSORB))
 	{
-		for (uint32 i = 0; i < count; ++i)
-			data << uint32(Abs);             // Absorb
+        for (uint32 i = 0; i < count; ++i)
+            data << uint32(Abs); // Absorb
 	}
 
 	if (HitStatus & (HITINFO_FULL_RESIST | HITINFO_PARTIAL_RESIST))
 	{
-		for (uint32 i = 0; i < count; ++i)
-			data << uint32(Dmg->resisted_damage);             // Resist
+        for (uint32 i = 0; i < count; ++i)
+            data << uint32(Dmg->resisted_damage); // Resist
 	}
 
-	data << uint8(VState);
-	data << uint32(0);                                      // Unknown attackerstate
-	data << uint32(0);                                      // Melee spellid
+	data << uint8(VState); // Victim state
+    data << uint32(0); // Unknown attackerstate
+    data << uint32(0); // Melee spellid
 
 	if (HitStatus & HITINFO_BLOCK)
 		data << uint32(BlockedDamage);
 
 	if (HitStatus & HITINFO_RAGE_GAIN)
-		data << uint32(0);
+		data << uint32(0); // Rage gained
 
 	//! Probably used for debugging purposes, as it is not known to appear on retail servers
-	if (HitStatus & HITSTATUS_UNK)
+	//if (HitStatus & HITSTATUS_UNK)
+    if (false)
 	{
         data << uint32(0);
         data << float(0);
@@ -2206,7 +2208,7 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
 	if (HitStatus & (HITINFO_BLOCK | HITINFO_UNK12))
 		data << float(0);
 
-	data.put(size, data.wpos() - size - 4); // Blizz - Weird and Lazy people....
+	//data.put(size, data.wpos() - size - 4); // Blizz - Weird and Lazy people....
 
 	SendMessageToSet(&data, Caster->IsPlayer());
 }
