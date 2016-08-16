@@ -50,19 +50,21 @@ uint32 WorldStatesHandler::GetWorldStateForZone( uint32 zone, uint32 area, uint3
 	return itr2->second;
 }
 
-void WorldStatesHandler::BuildInitWorldStatesForZone( uint32 zone, uint32 area, WorldPacket &data ) const{
-	data << uint32( map );
-	data << uint32( zone );
-	data << uint32( area );
+void WorldStatesHandler::BuildInitWorldStatesForZone(uint32 zone, uint32 area, WorldPacket &data) const
+{
+	data << uint32(map);
+	data << uint32(zone);
+	data << uint32(area);
 
-	HM_NAMESPACE::hash_map< uint32, HM_NAMESPACE::hash_map< uint32, uint32 > >::const_iterator itr
-		= worldstates.find( zone );
+	HM_NAMESPACE::hash_map< uint32, HM_NAMESPACE::hash_map< uint32, uint32 > >::const_iterator itr = worldstates.find( zone );
 
-	if( itr != worldstates.end() ){
-		data << uint16( 2 + itr->second.size() );
+	if (itr != worldstates.end())
+    {
+		data.WriteBits(2 + itr->second.size(), 21);
+        data.FlushBits();
 
 		for( HM_NAMESPACE::hash_map< uint32, uint32 >::const_iterator itr2 = itr->second.begin(); itr2 != itr->second.end(); ++itr2 ){
-			data << uint32( itr2->first );
+			data << uint32( itr2->first ); // Correct order?
 			data << uint32( itr2->second );
 		}
 
@@ -70,10 +72,10 @@ void WorldStatesHandler::BuildInitWorldStatesForZone( uint32 zone, uint32 area, 
 		data << uint16( 2 );
 	}
 
-	data << uint32( 3191 );
-	data << uint32( sWorld.Arena_Season );
-	data << uint32( 3901 );
-	data << uint32( sWorld.Arena_Progress );
+	//data << uint32( 3191 );
+	//data << uint32( sWorld.Arena_Season );
+	//data << uint32( 3901 );
+	//data << uint32( sWorld.Arena_Progress );
 }
 
 void WorldStatesHandler::InitWorldStates( std::multimap< uint32,WorldState > *states ){

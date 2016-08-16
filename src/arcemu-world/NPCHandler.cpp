@@ -499,20 +499,20 @@ void WorldSession::HandleSpiritHealerActivateOpcode(WorldPacket & recv_data)
 
 		if(aur == NULL)   // If the player already have the aura, just extend it.
 		{
-			SpellEntry* spellInfo = dbcSpell.LookupEntry(15007);  //resurrection sickness
+			SpellEntry* spellInfo = dbcSpell.LookupEntry(15007);  // Resurrection sickness
 			SpellCastTargets targets;
 			targets.m_unitTarget = GetPlayer()->GetGUID();
 			Spell* sp = sSpellFactoryMgr.NewSpell(_player, spellInfo, true, NULL);
 			sp->prepare(&targets);
 		}
 
-		//calc new duration
-		int32 duration = 600000; //10mins
+		// Calculate new duration
+		int32 duration = 600000; // 10 mins
 
 		if(_player->getLevel() < 20)
 			duration = (_player->getLevel() - 10) * 60000;
 
-		_player->SetAurDuration(15007, duration); //cebernic: change this to setaurduration() to be refreshed.
+		_player->SetAurDuration(15007, duration); // Cebernic: change this to setaurduration() to be refreshed.
 	}
 
 	GetPlayer()->SetHealth(GetPlayer()->GetMaxHealth() / 2);
@@ -642,8 +642,27 @@ void WorldSession::SendInnkeeperBind(Creature* pCreature)
 
 void WorldSession::SendSpiritHealerRequest(Creature* pCreature)
 {
+    ObjectGuid guid = pCreature->GetGUID();
 	WorldPacket data(SMSG_SPIRIT_HEALER_CONFIRM, 8);
-	data << pCreature->GetGUID();
+
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[0]);
+
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[1]);
+
 	SendPacket(&data);
 }
 

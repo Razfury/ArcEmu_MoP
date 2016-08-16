@@ -4488,6 +4488,7 @@ void Unit::AddAura(Aura* aur)
 			//uint32 aurName = aur->GetSpellProto()->Name;
 			//uint32 aurRank = aur->GetSpellProto()->Rank;
 			uint32 maxStack = aur->GetSpellProto()->maxstack;
+
 			if(aur->GetSpellProto()->procCharges > 0)
 			{
 				int charges = aur->GetSpellProto()->procCharges;
@@ -5891,10 +5892,56 @@ void Unit::CastSpellAoF(float x, float y, float z, SpellEntry* Sp, bool triggere
 	newSpell->prepare(&targets);
 }
 
+//! TODO add missing fields
 void Unit::PlaySpellVisual(uint64 target, uint32 spellVisual)
 {
-	WorldPacket data(SMSG_PLAY_SPELL_VISUAL, 12);
-	data << target << spellVisual;
+    ObjectGuid SourceGuid = GetGUID();
+    ObjectGuid TargetGuid = target;
+    LocationVector pos = objmgr.GetPlayer(GetGUID())->GetPosition();
+    WorldPacket data(SMSG_PLAY_SPELL_VISUAL, 12);
+
+    data.WriteBit(SourceGuid[4]);
+    data.WriteBit(TargetGuid[6]);
+    data.WriteBit(TargetGuid[4]);
+    data.WriteBit(TargetGuid[7]);
+    data.WriteBit(SourceGuid[6]);
+    data.WriteBit(TargetGuid[2]);
+    data.WriteBit(TargetGuid[0]);
+    data.WriteBit(SourceGuid[2]);
+    data.WriteBit(0); // Speed time
+    data.WriteBit(SourceGuid[7]);
+    data.WriteBit(TargetGuid[3]);
+    data.WriteBit(TargetGuid[1]);
+    data.WriteBit(SourceGuid[0]);
+    data.WriteBit(SourceGuid[1]);
+    data.WriteBit(TargetGuid[5]);
+    data.WriteBit(SourceGuid[5]);
+    data.WriteBit(SourceGuid[3]);
+
+    data << float(pos.z);
+    data.WriteByteSeq(SourceGuid[2]);
+    data.WriteByteSeq(SourceGuid[6]);
+    data.WriteByteSeq(SourceGuid[5]);
+    data.WriteByteSeq(TargetGuid[2]);
+    data.WriteByteSeq(SourceGuid[1]);
+    data << float(pos.x);
+    data.WriteByteSeq(SourceGuid[3]);
+    data << uint16(0); // Reflect status
+    data.WriteByteSeq(TargetGuid[4]);
+    data.WriteByteSeq(TargetGuid[7]);
+    data << float(pos.o);
+    data << float(pos.y);
+    data.WriteByteSeq(SourceGuid[4]);
+    data.WriteByteSeq(TargetGuid[5]);
+    data << uint32(spellVisual);
+    data.WriteByteSeq(TargetGuid[1]);
+    data.WriteByteSeq(SourceGuid[7]);
+    data << uint16(0); // Miss reason
+    data.WriteByteSeq(TargetGuid[0]);
+    data.WriteByteSeq(TargetGuid[6]);
+    data.WriteByteSeq(SourceGuid[0]);
+    data.WriteByteSeq(TargetGuid[3]);
+
 	SendMessageToSet(&data, true);
 }
 
@@ -6282,8 +6329,8 @@ bool Unit::IsPoisoned()
 void Unit::SendFullAuraUpdate()
 {
 	// not updated packet struct && opcode - DISABLED
-
-	/*WorldPacket data(SMSG_AURA_UPDATE_ALL, 200);
+    /*
+	WorldPacket data(SMSG_AURA_UPDATE_ALL, 200);
 
 	data << WoWGuid(GetNewGUID());
 
@@ -6332,56 +6379,111 @@ void Unit::SendFullAuraUpdate()
 
 void Unit::SendAuraUpdate(uint32 AuraSlot, bool remove)
 {
-	Aura* aur = m_auras[ AuraSlot ];
+	Aura* aura = m_auras[ AuraSlot ];
 
-	ARCEMU_ASSERT(aur != NULL);
+    ARCEMU_ASSERT(aura != NULL);
 
-	WorldPacket data(SMSG_AURA_UPDATE); //! TODO
+	WorldPacket data(SMSG_AURA_UPDATE);
 
     ObjectGuid guid = GetGUID();
     ObjectGuid targetGuid = GetTargetGUID();
 
-	if(remove)
-	{
-		data << WoWGuid(GetGUID());
-		data << uint8(aur->m_visualSlot);
-		data << uint32(0);
-	}
-	else
-	{
-		uint8 flags = (AFLAG_EFFECT_1 | AFLAG_EFFECT_2 | AFLAG_EFFECT_3);
+    uint8 flags = (AFLAG_EFFECT_1 | AFLAG_EFFECT_2 | AFLAG_EFFECT_3);
 
-		if(aur->IsPositive())
-			flags |= AFLAG_CANCELLABLE;
-		else
-			flags |= AFLAG_NEGATIVE;
+    if (aura->IsPositive())
+        flags |= AFLAG_CANCELLABLE;
+    else
+        flags |= AFLAG_NEGATIVE;
 
-		if(aur->GetDuration() != 0)
-			flags |= AFLAG_DURATION;
+    if (aura->GetDuration() != 0) //! TODO also  !(AttributesEx5 & SPELL_ATTR5_HIDE_DURATION)
+        flags |= AFLAG_DURATION;
 
-		data << WoWGuid(GetGUID());
-		data << uint8(aur->m_visualSlot);
+    data.WriteBit(targetGuid[7]);
+    data.WriteBit(0); // Is AURA_UPDATE_ALL
+    data.WriteBits(1, 24); // Aura Count
+    data.WriteBit(targetGuid[6]);
+    data.WriteBit(targetGuid[1]);
+    data.WriteBit(targetGuid[3]);
+    data.WriteBit(targetGuid[0]);
+    data.WriteBit(targetGuid[4]);
+    data.WriteBit(targetGuid[2]);
+    data.WriteBit(targetGuid[5]);
+    data.WriteBit(!remove); // Not remove
 
-		data << uint32(aur->GetSpellId());
-		data << uint8(flags);
+    if (!remove)
+    {
+        data.WriteBits(0, 22); //! TODO effect counter
 
-		Unit* caster = aur->GetUnitCaster();
-		if(caster != NULL)
-			data << uint8(caster->getLevel());
-		else
-			data << uint8(sWorld.m_levelCap);
+        data.WriteBit(!(flags & AFLAG_NOT_CASTER) == 0);
 
-		data << uint8(m_auraStackCount[ aur->m_visualSlot ]);
+        if ((flags & AFLAG_NOT_CASTER) == 0)
+        {
+            ObjectGuid casterGuid = aura->GetCasterGUID();
+            data.WriteBit(casterGuid[3]);
+            data.WriteBit(casterGuid[4]);
+            data.WriteBit(casterGuid[6]);
+            data.WriteBit(casterGuid[1]);
+            data.WriteBit(casterGuid[5]);
+            data.WriteBit(casterGuid[2]);
+            data.WriteBit(casterGuid[0]);
+            data.WriteBit(casterGuid[7]);
+        }
 
-		if((flags & AFLAG_NOT_CASTER) == 0)
-			data << WoWGuid(aur->GetCasterGUID());
+        data.WriteBits(0, 22); // Unk effect count
+        data.WriteBit(flags & AFLAG_DURATION); // HasDuration
+        data.WriteBit(flags & AFLAG_DURATION); // HasMaxDuration
+    }
 
-		if(flags & AFLAG_DURATION)
-		{
-			data << uint32(aur->GetDuration());
-			data << uint32(aur->GetTimeLeft());
-		}
-	}
+    data.FlushBits();
+
+    if (!remove)
+    {
+        if ((flags & AFLAG_NOT_CASTER) == 0)
+        {
+            ObjectGuid casterGuid = aura->GetCasterGUID();
+            data.WriteByteSeq(casterGuid[3]);
+            data.WriteByteSeq(casterGuid[2]);
+            data.WriteByteSeq(casterGuid[1]);
+            data.WriteByteSeq(casterGuid[6]);
+            data.WriteByteSeq(casterGuid[4]);
+            data.WriteByteSeq(casterGuid[0]);
+            data.WriteByteSeq(casterGuid[5]);
+            data.WriteByteSeq(casterGuid[7]);
+        }
+
+        data << uint8(flags);
+
+        Unit* caster = aura->GetUnitCaster();
+
+        if (caster)
+            data << uint16(caster->getLevel());
+        else
+            data << uint16(sWorld.m_levelCap);
+
+        data << uint32(aura->GetSpellId());
+
+        if (flags & AFLAG_DURATION)
+        {
+            data << uint32(aura->GetDuration());
+            data << uint32(aura->GetTimeLeft());
+        }
+
+        data << uint8(m_auraStackCount[aura->m_visualSlot]);
+        data << uint32(0); // Effect mask
+
+        data << float(0.f); //! TODO for each effect, float (amount)
+    }
+
+    data << uint8(aura->m_visualSlot);
+
+    data.WriteByteSeq(targetGuid[2]);
+    data.WriteByteSeq(targetGuid[6]);
+    data.WriteByteSeq(targetGuid[7]);
+    data.WriteByteSeq(targetGuid[1]);
+    data.WriteByteSeq(targetGuid[3]);
+    data.WriteByteSeq(targetGuid[4]);
+    data.WriteByteSeq(targetGuid[0]);
+    data.WriteByteSeq(targetGuid[5]);
 
 	SendMessageToSet(&data, true);
 }

@@ -557,8 +557,7 @@ void WorldSession::InitPacketHandlerTable()
 	WorldPacketHandlers[CMSG_CHAR_CREATE].handler =	&WorldSession::HandleCharCreateOpcode;
 	WorldPacketHandlers[CMSG_CHAR_CREATE].status = STATUS_AUTHED;
 
-	WorldPacketHandlers[CMSG_RANDOMIZE_CHAR_NAME].handler =
-		&WorldSession::HandleRandomizeCharNameOpcode;
+	WorldPacketHandlers[CMSG_RANDOMIZE_CHAR_NAME].handler = &WorldSession::HandleRandomizeCharNameOpcode;
 	WorldPacketHandlers[CMSG_RANDOMIZE_CHAR_NAME].status = STATUS_AUTHED;
 
 	WorldPacketHandlers[CMSG_CHAR_DELETE].handler = &WorldSession::HandleCharDeleteOpcode;
@@ -589,8 +588,7 @@ void WorldSession::InitPacketHandlerTable()
 
 	/*******************************************************************************/
 	// Queries
-	WorldPacketHandlers[MSG_CORPSE_QUERY].handler =
-	    &WorldSession::HandleCorpseQueryOpcode;
+	WorldPacketHandlers[CMSG_CORPSE_QUERY].handler = &WorldSession::HandleCorpseQueryOpcode;
 	WorldPacketHandlers[CMSG_NAME_QUERY].handler =
 	    &WorldSession::HandleNameQueryOpcode;
 	WorldPacketHandlers[CMSG_QUERY_TIME].handler = &WorldSession::HandleQueryTimeOpcode;
@@ -699,8 +697,7 @@ void WorldSession::InitPacketHandlerTable()
 
 	// Action Buttons
 	WorldPacketHandlers[CMSG_SET_ACTION_BUTTON].handler = &WorldSession::HandleSetActionButtonOpcode;
-	WorldPacketHandlers[CMSG_REPOP_REQUEST].handler =
-	    &WorldSession::HandleRepopRequestOpcode;
+	WorldPacketHandlers[CMSG_REPOP_REQUEST].handler = &WorldSession::HandleRepopRequestOpcode;
 
 	// Loot
 	WorldPacketHandlers[CMSG_AUTOSTORE_LOOT_ITEM].handler =
@@ -919,8 +916,7 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleGossipHelloOpcode;
 	WorldPacketHandlers[CMSG_GOSSIP_SELECT_OPTION].handler =
 	    &WorldSession::HandleGossipSelectOptionOpcode;
-	WorldPacketHandlers[CMSG_SPIRIT_HEALER_ACTIVATE].handler =
-	    &WorldSession::HandleSpiritHealerActivateOpcode;
+	WorldPacketHandlers[CMSG_SPIRIT_HEALER_ACTIVATE].handler = &WorldSession::HandleSpiritHealerActivateOpcode;
 	WorldPacketHandlers[CMSG_NPC_TEXT_QUERY].handler =
 	    &WorldSession::HandleNpcTextQueryOpcode;
 	WorldPacketHandlers[CMSG_BINDER_ACTIVATE].handler =
@@ -1060,8 +1056,7 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleQuestgiverCompleteQuestOpcode;
 	WorldPacketHandlers[CMSG_QUESTLOG_REMOVE_QUEST].handler =
 	    &WorldSession::HandleQuestlogRemoveQuestOpcode;
-	WorldPacketHandlers[CMSG_RECLAIM_CORPSE].handler =
-	    &WorldSession::HandleCorpseReclaimOpcode;
+	WorldPacketHandlers[CMSG_RECLAIM_CORPSE].handler = &WorldSession::HandleCorpseReclaimOpcode;
 	WorldPacketHandlers[CMSG_RESURRECT_RESPONSE].handler =
 	    &WorldSession::HandleResurrectResponseOpcode;
 	WorldPacketHandlers[CMSG_PUSHQUESTTOPARTY].handler =
@@ -1303,10 +1298,8 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleCompleteCinematic;
 	WorldPacketHandlers[CMSG_MOUNTSPECIAL_ANIM].handler =
 	    &WorldSession::HandleMountSpecialAnimOpcode;
-	WorldPacketHandlers[CMSG_TOGGLE_CLOAK].handler =
-	    &WorldSession::HandleToggleCloakOpcode;
-	WorldPacketHandlers[CMSG_TOGGLE_HELM].handler =
-	    &WorldSession::HandleToggleHelmOpcode;
+	WorldPacketHandlers[CMSG_TOGGLE_CLOAK].handler = &WorldSession::HandleToggleCloakOpcode;
+	WorldPacketHandlers[CMSG_TOGGLE_HELM].handler = &WorldSession::HandleToggleHelmOpcode;
 	WorldPacketHandlers[CMSG_SET_TITLE].handler =
 	    &WorldSession::HandleSetVisibleRankOpcode;
 	WorldPacketHandlers[CMSG_COMPLAIN].handler =

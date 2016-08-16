@@ -26,7 +26,6 @@ void WorldSession::HandleUseItemOpcode(WorldPacket & recvPacket)
 
 	Player* pUser = _player;
 	Unit* mover = _player->m_mover;
-
 	
 	uint8 bagIndex, slot;
 	uint8 castCount = 0;
@@ -1128,7 +1127,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket & recvPacket)
 		Spell* spell = sSpellFactoryMgr.NewSpell(GetPlayer(), spellInfo, false, NULL);
 		spell->extra_cast_number = castCount;
 		spell->prepare(&targets);
-		sLog.outError("end of spell cast");
 	}
 }
 
@@ -1145,7 +1143,6 @@ void WorldSession::HandleCancelCastOpcode(WorldPacket & recvPacket)
 
 void WorldSession::HandleCancelAuraOpcode(WorldPacket & recvPacket)
 {
-
 	CHECK_INWORLD_RETURN
 
 	uint32 spellId;
@@ -1167,7 +1164,6 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket & recvPacket)
 
 void WorldSession::HandleCancelChannellingOpcode(WorldPacket & recvPacket)
 {
-
 	CHECK_INWORLD_RETURN
 
 	uint32 spellId;
@@ -1194,7 +1190,6 @@ void WorldSession::HandleCancelAutoRepeatSpellOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandlePetCastSpell(WorldPacket & recvPacket)
 {
-
 	CHECK_INWORLD_RETURN
 
 	uint64 guid = 0;
@@ -1304,7 +1299,6 @@ void WorldSession::HandlePetCastSpell(WorldPacket & recvPacket)
 
 void WorldSession::HandleCancelTotem(WorldPacket & recv_data)
 {
-
 	CHECK_INWORLD_RETURN
 
 	uint8 slot;

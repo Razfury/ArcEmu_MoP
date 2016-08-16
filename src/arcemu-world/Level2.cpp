@@ -430,7 +430,6 @@ bool ChatHandler::HandleKillCommand(const char* args, WorldSession* m_session)
 			break;
 	}
 
-
 	// If we're killing a player, send a message indicating a gm killed them.
 	if(target->IsPlayer())
 	{
@@ -447,7 +446,8 @@ bool ChatHandler::HandleKillCommand(const char* args, WorldSession* m_session)
 
 		// Cast insta-kill.
 		SpellEntry* se = dbcSpell.LookupEntryForced(5);
-		if(se == NULL) return false;
+		if(se == NULL)
+            return false;
 
 		SpellCastTargets targets(target->GetGUID());
 		Spell* sp = sSpellFactoryMgr.NewSpell(m_session->GetPlayer(), se, true, 0);

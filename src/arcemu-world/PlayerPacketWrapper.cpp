@@ -231,18 +231,58 @@ void Player::SendSetProficiency(uint8 ItemClass, uint32 Proficiency)
 
 void Player::SendPlaySpellVisual(uint64 guid, uint32 visualid)
 {
+    ObjectGuid SourceGuid = GetGUID();
+    ObjectGuid TargetGuid = guid;
+    LocationVector pos = objmgr.GetPlayer(GetGUID())->GetPosition();
+    WorldPacket data(SMSG_PLAY_SPELL_VISUAL, 12);
 
-	WorldPacket data(SMSG_PLAY_SPELL_VISUAL, 12);
+    data.WriteBit(SourceGuid[4]);
+    data.WriteBit(TargetGuid[6]);
+    data.WriteBit(TargetGuid[4]);
+    data.WriteBit(TargetGuid[7]);
+    data.WriteBit(SourceGuid[6]);
+    data.WriteBit(TargetGuid[2]);
+    data.WriteBit(TargetGuid[0]);
+    data.WriteBit(SourceGuid[2]);
+    data.WriteBit(0); // Speed time
+    data.WriteBit(SourceGuid[7]);
+    data.WriteBit(TargetGuid[3]);
+    data.WriteBit(TargetGuid[1]);
+    data.WriteBit(SourceGuid[0]);
+    data.WriteBit(SourceGuid[1]);
+    data.WriteBit(TargetGuid[5]);
+    data.WriteBit(SourceGuid[5]);
+    data.WriteBit(SourceGuid[3]);
 
-	data << uint64(guid);
-	data << uint32(visualid);
+    data << float(pos.z);
+    data.WriteByteSeq(SourceGuid[2]);
+    data.WriteByteSeq(SourceGuid[6]);
+    data.WriteByteSeq(SourceGuid[5]);
+    data.WriteByteSeq(TargetGuid[2]);
+    data.WriteByteSeq(SourceGuid[1]);
+    data << float(pos.x);
+    data.WriteByteSeq(SourceGuid[3]);
+    data << uint16(0); // Reflect status
+    data.WriteByteSeq(TargetGuid[4]);
+    data.WriteByteSeq(TargetGuid[7]);
+    data << float(pos.o);
+    data << float(pos.y);
+    data.WriteByteSeq(SourceGuid[4]);
+    data.WriteByteSeq(TargetGuid[5]);
+    data << uint32(visualid);
+    data.WriteByteSeq(TargetGuid[1]);
+    data.WriteByteSeq(SourceGuid[7]);
+    data << uint16(0); // Miss reason
+    data.WriteByteSeq(TargetGuid[0]);
+    data.WriteByteSeq(TargetGuid[6]);
+    data.WriteByteSeq(SourceGuid[0]);
+    data.WriteByteSeq(TargetGuid[3]);
 
 	SendMessageToSet(&data, true, false);
 }
 
 void Player::SendDungeonDifficulty()
 {
-
 	WorldPacket data(MSG_SET_DUNGEON_DIFFICULTY, 12);
 
 	data << uint32(iInstanceType);
@@ -617,15 +657,19 @@ void Player::SendInitialLogonPackets()
 	m_lastRunSpeed = 0;
 	UpdateSpeed();
 
-	// we do not need this here I guess
-	// toDo: make a function for this packet, we'll need it later
-	/*WorldPacket ArenaSettings(SMSG_UPDATE_WORLD_STATE, 16);
+    //! TODO check the structure
+    WorldPacket UpdateWSData(SMSG_UPDATE_WORLD_STATE, 8);
+    data.WriteBit(0);
+    data << uint32(sWorld.Arena_Progress);
+    data << uint32(sWorld.Arena_Season);
+    m_session->SendPacket(&UpdateWSData);
 
+	// Keeping the old structure here, just in case
+	/*WorldPacket ArenaSettings(SMSG_UPDATE_WORLD_STATE, 16);
 	ArenaSettings << uint32(0xC77);
 	ArenaSettings << uint32(sWorld.Arena_Progress);
 	ArenaSettings << uint32(0xF3D);
 	ArenaSettings << uint32(sWorld.Arena_Season);
-
 	m_session->SendPacket(&ArenaSettings);*/
 	
 	LOG_DETAIL("WORLD: Sent initial logon packets for %s.", GetName());
@@ -729,9 +773,9 @@ void Player::SendPartyKillLog(uint64 GUID)
 	SendMessageToSet(&data, true);
 }
 
+//! TODO structure
 void Player::SendDestroyObject(uint64 GUID)
 {
-
 	WorldPacket data(SMSG_DESTROY_OBJECT, 9);
 
 	data << GUID;
@@ -743,7 +787,6 @@ void Player::SendDestroyObject(uint64 GUID)
 
 void Player::SendEquipmentSetList()
 {
-
 	WorldPacket data(SMSG_EQUIPMENT_SET_LIST, 1000);
 
 	m_ItemInterface->m_EquipmentSets.FillEquipmentSetListPacket(data);
@@ -786,11 +829,9 @@ void Player::SendTotemCreated(uint8 slot, uint64 GUID, uint32 duration, uint32 s
 	m_session->SendPacket(&data);
 }
 
-void Player::SendInitialWorldstates(){
-	// packet struct && opcode not updated - DISABLED
-
-	/*WorldPacket data( SMSG_INIT_WORLD_STATES, 100 );
-	m_mapMgr->GetWorldStatesHandler().BuildInitWorldStatesForZone( m_zoneId, m_AreaID, data );
-	m_session->SendPacket( &data );*/
-
+void Player::SendInitialWorldstates()
+{
+	WorldPacket data(SMSG_INIT_WORLD_STATES, 150);
+	m_mapMgr->GetWorldStatesHandler().BuildInitWorldStatesForZone(m_zoneId, m_AreaID, data);
+	m_session->SendPacket(&data);
 }

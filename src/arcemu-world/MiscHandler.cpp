@@ -1118,8 +1118,25 @@ void WorldSession::HandleCorpseReclaimOpcode(WorldPacket & recv_data)
 	CHECK_INWORLD_RETURN
 	LOG_DETAIL("WORLD: Received CMSG_RECLAIM_CORPSE");
 
-	uint64 guid;
-	recv_data >> guid;
+    ObjectGuid guid;
+
+    guid[1] = recv_data.ReadBit();
+    guid[5] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    guid[2] = recv_data.ReadBit();
+    guid[6] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[3]);
 
 	if(guid == 0)
 		return;
@@ -2485,40 +2502,6 @@ void WorldSession::HandleResetInstanceOpcode(WorldPacket & recv_data)
 	sInstanceMgr.ResetSavedInstances(_player);
 }
 
-void WorldSession::HandleToggleCloakOpcode(WorldPacket & recv_data)
-{
-	CHECK_INWORLD_RETURN
-
-	//////////////////////////
-	//	PLAYER_FLAGS									   = 3104 / 0x00C20 / 0000000000000000000110000100000
-	//																							 ^
-	// This bit, on = toggled OFF, off = toggled ON.. :S
-
-	//uint32 SetBit = 0 | (1 << 11);
-
-	if(_player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_CLOAK))
-		_player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_CLOAK);
-	else
-		_player->SetFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_CLOAK);
-}
-
-void WorldSession::HandleToggleHelmOpcode(WorldPacket & recv_data)
-{
-	CHECK_INWORLD_RETURN
-
-	//////////////////////////
-	//	PLAYER_FLAGS									   = 3104 / 0x00C20 / 0000000000000000000110000100000
-	//																							  ^
-	// This bit, on = toggled OFF, off = toggled ON.. :S
-
-	//uint32 SetBit = 0 | (1 << 10);
-
-	if(_player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_HELM))
-		_player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_HELM);
-	else
-		_player->SetFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_HELM);
-}
-
 void WorldSession::HandleDungeonDifficultyOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
@@ -2716,27 +2699,27 @@ void WorldSession::HandleTimeSyncRespOpcode(WorldPacket & recv_data) // 4.3.4 (c
 
 void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket)
 {
-	ObjectGuid guid;
+    ObjectGuid guid;
 
-	guid[3] = recvPacket.ReadBit();
-	guid[5] = recvPacket.ReadBit();
-	guid[6] = recvPacket.ReadBit();
-	guid[0] = recvPacket.ReadBit();
-	guid[1] = recvPacket.ReadBit();
-	guid[2] = recvPacket.ReadBit();
-	guid[7] = recvPacket.ReadBit();
-	guid[4] = recvPacket.ReadBit();
+    guid[3] = recvPacket.ReadBit();
+    guid[5] = recvPacket.ReadBit();
+    guid[6] = recvPacket.ReadBit();
+    guid[0] = recvPacket.ReadBit();
+    guid[1] = recvPacket.ReadBit();
+    guid[2] = recvPacket.ReadBit();
+    guid[7] = recvPacket.ReadBit();
+    guid[4] = recvPacket.ReadBit();
 
-	recvPacket.ReadByteSeq(guid[0]);
-	recvPacket.ReadByteSeq(guid[6]);
-	recvPacket.ReadByteSeq(guid[5]);
-	recvPacket.ReadByteSeq(guid[7]);
-	recvPacket.ReadByteSeq(guid[2]);
-	recvPacket.ReadByteSeq(guid[1]);
-	recvPacket.ReadByteSeq(guid[3]);
-	recvPacket.ReadByteSeq(guid[4]);
+    recvPacket.ReadByteSeq(guid[0]);
+    recvPacket.ReadByteSeq(guid[6]);
+    recvPacket.ReadByteSeq(guid[5]);
+    recvPacket.ReadByteSeq(guid[7]);
+    recvPacket.ReadByteSeq(guid[2]);
+    recvPacket.ReadByteSeq(guid[1]);
+    recvPacket.ReadByteSeq(guid[3]);
+    recvPacket.ReadByteSeq(guid[4]);
 
-	LOG_ERROR("Failed to update object for GUID: %u", guid);	
+	LOG_ERROR("Failed to update object for GUID: %u", guid);
 }
 
 void WorldSession::HandleRequestHotfixOpcode(WorldPacket & recv_data)
@@ -2796,4 +2779,13 @@ void WorldSession::HandleRequestHotfixOpcode(WorldPacket & recv_data)
 void WorldSession::HandleReturnToGraveyardOpcode(WorldPacket & recv_data)
 {
     _player->RepopAtGraveyard(_player->GetPositionX(), _player->GetPositionY(), _player->GetPositionZ(), _player->GetMapId());
+}
+
+// We do not do anything with this opcode...
+void WorldSession::HandleLoadScreenOpcode(WorldPacket & recv_data)
+{
+    uint32 mapId;
+
+    recv_data >> mapId;
+    recv_data.ReadBit();
 }

@@ -4486,8 +4486,27 @@ void Player::SetSpeeds(uint8 type, float speed)
 
 void Player::BuildPlayerRepop()
 {
+    ObjectGuid guid = GetGUID();
 	WorldPacket data(SMSG_PRE_RESURRECT, 8);
-	FastGUIDPack(data, GetGUID());		 // caster guid
+
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[4]);
+
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[3]);
+
 	GetSession()->SendPacket(&data);
 
 	// Cleanup first
@@ -4501,7 +4520,7 @@ void Player::BuildPlayerRepop()
 
 	if (getRace() == RACE_NIGHTELF)
 	{
-		SpellEntry* inf = dbcSpell.LookupEntry(9036);
+		SpellEntry* inf = dbcSpell.LookupEntry(9036); // Is it this spell that should be applied?
 		Spell* sp = sSpellFactoryMgr.NewSpell(this, inf, true, NULL);
 		sp->prepare(&tgt);
 	}
@@ -4566,7 +4585,6 @@ void Player::RepopRequestedPlayer()
 	if (corpse)
 		CreateCorpse();
 
-
 	BuildPlayerRepop();
 
 	// Cebernic: don't do this.
@@ -4615,19 +4633,22 @@ void Player::RepopRequestedPlayer()
 		}
 
 		/* Send Spirit Healer Location */
-		WorldPacket data(SMSG_DEATH_RELEASE_LOC, 16);
-
-		data << m_mapId;
-		data << m_position;
-
+		WorldPacket data(SMSG_DEATH_RELEASE_LOC, 16); // Remove Spirit Healer position
+        data << uint32(-1);
+        data << float(0);
+        data << float(0);
+        data << float(0);
 		m_session->SendPacket(&data);
 
 		/* Corpse reclaim delay */
 		WorldPacket data2(SMSG_CORPSE_RECLAIM_DELAY, 4);
-		data2 << uint32(CORPSE_RECLAIM_TIME_MS);
+        data2.WriteBit(CORPSE_RECLAIM_TIME == 0);
+
+        if (CORPSE_RECLAIM_TIME)
+		    data2 << uint32(CORPSE_RECLAIM_TIME_MS);
+
 		m_session->SendPacket(&data2);
 	}
-
 }
 
 void Player::ResurrectPlayer()
@@ -9205,8 +9226,13 @@ void Player::CompleteLoading()
 			Corpse* myCorpse = objmgr.GetCorpseByOwner(GetLowGUID());
 			if (myCorpse != NULL)
 				myCorpse->ResetDeathClock();
+
 			WorldPacket SendCounter(SMSG_CORPSE_RECLAIM_DELAY, 4);
-			SendCounter << (uint32)(CORPSE_RECLAIM_TIME_MS);
+            SendCounter.WriteBit(CORPSE_RECLAIM_TIME == 0);
+
+            if (CORPSE_RECLAIM_TIME)
+			    SendCounter << (uint32)(CORPSE_RECLAIM_TIME_MS);
+
 			GetSession()->SendPacket(&SendCounter);
 		}
 		//RepopRequestedPlayer();

@@ -1339,25 +1339,43 @@ bool ChatHandler::HandleRenameCommand(const char* args, WorldSession* m_session)
 	return true;
 }
 
-// We do not do anything with this opcode...
-void WorldSession::HandleLoadScreenOpcode(WorldPacket & recv_data)
-{
-	// empty opcode
-	// printf("LOAD SCREEN OPCODE\n");
-	uint32 mapId;
-
-	recv_data >> mapId;
-	recv_data.ReadBit();
-}
-
 void WorldSession::HandleRandomizeCharNameOpcode(WorldPacket & recv_data)
 {
 	uint8 gender, race;
 
-	recv_data >> race;
-	recv_data >> gender;	
+	recv_data >> gender;
+	recv_data >> race;	
 
-	WorldPacket data(SMSG_RANDOMIZE_CHAR_NAME, 10);
-	data.WriteBit(0);     //////  This isn't correct
-	SendPacket(&data);    //////  but she works! :)
+    std::string newName = "Test"; //! TODO get the new random name
+
+	WorldPacket data(SMSG_RANDOMIZE_CHAR_NAME, 1 + newName.size());
+	data.WriteBit(0);
+    data.WriteBits(newName.length(), 6);
+    data.FlushBits();
+    data.WriteString(newName);
+    SendPacket(&data);
+}
+
+void WorldSession::HandleToggleCloakOpcode(WorldPacket & recv_data)
+{
+    CHECK_INWORLD_RETURN
+
+        recv_data.read<uint8>();
+
+    if (_player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_CLOAK))
+        _player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_CLOAK);
+    else
+        _player->SetFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_CLOAK);
+}
+
+void WorldSession::HandleToggleHelmOpcode(WorldPacket & recv_data)
+{
+    CHECK_INWORLD_RETURN
+
+        recv_data.read<uint8>();
+
+    if (_player->HasFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_HELM))
+        _player->RemoveFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_HELM);
+    else
+        _player->SetFlag(PLAYER_FLAGS, PLAYER_FLAG_HIDE_HELM);
 }
