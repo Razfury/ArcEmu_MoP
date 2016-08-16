@@ -2107,14 +2107,10 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
 	if (!Caster || !Target || !Dmg)
 		return;
 
-	ObjectGuid guid = Caster->GetGUID();
-	uint32 count = 1;
-	uint32 counter = 0;
 	size_t maxsize = 4 + 5 + 5 + 4 + 4 + 1 + 4 + 4 + 4 + 4 + 4 + 1 + 4 + 4 + 4 + 4 + 4 * 12;
 	WorldPacket data(SMSG_ATTACKERSTATEUPDATE, maxsize);    // we guess size
 
 	uint32 Overkill = 0;
-
 	if (Damage > Target->GetUInt32Value(UNIT_FIELD_MAXHEALTH))
 		Overkill = Damage - Target->GetUInt32Value(UNIT_FIELD_HEALTH);
 
@@ -2126,7 +2122,7 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
 	if (hasUnkFlags)
 	{
 		data.WriteBits(unkCounter, 21);
-		data.FlushBits();
+		//data.FlushBits();
 
 		data << uint32(0);
 
@@ -2141,36 +2137,27 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
 	}
 
 	// Needs to be flushed because data.wpos() wouldnt return the correct placeholder
-	//data.FlushBits();
+	data.FlushBits();
 
 	//size_t size = data.wpos();
 	data << uint32(0); // size
 
 	data << uint32(HitStatus);
-	data.append(Caster->GetNewGUID());
-	data.append(Target->GetNewGUID());
+	data.append(Caster->GetGUID());
+	data.append(Target->GetGUID());
     data << uint32(Dmg->full_damage); // Full damage
     data << uint32(Overkill < 0 ? 0 : Overkill); // Overkill
-    data << uint8(count); // Sub damage count
+    data << uint8(1); // Damage type counter / swing type
 
-	for (uint32 i = 0; i < count; ++i)
-	{
-        data << uint32(g_spellSchoolConversionTable[Dmg->school_type]); // Damage school
-        data << float(Dmg->full_damage); // Damage float
-        data << uint32(Dmg->full_damage); // Damage amount
-	}
+    data << uint32(g_spellSchoolConversionTable[Dmg->school_type]); // Damage school
+    data << float(Dmg->full_damage); // Damage float
+    data << uint32(Dmg->full_damage); // Damage amount
 
 	if (HitStatus & (HITINFO_FULL_ABSORB | HITINFO_PARTIAL_ABSORB))
-	{
-        for (uint32 i = 0; i < count; ++i)
             data << uint32(Abs); // Absorb
-	}
 
 	if (HitStatus & (HITINFO_FULL_RESIST | HITINFO_PARTIAL_RESIST))
-	{
-        for (uint32 i = 0; i < count; ++i)
             data << uint32(Dmg->resisted_damage); // Resist
-	}
 
 	data << uint8(VState); // Victim state
     data << uint32(0); // Unknown attackerstate
@@ -2183,8 +2170,7 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
 		data << uint32(0); // Rage gained
 
 	//! Probably used for debugging purposes, as it is not known to appear on retail servers
-	//if (HitStatus & HITSTATUS_UNK)
-    if (false)
+    if (HitStatus & HITINFO_UNK0)
 	{
         data << uint32(0);
         data << float(0);
@@ -2195,13 +2181,8 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
         data << float(0);
         data << float(0);
         data << float(0);
-
-        for (uint8 i = 0; i < 2; ++i)
-        {
-            data << float(0);
-            data << float(0);
-        }
-
+        data << float(0);
+        data << float(0);
         data << uint32(0);
 	}
 

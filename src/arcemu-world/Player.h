@@ -67,13 +67,15 @@ struct ActionButtonPACKET
 #define PLAYER_LEVEL_CAP 90
 #define PLAYER_ARENA_MIN_LEVEL  70
 
-#define PLAYER_EXPLORED_ZONES_LENGTH 128
-#ifdef ENABLE_ACHIEVEMENTS
-#define ACHIEVEMENT_SEND_DELAY 1000 //we have this delay of sending auras to other players so client will have time to create object first
-#endif
-#define LOGIN_CIENT_SEND_DELAY 1000 //we have this delay of sending auras to other players so client will have time to create object first
+#define PLAYER_EXPLORED_ZONES_LENGTH 200
 
-enum PlayerTeams{
+#ifdef ENABLE_ACHIEVEMENTS
+#define ACHIEVEMENT_SEND_DELAY 1000 // we have this delay of sending auras to other players so client will have time to create object first
+#endif
+#define LOGIN_CIENT_SEND_DELAY 1000 // we have this delay of sending auras to other players so client will have time to create object first
+
+enum PlayerTeams
+{
 	TEAM_ALLIANCE = 0,
 	TEAM_HORDE = 1,
 	MAX_PLAYER_TEAMS

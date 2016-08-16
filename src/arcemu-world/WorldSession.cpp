@@ -727,10 +727,8 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleZoneUpdateOpcode;
 	// WorldPacketHandlers[CMSG_SET_TARGET_OBSOLETE].handler =
 	// &WorldSession::HandleSetTargetOpcode;
-	WorldPacketHandlers[CMSG_SET_SELECTION].handler =
-	    &WorldSession::HandleSetSelectionOpcode;
-	WorldPacketHandlers[CMSG_STANDSTATECHANGE].handler =
-	    &WorldSession::HandleStandStateChangeOpcode;
+	WorldPacketHandlers[CMSG_SET_SELECTION].handler = &WorldSession::HandleSetSelectionOpcode;
+	WorldPacketHandlers[CMSG_STANDSTATECHANGE].handler = &WorldSession::HandleStandStateChangeOpcode;
 	WorldPacketHandlers[CMSG_CANCEL_MOUNT_AURA].handler =
 	    &WorldSession::HandleDismountOpcode;
     WorldPacketHandlers[CMSG_RETURN_TO_GRAVEYARD].handler = &WorldSession::HandleReturnToGraveyardOpcode;

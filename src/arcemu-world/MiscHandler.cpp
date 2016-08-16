@@ -1055,7 +1055,7 @@ void WorldSession::HandleSetSelectionOpcode(WorldPacket & recv_data)
 	recv_data.ReadByteSeq(guid[6]);
 	recv_data.ReadByteSeq(guid[2]);
 
-	sLog.outError("Setting %u as target.", Arcemu::Util::GUID_LOPART(guid));
+	sLog.outError("Setting %u as target.", Arcemu::Util::GUID_LOPART(guid)); // TODO change Arcemu::Util::GUID_LOPART
 
 	_player->SetSelection(guid);
 
@@ -1065,7 +1065,6 @@ void WorldSession::HandleSetSelectionOpcode(WorldPacket & recv_data)
 	_player->SetTargetGUID(guid);
 	if(guid == 0) // deselected target
 	{
-		sLog.outError("bad guid");
 		if(_player->IsInWorld())
 			_player->CombatStatusHandler_ResetPvPTimeout();
 	}
@@ -1075,7 +1074,7 @@ void WorldSession::HandleStandStateChangeOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	uint8 animstate;
+	uint32 animstate;
 	recv_data >> animstate;
 
 	_player->SetStandState(animstate);
@@ -1960,7 +1959,6 @@ void WorldSession::HandleInspectOpcode(WorldPacket & recv_data)
 	}
 
 	_player->SetTargetGUID(guid);
-
 	_player->SetSelection(guid);
 
 	if(_player->m_comboPoints)
@@ -2612,6 +2610,7 @@ void WorldSession::HandleRemoveGlyph(WorldPacket & recv_data)
 
 	uint32 glyphNum;
 	recv_data >> glyphNum;
+    //! Don't forget to update this when updating glyphs
 	if(glyphNum > 5)
 		return; // Glyph doesn't exist
 	// Get info

@@ -5642,21 +5642,19 @@ int32 Unit::getDetectRangeMod(uint64 guid)
 
 void Unit::SetStandState(uint8 standstate)
 {
-	printf("received setStandState\n");
 	//only take actions if standstate did change.
 	StandState bef = GetStandState();
 	if(bef == standstate)
 		return;
 
 	SetByte(UNIT_FIELD_BYTES_1, 0, standstate);
-	if(standstate == STANDSTATE_STAND)  //standup
+	if(standstate == STANDSTATE_STAND)  // standup
 		RemoveAurasByInterruptFlag(AURA_INTERRUPT_ON_STAND_UP);
 
 	if (IsPlayer())
 	{
-		printf("Standstate succeeded\n");
 		WorldPacket data(SMSG_STANDSTATE_UPDATE, 1);
-		data << (uint8)standstate;
+		data << uint8(standstate);
 		TO< Player* >(this)->GetSession()->SendPacket(&data);
 	}
 }
