@@ -1304,8 +1304,7 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleSetVisibleRankOpcode;
 	WorldPacketHandlers[CMSG_COMPLAIN].handler =
 	    &WorldSession::HandleReportSpamOpcode;
-	WorldPacketHandlers[CMSG_GAMEOBJ_REPORT_USE].handler =
-	    &WorldSession::HandleGameobjReportUseOpCode;
+	WorldPacketHandlers[CMSG_GAMEOBJ_REPORT_USE].handler = &WorldSession::HandleGameobjReportUseOpCode;
 	WorldPacketHandlers[CMSG_CHAT_IGNORED].handler =
 	    &WorldSession::HandleChatIgnoredOpcode;
 

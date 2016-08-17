@@ -738,6 +738,7 @@ bool QuestMgr::OnGameObjectActivate(Player* plr, GameObject* go)
 			}
 		}
 	}
+
 	return false;
 }
 

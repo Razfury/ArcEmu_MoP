@@ -218,7 +218,7 @@ enum Opcodes
 	SMSG_READ_ITEM_OK = 0xBAD,	// implemented
 	SMSG_READ_ITEM_FAILED = 0xBAD,	// implemented
 	SMSG_ITEM_COOLDOWN = 0xBAD,	/// TODO: implement
-	CMSG_GAMEOBJ_USE = 0xBAD,	// 15595               !!!! NOT SURE !!!!
+    CMSG_GAMEOBJ_USE = 0x06D8, // 18414
 	CMSG_DESTROY_ITEMS = 0xBAD,
 	SMSG_GAMEOBJECT_CUSTOM_ANIM = 0xBAD,	// implemented
     CMSG_AREATRIGGER = 0x1C44,	// 18414
@@ -427,7 +427,7 @@ enum Opcodes
     CMSG_GOSSIP_HELLO = 0x12F3, // 18414
 	CMSG_GOSSIP_SELECT_OPTION = 0x17C,	// implemented
     SMSG_GOSSIP_MESSAGE = 0x0244, // 18414
-	SMSG_GOSSIP_COMPLETE = 0x17E,	// implemented
+    SMSG_GOSSIP_COMPLETE = 0x034E, // 18414
 	CMSG_NPC_TEXT_QUERY = 0x17F,	// implemented
 	SMSG_NPC_TEXT_UPDATE = 0x180,	// implemented
 	SMSG_NPC_WONT_TALK = 0x181,	// not used in client
@@ -1198,7 +1198,7 @@ enum Opcodes
 	CMSG_FORCE_SAY_CHEAT = 0x47E,	// GM client only
 	SMSG_HEALTH_UPDATE = 0x47F,	/// TODO: implement..
 	SMSG_POWER_UPDATE = 0x109F,	// 5.4.8 18414
-	CMSG_GAMEOBJ_REPORT_USE = 0x4827,	// 15595                !!!! NOT SURE !!!!
+    CMSG_GAMEOBJ_REPORT_USE = 0x06D9, // 18414
 	SMSG_HIGHEST_THREAT_UPDATE = 0x482,	/// TODO: implement
 	SMSG_THREAT_UPDATE = 0x483,	/// TODO: implement
 	SMSG_THREAT_REMOVE = 0x484,	/// TODO: implement

@@ -1565,13 +1565,31 @@ void WorldSession::HandleBarberShopResult(WorldPacket & recv_data)
 #endif
 }
 
+// CMSG_GAMEOBJ_USE
 void WorldSession::HandleGameObjectUse(WorldPacket & recv_data)
 {
-	printf("handle gameobject use\n");
 	CHECK_INWORLD_RETURN
 
-	uint64 guid;
-	recv_data >> guid;
+    ObjectGuid guid;
+
+    guid[6] = recv_data.ReadBit();
+    guid[1] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
+    guid[5] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    guid[2] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[3]);
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[7]);
+
 	SpellCastTargets targets;
 	Spell* spell = NULL;
 	SpellEntry* spellInfo = NULL;
@@ -1588,7 +1606,6 @@ void WorldSession::HandleGameObjectUse(WorldPacket & recv_data)
 	CALL_INSTANCE_SCRIPT_EVENT(_player->GetMapMgr(), OnGameObjectActivate)(obj, _player);
 
 	_player->RemoveStealth(); // cebernic:RemoveStealth due to GO was using. Blizzlike
-
 
 	uint32 type = obj->GetType();
 	switch(type)
@@ -1952,14 +1969,16 @@ void WorldSession::HandlePlayedTimeOpcode(WorldPacket & recv_data)
 	//
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
-	WorldPacket data(SMSG_PLAYED_TIME, 9); //VLack: again, an Aspire trick, with an uint8(0) -- I hate packet structure changes...
+    // VLack: again, an Aspire trick, with an uint8(0) -- I hate packet structure changes...
+    // I hate them too. You should see MoP :D
+	WorldPacket data(SMSG_PLAYED_TIME, 9);
 	data << (uint32)_player->m_playedtime[1];
 	data << (uint32)_player->m_playedtime[0];
 	data << uint8(displayinui);
 	SendPacket(&data);
 
 	LOG_DEBUG("Sent SMSG_PLAYED_TIME.");
-	LOG_DEBUG(" total: %lu level: %lu", _player->m_playedtime[1], _player->m_playedtime[0]);
+	LOG_DEBUG("total: %lu level: %lu", _player->m_playedtime[1], _player->m_playedtime[0]);
 }
 
 void WorldSession::HandleInspectOpcode(WorldPacket & recv_data)
@@ -2614,18 +2633,40 @@ void WorldSession::HandleRemoveGlyph(WorldPacket & recv_data)
 	_player->SendTalentsInfo(false);
 }
 
-void WorldSession::HandleGameobjReportUseOpCode(WorldPacket & recv_data)    // CMSG_GAMEOBJ_REPORT_USE
+// CMSG_GAMEOBJ_REPORT_USE
+void WorldSession::HandleGameobjReportUseOpCode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN;
-	uint64 guid;
-	recv_data >> guid;
+
+    ObjectGuid guid;
+
+    guid[4] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    guid[5] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[6] = recv_data.ReadBit();
+    guid[1] = recv_data.ReadBit();
+    guid[2] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[3]);
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[4]);
+
 	GameObject* gameobj = _player->GetMapMgr()->GetGameObject((uint32)guid);
 	if(gameobj == NULL)
 		return;
 	sQuestMgr.OnGameObjectActivate(_player, gameobj);
+
 #ifdef ENABLE_ACHIEVEMENTS
 	_player->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_USE_GAMEOBJECT, gameobj->GetEntry(), 0, 0);
 #endif
+
 	return;
 }
 
