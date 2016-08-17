@@ -22,7 +22,9 @@
 
 void WorldSession::HandleRepopRequestOpcode(WorldPacket & recv_data)
 {
-	CHECK_INWORLD_RETURN
+    CHECK_INWORLD_RETURN
+
+    recv_data.read<uint8>();
 
 	LOG_DEBUG("WORLD: Recvd CMSG_REPOP_REQUEST Message");
 	if(_player->getDeathState() != JUST_DIED)
@@ -1118,6 +1120,7 @@ void WorldSession::HandleCorpseReclaimOpcode(WorldPacket & recv_data)
 	CHECK_INWORLD_RETURN
 	LOG_DETAIL("WORLD: Received CMSG_RECLAIM_CORPSE");
 
+    //! Not working
     ObjectGuid guid;
 
     guid[1] = recv_data.ReadBit();
@@ -1137,6 +1140,8 @@ void WorldSession::HandleCorpseReclaimOpcode(WorldPacket & recv_data)
     recv_data.ReadByteSeq(guid[0]);
     recv_data.ReadByteSeq(guid[7]);
     recv_data.ReadByteSeq(guid[3]);
+    
+    printf("RECLAIM CORPSE FOR GUID %u", guid);
 
 	if(guid == 0)
 		return;
@@ -2697,6 +2702,7 @@ void WorldSession::HandleTimeSyncRespOpcode(WorldPacket & recv_data) // 4.3.4 (c
 	_player->m_timeSyncQueue.pop();
 }
 
+//! TODO check this
 void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket)
 {
     ObjectGuid guid;

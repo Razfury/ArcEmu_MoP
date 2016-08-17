@@ -391,7 +391,7 @@ enum Opcodes
 	SMSG_BINDZONEREPLY = 0x157,	// handled by client, but unused. Oo
 	SMSG_PLAYERBOUND = 0x2516,	// 15595
 	SMSG_CLIENT_CONTROL_UPDATE = 0x1043, // 5.4.8
-	CMSG_REPOP_REQUEST = 0x15A,	// implemented
+    CMSG_REPOP_REQUEST = 0x134A, // 18414
 	SMSG_RESURRECT_REQUEST = 0x15B,	// implemented
 	CMSG_RESURRECT_RESPONSE = 0x15C,	// implemented
 	CMSG_LOOT = 0x15D,	// implemented
@@ -424,9 +424,9 @@ enum Opcodes
 	SMSG_PET_NAME_INVALID = 0x178,	/// TODO: implement
 	SMSG_PET_SPELLS = 0x179,	// implemented
 	SMSG_PET_MODE = 0x17A,	/// TODO: implement
-	CMSG_GOSSIP_HELLO = 0x17B,	// implemented
+    CMSG_GOSSIP_HELLO = 0x12F3, // 18414
 	CMSG_GOSSIP_SELECT_OPTION = 0x17C,	// implemented
-	SMSG_GOSSIP_MESSAGE = 0x17D,	// implemented
+    SMSG_GOSSIP_MESSAGE = 0x0244, // 18414
 	SMSG_GOSSIP_COMPLETE = 0x17E,	// implemented
 	CMSG_NPC_TEXT_QUERY = 0x17F,	// implemented
 	SMSG_NPC_TEXT_UPDATE = 0x180,	// implemented

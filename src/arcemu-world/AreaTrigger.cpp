@@ -131,7 +131,7 @@ void WorldSession::_HandleAreaTriggerOpcode(uint32 id)
 
 	if(entry == NULL)
 	{
-		LOG_DEBUG("Missing AreaTrigger: %u", id);
+		LOG_ERROR("Missing AreaTrigger: %u", id);
 		return;
 	}
 

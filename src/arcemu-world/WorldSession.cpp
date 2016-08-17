@@ -697,7 +697,6 @@ void WorldSession::InitPacketHandlerTable()
 
 	// Action Buttons
 	WorldPacketHandlers[CMSG_SET_ACTION_BUTTON].handler = &WorldSession::HandleSetActionButtonOpcode;
-	WorldPacketHandlers[CMSG_REPOP_REQUEST].handler = &WorldSession::HandleRepopRequestOpcode;
 
 	// Loot
 	WorldPacketHandlers[CMSG_AUTOSTORE_LOOT_ITEM].handler =
@@ -912,8 +911,7 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleCharterShowListOpcode;
 	WorldPacketHandlers[MSG_AUCTION_HELLO].handler =
 	    &WorldSession::HandleAuctionHelloOpcode;
-	WorldPacketHandlers[CMSG_GOSSIP_HELLO].handler =
-	    &WorldSession::HandleGossipHelloOpcode;
+	WorldPacketHandlers[CMSG_GOSSIP_HELLO].handler = &WorldSession::HandleGossipHelloOpcode;
 	WorldPacketHandlers[CMSG_GOSSIP_SELECT_OPTION].handler =
 	    &WorldSession::HandleGossipSelectOptionOpcode;
 	WorldPacketHandlers[CMSG_SPIRIT_HEALER_ACTIVATE].handler = &WorldSession::HandleSpiritHealerActivateOpcode;
@@ -980,8 +978,7 @@ void WorldSession::InitPacketHandlerTable()
 	// Spell System / Talent System
 	WorldPacketHandlers[CMSG_USE_ITEM].handler =
 	    &WorldSession::HandleUseItemOpcode;
-	WorldPacketHandlers[CMSG_CAST_SPELL].handler =
-	    &WorldSession::HandleCastSpellOpcode;
+	WorldPacketHandlers[CMSG_CAST_SPELL].handler = &WorldSession::HandleCastSpellOpcode;
 	WorldPacketHandlers[CMSG_SPELLCLICK].handler =
 	    &WorldSession::HandleSpellClick;
 	WorldPacketHandlers[CMSG_CANCEL_CAST].handler =
@@ -1056,15 +1053,18 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleQuestgiverCompleteQuestOpcode;
 	WorldPacketHandlers[CMSG_QUESTLOG_REMOVE_QUEST].handler =
 	    &WorldSession::HandleQuestlogRemoveQuestOpcode;
-	WorldPacketHandlers[CMSG_RECLAIM_CORPSE].handler = &WorldSession::HandleCorpseReclaimOpcode;
-	WorldPacketHandlers[CMSG_RESURRECT_RESPONSE].handler =
-	    &WorldSession::HandleResurrectResponseOpcode;
 	WorldPacketHandlers[CMSG_PUSHQUESTTOPARTY].handler =
 	    &WorldSession::HandlePushQuestToPartyOpcode;
 	WorldPacketHandlers[MSG_QUEST_PUSH_RESULT].handler =
 	    &WorldSession::HandleQuestPushResult;
 	WorldPacketHandlers[CMSG_QUEST_POI_QUERY].handler =
 	    &WorldSession::HandleQuestPOIQueryOpcode;
+
+    // Death & Resurrection
+    WorldPacketHandlers[CMSG_RECLAIM_CORPSE].handler = &WorldSession::HandleCorpseReclaimOpcode;
+    WorldPacketHandlers[CMSG_REPOP_REQUEST].handler = &WorldSession::HandleRepopRequestOpcode;
+    WorldPacketHandlers[CMSG_RESURRECT_RESPONSE].handler =
+        &WorldSession::HandleResurrectResponseOpcode;
 
 	// Auction System
 	WorldPacketHandlers[CMSG_AUCTION_LIST_ITEMS].handler =

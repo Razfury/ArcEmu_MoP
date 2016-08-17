@@ -91,13 +91,15 @@ namespace Arcemu
 		class Menu;
 		class Item
 		{
+            public:
 				uint16 id_;
 				bool coded_;
 				uint8 icon_;
 				uint32 boxmoney_;
 				string boxmessage_;
 				string text_;
-			public:
+			//public:
+
 				Item(size_t, uint8);
 				Item(size_t, uint8, const char*, bool = false, size_t = 0, const char* = NULL);
 
@@ -110,6 +112,7 @@ namespace Arcemu
 
 		typedef std::vector<Gossip::Item> ItemList;
 		typedef HM_NAMESPACE::hash_map<Quest*, uint8> QuestList;
+        typedef HM_NAMESPACE::hash_map<Gossip::Item*, uint8> newItemList;
 
 		class SERVER_DECL Menu
 		{
@@ -212,7 +215,7 @@ namespace Arcemu
 
 				//************************************
 				// Purpose : Simply sends out an SMSG_GOSSIP_COMPLETE packet.
-				// Parameter:	Plr *
+				// Parameter : Plr *
 				// Return : void
 				//************************************
 				static void Complete(Player*);
@@ -224,11 +227,13 @@ namespace Arcemu
 
 			protected:
 				uint32 textid_;
-				uint32 language_;	//For localized quest texts.
+				uint32 language_;	// For localized quest texts.
 				uint64 guid_;
-				Gossip::ItemList itemlist_;	//Contains non quest items.
-				Gossip::QuestList questlist_;	//Contains the quests, it's filled up then added to the packet when it comes to send.
-		};
+				Gossip::ItemList itemlist_;	// Contains non quest items.
+				Gossip::QuestList questlist_;	// Contains the quests, it's filled up then added to the packet when it comes to send.
+                Gossip::newItemList _newItemList;
+                int ItemListIndex;
+            };
 
 		class SERVER_DECL Script
 		{

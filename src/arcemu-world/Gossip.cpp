@@ -56,6 +56,7 @@ StackBuffer<size>& Gossip::operator<<(StackBuffer<size>& packet, const Gossip::I
 
 Gossip::Menu::Menu(uint64 Creature_Guid, uint32 Text_Id, uint32 language) : textid_(Text_Id), guid_(Creature_Guid), language_(language)
 {
+
 }
 
 Gossip::Menu::Menu(Object* obj, uint32 textid, uint32 language)
@@ -63,6 +64,8 @@ Gossip::Menu::Menu(Object* obj, uint32 textid, uint32 language)
 	guid_ = obj->GetGUID();
 	textid_ = textid;
 	language_ = language;
+
+    ItemListIndex = 0;
 }
 
 void Gossip::Menu::AddItem(uint8 icon, const char* itemtext, uint32 itemid, bool coded/*=false*/)
@@ -71,12 +74,19 @@ void Gossip::Menu::AddItem(uint8 icon, const char* itemtext, uint32 itemid, bool
 	item.text_ = (itemtext != NULL) ? itemtext : "";
 	item.coded_ = coded;
 	this->itemlist_.push_back(item);
+
+    this->_newItemList.insert(make_pair(&item, ItemListIndex++));
+
+    //_ItemList[ItemListIndex++].item = item;
 }
 
 void Gossip::Menu::AddItem(uint8 icon, const char* itemtext, uint32 itemid, uint32 boxmoney/*=0*/, const char* boxtext/*=NULL*/, bool coded/*=false*/)
 {
 	Gossip::Item item(itemid, icon, itemtext, coded, boxmoney, boxtext);
 	this->itemlist_.push_back(item);
+
+    //_ItemList[ItemListIndex++].item = item;
+    this->_newItemList.insert(make_pair(&item, ItemListIndex++));
 }
 
 void Gossip::Menu::RemoveItem(uint32 id)
@@ -95,6 +105,7 @@ void Gossip::Menu::AddQuest(Quest* quest, uint8 icon)
 {
 	this->questlist_.insert(make_pair(quest, icon));
 }
+
 void Gossip::Menu::RemoveQuest(Quest* quest)
 {
 	Gossip::QuestList::iterator itr = questlist_.find(quest);
@@ -104,55 +115,159 @@ void Gossip::Menu::RemoveQuest(Quest* quest)
 
 WorldPacket & Gossip::operator<<(WorldPacket & packet, const Gossip::Menu & menu)
 {
-	packet << menu.guid_;
-	packet << uint32(0);
-	packet << menu.textid_;
-	packet << uint32(menu.itemlist_.size());
-	{
-		for(Gossip::ItemList::const_iterator itr = menu.itemlist_.begin(); itr != menu.itemlist_.end(); ++itr)
-			packet << *itr;
-	}
-	packet << uint32(menu.questlist_.size());
-	{
-		for(Gossip::QuestList::const_iterator itr = menu.questlist_.begin(); itr != menu.questlist_.end(); ++itr)
-		{
-			packet << itr->first->id << uint32(itr->second) << itr->first->min_level << itr->first->quest_flags << uint8(0);
-			LocalizedQuest* lq = sLocalizationMgr.GetLocalizedQuest(itr->first->id, menu.language_);
-			if(lq != NULL)
-				packet << lq->Title;
-			else
-				packet << itr->first->title;
-		}
-	}
-	return packet;
+    ObjectGuid guid = menu.guid_;
+
+    packet.WriteBits(menu.questlist_.size(), 19);
+
+    for (Gossip::QuestList::const_iterator itr = menu.questlist_.begin(); itr != menu.questlist_.end(); ++itr)
+    {
+        packet.WriteBit(0);
+
+        LocalizedQuest* lq = sLocalizationMgr.GetLocalizedQuest(itr->first->id, menu.language_);
+        if (lq != NULL)
+            packet.WriteBits(strlen(lq->Title) + 1, 9); // + 1?
+        else
+            packet.WriteBits(strlen(itr->first->title) + 1, 9); // + 1?
+    }
+
+    packet.WriteBit(guid[5]);
+    packet.WriteBit(guid[7]);
+    packet.WriteBit(guid[4]);
+    packet.WriteBit(guid[0]);
+    packet.WriteBits(menu.itemlist_.size(), 20); // max count 0x10
+    packet.WriteBit(guid[6]);
+    packet.WriteBit(guid[2]);
+
+    for (Gossip::newItemList::const_iterator itr = menu._newItemList.begin(); itr != menu._newItemList.end(); ++itr)
+    {
+        packet.WriteBits(itr->first->boxmessage_.length(), 12);
+        packet.WriteBits(itr->first->text_.length(), 12);
+    }
+
+    packet.WriteBit(guid[3]);
+    packet.WriteBit(guid[1]);
+    packet.FlushBits();
+
+    for (Gossip::QuestList::const_iterator itr = menu.questlist_.begin(); itr != menu.questlist_.end(); ++itr)
+    {
+        LocalizedQuest* lq = sLocalizationMgr.GetLocalizedQuest(itr->first->id, menu.language_);
+        if (lq != NULL)
+            packet.WriteString(lq->Title);
+        else
+            packet.WriteString(itr->first->title);
+
+        packet << int32(itr->first->quest_flags);
+        packet << int32(itr->first->questlevel); // Or min_level?
+        packet << int32(itr->second); // Not really!
+        packet << int32(itr->first->id);
+        packet << int32(itr->first->special_flags); // Maybe?
+    }
+
+    packet.WriteByteSeq(guid[1]);
+    packet.WriteByteSeq(guid[0]);
+
+    for (Gossip::newItemList::const_iterator itr = menu._newItemList.begin(); itr != menu._newItemList.end(); ++itr)
+    {
+        packet << int32(itr->first->boxmoney_);
+        packet.WriteString(itr->first->boxmessage_);
+        packet << int32(itr->first->id_); // Most likely
+        packet << int8(itr->first->coded_);
+        packet.WriteString(itr->first->text_);
+        packet << int8(itr->first->icon_);
+    }
+
+    packet.WriteByteSeq(guid[5]);
+    packet.WriteByteSeq(guid[3]);
+    packet << int32(0); // new 2.4.0; Menu id?
+    packet.WriteByteSeq(guid[2]);
+    packet.WriteByteSeq(guid[6]);
+    packet.WriteByteSeq(guid[4]);
+    packet << int32(0); // friend faction ID?
+    packet.WriteByteSeq(guid[7]);
+    packet << int32(menu.textid_);
+
+    return packet;
 }
 
 template<uint32 size>
 StackBuffer<size>& Gossip::operator<<(StackBuffer<size> & packet, const Gossip::Menu & menu)
 {
-	packet << menu.guid_;
-	packet << uint32(0);
-	packet << menu.textid_;
-	packet << uint32(menu.itemlist_.size());
-	{
-		for(Gossip::ItemList::const_iterator itr = menu.itemlist_.begin(); itr != menu.itemlist_.end(); ++itr)
-			packet << *itr;
-	}
-	packet << uint32(menu.questlist_.size());
-	{
-		string title;
-		for(Gossip::QuestList::const_iterator itr = menu.questlist_.begin(); itr != menu.questlist_.end(); ++itr)
-		{
-			packet << itr->first->id << uint32(itr->second) << itr->first->min_level << itr->first->quest_flags << uint8(0);
-			LocalizedQuest* lq = sLocalizationMgr.GetLocalizedQuest(itr->first->id, menu.language_);
-			if(lq != NULL)
-				title = lq->Title;
-			else
-				title = itr->first->title;
-			packet << title;
-		}
-	}
-	return packet;
+    /*
+    ObjectGuid guid = menu.guid_;
+
+    packet.WriteBits(menu.questlist_.size(), 19);
+
+    for (Gossip::QuestList::const_iterator itr = menu.questlist_.begin(); itr != menu.questlist_.end(); ++itr)
+    {
+        packet.WriteBit(0);
+
+        LocalizedQuest* lq = sLocalizationMgr.GetLocalizedQuest(itr->first->id, menu.language_);
+        if (lq != NULL)
+            packet.WriteBits(strlen(lq->Title) + 1, 9); // + 1?
+        else
+            packet.WriteBits(strlen(itr->first->title) + 1, 9); // + 1?
+    }
+
+    packet.WriteBit(guid[5]);
+    packet.WriteBit(guid[7]);
+    packet.WriteBit(guid[4]);
+    packet.WriteBit(guid[0]);
+    packet.WriteBits(menu.itemlist_.size(), 20); // max count 0x10
+    packet.WriteBit(guid[6]);
+    packet.WriteBit(guid[2]);
+
+    for (Gossip::newItemList::const_iterator itr = menu._newItemList.begin(); itr != menu._newItemList.end(); ++itr)
+    {
+        packet.WriteBits(itr->first->boxmessage_.length(), 12);
+        packet.WriteBits(itr->first->text_.length(), 12);
+    }
+
+    packet.WriteBit(guid[3]);
+    packet.WriteBit(guid[1]);
+    packet.FlushBits();
+
+    for (Gossip::QuestList::const_iterator itr = menu.questlist_.begin(); itr != menu.questlist_.end(); ++itr)
+    {
+        LocalizedQuest* lq = sLocalizationMgr.GetLocalizedQuest(itr->first->id, menu.language_);
+        if (lq != NULL)
+            packet.WriteString(lq->Title);
+        else
+            packet.WriteString(itr->first->title);
+
+        packet << int32(itr->first->quest_flags);
+        packet << int32(itr->first->questlevel); // Or min_level?
+        packet << int32(itr->second); // Not really!
+        packet << int32(itr->first->id);
+        packet << int32(itr->first->special_flags); // Maybe?
+    }
+
+    packet.WriteByteSeq(guid[1]);
+    packet.WriteByteSeq(guid[0]);
+
+    for (Gossip::newItemList::const_iterator itr = menu._newItemList.begin(); itr != menu._newItemList.end(); ++itr)
+    {
+        packet << int32(itr->first->boxmoney_);
+        packet.WriteString(itr->first->boxmessage_);
+        packet << int32(itr->first->id_); // Most likely
+        packet << int8(itr->first->coded_);
+        packet.WriteString(itr->first->text_);
+        packet << int8(itr->first->icon_);
+    }
+
+    packet.WriteByteSeq(guid[5]);
+    packet.WriteByteSeq(guid[3]);
+    packet << int32(0); // new 2.4.0; Menu id?
+    packet.WriteByteSeq(guid[2]);
+    packet.WriteByteSeq(guid[6]);
+    packet.WriteByteSeq(guid[4]);
+    packet << int32(0); // friend faction ID?
+    packet.WriteByteSeq(guid[7]);
+    packet << int32(menu.textid_);
+
+    return packet;
+    */
+
+    return packet;
 }
 
 void Gossip::Menu::BuildPacket(WorldPacket & packet) const
@@ -189,6 +304,7 @@ void Gossip::Menu::SendSimpleMenu(uint64 guid, size_t txt_id, Player* plr)
 void Gossip::Menu::SendQuickMenu(uint64 guid, size_t textid, Player* Plr, size_t itemid, uint8 itemicon, const char* itemtext, size_t requiredmoney/*=0*/, const char* moneytext/*=NULL*/, uint8 extra/*=0*/)
 {
 	StackWorldPacket<64> packet(SMSG_GOSSIP_MESSAGE);
+
 	string itemtexts = (itemtext != NULL) ? itemtext : "";
 	string moneytexts = (moneytext != NULL) ? moneytext : "";
 	packet << guid << uint32(0) << uint32(textid) << uint32(1) << uint32(itemid) << itemicon << extra << uint32(requiredmoney) << itemtexts;
@@ -204,7 +320,6 @@ void Gossip::Menu::Complete(Player* plr)
 {
 	plr->GetSession()->OutPacket(SMSG_GOSSIP_COMPLETE, 0, NULL);
 }
-
 
 /*
 English Worldstrings as of 08.16.2009
@@ -317,7 +432,7 @@ Gossip::Script* Gossip::Script::GetInterface(Creature* creature)
 	{
 		::Trainer* traininfo = creature->GetTrainer();
 
-		if(traininfo != NULL)	//Seems to happen.
+		if(traininfo != NULL)	// Seems to happen.
 		{
 			if(traininfo->TrainerType == TRAINER_TYPE_PET)
 				return &sScriptMgr.pettrainerScript_;

@@ -4557,7 +4557,6 @@ void Player::RepopRequestedPlayer()
 		return;
 	}
 
-
 	if (m_CurrentTransporter != NULL)
 	{
 		m_CurrentTransporter->RemovePlayer(this);
@@ -4633,11 +4632,11 @@ void Player::RepopRequestedPlayer()
 		}
 
 		/* Send Spirit Healer Location */
-		WorldPacket data(SMSG_DEATH_RELEASE_LOC, 16); // Remove Spirit Healer position
-        data << uint32(-1);
-        data << float(0);
-        data << float(0);
-        data << float(0);
+		WorldPacket data(SMSG_DEATH_RELEASE_LOC, 16);
+        data << uint32(m_mapId);
+        data << float(m_position.y);
+        data << float(m_position.x);
+        data << float(m_position.z);
 		m_session->SendPacket(&data);
 
 		/* Corpse reclaim delay */

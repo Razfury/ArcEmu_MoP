@@ -40,8 +40,6 @@ trainertype trainer_types[TRAINER_TYPE_MAX] =
 	{	"Weapon Master",		 0 },
 };
 
-
-
 //////////////////////////////////////////////////////////////
 /// This function handles MSG_TABARDVENDOR_ACTIVATE:
 //////////////////////////////////////////////////////////////
@@ -84,7 +82,6 @@ void WorldSession::HandleBankerActivateOpcode(WorldPacket & recv_data)
 
 void WorldSession::SendBankerList(Creature* pCreature)
 {
-
 	WorldPacket data(8);
 	data.Initialize(SMSG_SHOW_BANK);
 	data << pCreature->GetGUID();
@@ -409,25 +406,41 @@ void WorldSession::HandleGossipHelloOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	uint64 guid;
+    ObjectGuid guid;
 
-	recv_data >> guid;
-	Creature* qst_giver = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    guid[2] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[6] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    guid[5] = recv_data.ReadBit();
+    guid[1] = recv_data.ReadBit();
 
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[3]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[2]);
+
+	Creature* qst_giver = _player->GetMapMgr()->GetCreature(GUID_LOPART_TEST(guid));
 	if(qst_giver != NULL)
 	{
-		//stop when talked to
+		// Stop when talked to
 		if(qst_giver->GetAIInterface())
 			qst_giver->GetAIInterface()->StopMovement(30000);
 
-		// unstealth meh
+		// Unstealth meh
 		if(_player->IsStealth())
 			_player->RemoveAllAuraType(SPELL_AURA_MOD_STEALTH);
 
-		// reputation
+		// Reputation
 		_player->Reputation_OnTalk(qst_giver->m_factionDBC);
 
-		LOG_DEBUG("WORLD: Received CMSG_GOSSIP_HELLO from %u", Arcemu::Util::GUID_LOPART(guid));
+		LOG_DEBUG("WORLD: Received CMSG_GOSSIP_HELLO from %u", GUID_LOPART_TEST(guid));
 
 		Arcemu::Gossip::Script* script = Arcemu::Gossip::Script::GetInterface(qst_giver);
 		if(script != NULL)
@@ -453,7 +466,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket & recv_data)
 	uint32 guidtype = GET_TYPE_FROM_GUID(guid);
 
 	Object* qst_giver;
-	if(guidtype == HIGHGUID_TYPE_ITEM)	//Item objects are retrieved differently.
+	if(guidtype == HIGHGUID_TYPE_ITEM)	// Item objects are retrieved differently.
 	{
 		qst_giver = GetPlayer()->GetItemInterface()->GetItemByGUID(guid);
 		if(qst_giver != NULL)
