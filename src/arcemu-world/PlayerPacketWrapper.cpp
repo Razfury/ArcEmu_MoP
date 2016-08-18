@@ -160,7 +160,6 @@ void Player::SendCastResult(uint32 SpellId, uint8 ErrorMessage, uint8 MultiCast,
 
 void Player::SendSpellCooldownEvent(uint32 SpellId)
 {
-
 	WorldPacket data(SMSG_COOLDOWN_EVENT, 12);
 
 	data << uint32(SpellId);
@@ -226,7 +225,7 @@ void Player::SendSetProficiency(uint8 ItemClass, uint32 Proficiency)
 
 	data << uint32(Proficiency);
 	data << uint8(ItemClass);
-	m_session->SendPacket(&data);
+    m_session->SendPacket(&data);
 }
 
 void Player::SendPlaySpellVisual(uint64 guid, uint32 visualid)

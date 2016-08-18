@@ -7927,7 +7927,7 @@ void Unit::RemoveReflect(uint32 spellid, bool apply)
 }
 
 void Unit::SetPower(uint32 type, int32 value)
-{	
+{
 	uint32 maxpower = GetUInt32Value(UNIT_FIELD_MAXPOWER + type);
 
 	if (value < 0)
@@ -7942,6 +7942,7 @@ void Unit::SendPowerUpdate(bool self)
 {
 	uint32 amount = GetUInt32Value(UNIT_FIELD_POWER + GetPowerType());
 	ObjectGuid guid = GetGUID();
+    printf("GOT POWERTYPE %u and amount %u", GetPowerType(), amount);
 
 	WorldPacket data(SMSG_POWER_UPDATE, 8 + 4 + 1 + 4);
 	data.WriteBit(guid[4]);
@@ -7964,11 +7965,11 @@ void Unit::SendPowerUpdate(bool self)
 	data << int32(amount);
 	data.WriteByteSeq(guid[6]);
 
-	SendMessageToSet(&data, true);
+	SendMessageToSet(&data, self);
 
-	//WorldPacket* pkt = BuildFieldUpdatePacket(UNIT_FIELD_POWER + GetPowerType(), amount);
-	//SendMessageToSet(pkt, false);
-	//delete pkt;
+	WorldPacket* pkt = BuildFieldUpdatePacket(UNIT_FIELD_POWER + GetPowerType(), amount);
+	SendMessageToSet(pkt, false);
+	delete pkt;
 }
 
 void Unit::UpdatePowerAmm()
@@ -7978,6 +7979,7 @@ void Unit::UpdatePowerAmm()
 
     uint32 amount = GetUInt32Value(UNIT_FIELD_POWER + GetPowerType());
     ObjectGuid guid = GetGUID();
+    printf("[POWER AMM] GOT POWERTYPE %u and amount %u \n", GetPowerType(), amount);
 
     WorldPacket data(SMSG_POWER_UPDATE, 8 + 4 + 1 + 4);
     data.WriteBit(guid[4]);
@@ -8001,16 +8003,11 @@ void Unit::UpdatePowerAmm()
     data.WriteByteSeq(guid[6]);
 
     SendMessageToSet(&data, true);
-
-    //WorldPacket* pkt = BuildFieldUpdatePacket(UNIT_FIELD_POWER + GetPowerType(), amount);
-    //SendMessageToSet(pkt, false);
-    //delete pkt;
 }
 
 void Unit::SetDualWield(bool enabled)
 {
 	m_dualWield = enabled;
-
 
 	// Titan's grip
 	if(!enabled && IsPlayer())

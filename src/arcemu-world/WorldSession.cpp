@@ -614,8 +614,7 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleMovementOpcodes;
 	WorldPacketHandlers[MSG_MOVE_START_FORWARD].handler =
 	    &WorldSession::HandleMovementOpcodes;
-	WorldPacketHandlers[MSG_MOVE_START_BACKWARD].handler =
-	    &WorldSession::HandleMovementOpcodes;
+	WorldPacketHandlers[CMSG_MOVE_START_BACKWARD].handler = &WorldSession::HandleMovementOpcodes;
 	WorldPacketHandlers[MSG_MOVE_SET_FACING].handler =
 	    &WorldSession::HandleMovementOpcodes;
 	WorldPacketHandlers[MSG_MOVE_START_STRAFE_LEFT].handler =

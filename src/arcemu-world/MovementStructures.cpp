@@ -5387,7 +5387,7 @@ MovementStatusElements const* GetMovementStatusElementsSequence(uint32 opcode)
 		return MovementSetPitch;
 	case MSG_MOVE_START_ASCEND:
 		return MovementStartAscend;
-	case MSG_MOVE_START_BACKWARD:
+	case CMSG_MOVE_START_BACKWARD:
 		return MovementStartBackward;
 	//case MSG_MOVE_START_DESCEND:
 	//	return MovementStartDescend;

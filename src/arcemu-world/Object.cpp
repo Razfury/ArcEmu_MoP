@@ -1205,8 +1205,6 @@ void Object::RemoveFromWorld(bool free_guid)
 	event_Relocate();
 }
 
-
-
 //! Set uint32 property
 void Object::SetUInt32Value(const uint32 index, const uint32 value)
 {
@@ -1244,7 +1242,7 @@ void Object::SetUInt32Value(const uint32 index, const uint32 value)
 		case UNIT_FIELD_POWER + 0:
 		case UNIT_FIELD_POWER + 1:
 		case UNIT_FIELD_POWER + 3:
-		//case UNIT_FIELD_POWER + 5:
+		//case UNIT_FIELD_POWER + 6: // Should be runic?
 			TO< Unit* >(this)->SendPowerUpdate(true);
 			break;
 		default:
@@ -1259,7 +1257,7 @@ void Object::SetUInt32Value(const uint32 index, const uint32 value)
 		case UNIT_FIELD_POWER + 1:
 		case UNIT_FIELD_POWER + 2:
 		case UNIT_FIELD_POWER + 3:
-		case UNIT_FIELD_POWER + 4:
+		//case UNIT_FIELD_POWER + 6: // Should be runic?
 			TO_CREATURE(this)->SendPowerUpdate(false);
 			break;
 		default:
@@ -2106,6 +2104,8 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
 	if (!Caster || !Target || !Dmg)
 		return;
 
+    printf("GOT DMG %u FULL_DMG %u BLOCKED %u ABSORBED %u \n", Damage, Dmg->full_damage, BlockedDamage, Abs);
+
 	size_t maxsize = 4 + 5 + 5 + 4 + 4 + 1 + 4 + 4 + 4 + 4 + 4 + 1 + 4 + 4 + 4 + 4 + 4 * 12;
     WorldPacket data(SMSG_ATTACKERSTATEUPDATE, maxsize); // we guess size
 
@@ -2144,7 +2144,7 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
 	data << uint32(HitStatus);
 	data << Caster->GetNewGUID();
     data << Target->GetNewGUID();
-    data << uint32(Dmg->full_damage); // Full damage
+    data << uint32(Damage); // Real damage
     data << uint32(Overkill < 0 ? 0 : Overkill); // Overkill
     data << uint8(1); // Damage type counter / swing type
 
@@ -2300,7 +2300,6 @@ void Object::SetByte(uint32 index, uint32 index1, uint8 value)
 			m_objectUpdated = true;
 		}
 	}
-
 }
 
 void Object::SetByteFlag(uint16 index, uint8 offset, uint8 newFlag)

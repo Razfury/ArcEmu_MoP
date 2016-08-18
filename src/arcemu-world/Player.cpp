@@ -657,20 +657,19 @@ bool Player::Create(WorldPacket & data)
 	uint8 gender;
 	uint8 outfitId;
 
-	data
-		>> outfitId
-		>> hairStyle
-		>> class_
-		>> skin
-		>> face
-		>> race
-		>> facialHair
-		>> gender
-		>> hairColor
+    data
+        >> outfitId
+        >> hairStyle
+        >> class_
+        >> skin
+        >> face
+        >> race
+        >> facialHair
+        >> gender
+        >> hairColor
 		>> m_name;
 
 	m_name = m_name.substr(1, m_name.length()); 
-
 	CapitalizeString(m_name);
 
 	info = objmgr.GetPlayerCreateInfo(race, class_);
@@ -774,6 +773,7 @@ bool Player::Create(WorldPacket & data)
 		setLevel(55);
 		SetNextLevelXp(148200);
 	}
+
 	UpdateGlyphs();
 
 	SetPrimaryProfessionPoints(sWorld.MaxProfs);
@@ -2184,7 +2184,6 @@ void Player::_SetUpdateBits(UpdateMask* updateMask, Player* target) const
 	}
 }
 
-
 void Player::InitVisibleUpdateBits()
 {
 	Player::m_visibleUpdateMask.SetCount(PLAYER_END);
@@ -2200,18 +2199,20 @@ void Player::InitVisibleUpdateBits()
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_TARGET + 1);
 
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_HEALTH);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 0);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 1);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 2);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 3);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 4);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 5);
 
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXHEALTH);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 0);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 1);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 2);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 3);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 4);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 5);
+
+    //Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_DISPLAY_POWER); // Idk
 
 	Player::m_visibleUpdateMask.SetBit(UNIT_VIRTUAL_ITEM_SLOT_ID);
 	Player::m_visibleUpdateMask.SetBit(UNIT_VIRTUAL_ITEM_SLOT_ID + 1);
@@ -10178,7 +10179,6 @@ void Player::Possess(uint64 GUID, uint32 delay)
 		pTarget->BuildPetSpellList(data);
 		m_session->SendPacket(&data);
 	}
-
 }
 
 void Player::UnPossess()
@@ -10214,7 +10214,7 @@ void Player::UnPossess()
 
 	/* send "switch mover" packet */
 	WorldPacket data(SMSG_CLIENT_CONTROL_UPDATE, 10);
-	Unit* target;
+	Unit* target; //! TODO get target
 	ObjectGuid guid = target->GetGUID();
 	data.WriteBit(guid[2]);  // 26
 	data.WriteBit(guid[7]);  // 31

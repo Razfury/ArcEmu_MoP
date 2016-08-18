@@ -1941,6 +1941,7 @@ class SERVER_DECL Unit : public Object
 
 		void SetPowerType(uint8 type) { SetByte(UNIT_FIELD_BYTES_0, 3, type); }
 		uint8 GetPowerType() { return GetByte(UNIT_FIELD_BYTES_0, 3); }
+
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		void SetHealth(uint32 val) { SetUInt32Value(UNIT_FIELD_HEALTH, val); }

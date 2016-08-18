@@ -231,12 +231,12 @@ void CommandTableStorage::Init()
 	{
 		{ "hp",              'm', NULL,                                   "Modifies health points (HP) of selected target",                  NULL, UNIT_FIELD_HEALTH,                 UNIT_FIELD_MAXHEALTH, 1 },
 		{ "gender",          'm', &ChatHandler::HandleGenderChanger,      "Changes gender of selected target. Usage: 0=male, 1=female.",     NULL, 0,                                 0,                    0 },
-		{ "mana",            'm', NULL,                                   "Modifies mana points (MP) of selected target.",                   NULL, UNIT_FIELD_POWER + 1,                 UNIT_FIELD_MAXPOWER + 1, 1 },
-		{ "rage",            'm', NULL,                                   "Modifies rage points of selected target.",                        NULL, UNIT_FIELD_POWER + 2,                 UNIT_FIELD_MAXPOWER + 2, 1 },
-		{ "energy",          'm', NULL,                                   "Modifies energy points of selected target.",                      NULL, UNIT_FIELD_POWER + 4,                 UNIT_FIELD_MAXPOWER + 4, 1 },
-		{ "runicpower",      'm', NULL,                                   "Modifies runic power points of selected target.",                 NULL, UNIT_FIELD_POWER + 5,                 UNIT_FIELD_MAXPOWER + 5, 1 }, //7 is gone, i guess 5... what happens with happines tho?
+		{ "mana",            'm', NULL,                                   "Modifies mana points (MP) of selected target.",                   NULL, UNIT_FIELD_POWER + 0,                 UNIT_FIELD_MAXPOWER + 0, 1 },
+		{ "rage",            'm', NULL,                                   "Modifies rage points of selected target.",                        NULL, UNIT_FIELD_POWER + 1,                 UNIT_FIELD_MAXPOWER + 1, 1 },
+		{ "energy",          'm', NULL,                                   "Modifies energy points of selected target.",                      NULL, UNIT_FIELD_POWER + 2,                 UNIT_FIELD_MAXPOWER + 2, 1 },
+		{ "runicpower",      'm', NULL,                                   "Modifies runic power points of selected target.",                 NULL, UNIT_FIELD_POWER + 6,                 UNIT_FIELD_MAXPOWER + 6, 1 }, // I think?
 		{ "level",           'm', &ChatHandler::HandleModifyLevelCommand, "Modifies the level of selected target.",                          NULL, 0,                                 0,                    0 },
-		{ "strength",        'm', NULL,                                   "Modifies the strength value of the selected target.",             NULL, UNIT_FIELD_STAT0,                  0,                    1 },
+		{ "strength",        'm', NULL,                                   "Modifies the strength value of the selected target.",             NULL, UNIT_FIELD_STAT0 + 0,                  0,                    1 },
 		{ "agility",         'm', NULL,                                   "Modifies the agility value of the selected target.",              NULL, UNIT_FIELD_STAT0 + 1,                  0,                    1 },
 		{ "intelligence",    'm', NULL,                                   "Modifies the intelligence value of the selected target.",         NULL, UNIT_FIELD_STAT0 + 3,                  0,                    1 },
 		{ "spirit",          'm', NULL,                                   "Modifies the spirit value of the selected target.",               NULL, UNIT_FIELD_STAT0 + 4,                  0,                    1 },

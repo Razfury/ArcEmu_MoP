@@ -3196,22 +3196,22 @@ bool Spell::HasPower()
 			{	powerField = UNIT_FIELD_HEALTH;						}
 			break;
 		case POWER_TYPE_MANA:
-			{	powerField = UNIT_FIELD_POWER + 1;	m_usesMana = true;	}
+			{	powerField = UNIT_FIELD_POWER + 0;	m_usesMana = true;	}
 			break;
 		case POWER_TYPE_RAGE:
-			{	powerField = UNIT_FIELD_POWER + 2;						}
+			{	powerField = UNIT_FIELD_POWER + 1;						}
 			break;
 		case POWER_TYPE_FOCUS:
-			{	powerField = UNIT_FIELD_POWER + 3;						}
+			{	powerField = UNIT_FIELD_POWER + 2;						}
 			break;
 		case POWER_TYPE_ENERGY:
-			{	powerField = UNIT_FIELD_POWER + 4;						}
+			{	powerField = UNIT_FIELD_POWER + 3;						}
 			break;
 		/*case POWER_TYPE_HAPPINESS:
 			{	powerField = UNIT_FIELD_POWER + 5;						}
 			break;*/
 		case POWER_TYPE_RUNIC_POWER:
-			{	powerField = UNIT_FIELD_POWER + 5;						}
+			{	powerField = UNIT_FIELD_POWER + 6;						} // I think?
 			break;
 		case POWER_TYPE_RUNES:
 			{
@@ -3336,22 +3336,22 @@ bool Spell::TakePower()
 			{	powerField = UNIT_FIELD_HEALTH;						}
 			break;
 		case POWER_TYPE_MANA:
-			{	powerField = UNIT_FIELD_POWER + 1;	m_usesMana = true;	}
+			{	powerField = UNIT_FIELD_POWER + 0;	m_usesMana = true;	}
 			break;
 		case POWER_TYPE_RAGE:
-			{	powerField = UNIT_FIELD_POWER + 2;						}
+			{	powerField = UNIT_FIELD_POWER + 1;						}
 			break;
 		case POWER_TYPE_FOCUS:
-			{	powerField = UNIT_FIELD_POWER + 3;						}
+			{	powerField = UNIT_FIELD_POWER + 2;						}
 			break;
 		case POWER_TYPE_ENERGY:
-			{	powerField = UNIT_FIELD_POWER + 4;						}
+			{	powerField = UNIT_FIELD_POWER + 3;						}
 			break;
 		/*case POWER_TYPE_HAPPINESS:
 			{	powerField = UNIT_FIELD_POWER5;						}
 			break;*/
 		case POWER_TYPE_RUNIC_POWER:
-			{	powerField = UNIT_FIELD_POWER + 5;						}
+			{	powerField = UNIT_FIELD_POWER + 5;						} // TODO!
 			break;
 		case POWER_TYPE_RUNES:
 			{

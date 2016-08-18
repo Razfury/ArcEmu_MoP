@@ -1044,7 +1044,7 @@ void Group::UpdateAllOutOfRangePlayersFor(Player* pPlayer)
 void Group::HandleUpdateFieldChange(uint32 Index, Player* pPlayer)
 {
 	uint32 Flags = 0;
-	switch(Index)
+	switch (Index)
 	{
 		case UNIT_FIELD_HEALTH:
 			Flags = GROUP_UPDATE_FLAG_HEALTH;
@@ -1058,15 +1058,15 @@ void Group::HandleUpdateFieldChange(uint32 Index, Player* pPlayer)
 		case UNIT_FIELD_POWER + 1:
 		case UNIT_FIELD_POWER + 2:
 		case UNIT_FIELD_POWER + 3:
-		case UNIT_FIELD_POWER + 6: //runicpower don't really think it's correct
+		//case UNIT_FIELD_POWER + 4: // Is this right? Rune related!
 			Flags = GROUP_UPDATE_FLAG_POWER;
 			break;
 
-		case UNIT_FIELD_MAXPOWER + 1: // this either
+		case UNIT_FIELD_MAXPOWER + 0:
+		case UNIT_FIELD_MAXPOWER + 1:
 		case UNIT_FIELD_MAXPOWER + 2:
 		case UNIT_FIELD_MAXPOWER + 3:
-		case UNIT_FIELD_MAXPOWER + 4:
-		case UNIT_FIELD_MAXPOWER + 5: //runicpower in cata?
+		case UNIT_FIELD_MAXPOWER + 5: // Is this right? Rune related!
 			Flags = GROUP_UPDATE_FLAG_MAXPOWER;
 			break;
 
