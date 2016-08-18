@@ -22,7 +22,7 @@
 #define WOWSERVER_DEFINITION_H
 
 
-const unsigned NUM_MAPS = 800;
+const unsigned NUM_MAPS = 980 + 100; // Probably not right
 const unsigned NUM_INSTANCE_MODES = 4;
 
 

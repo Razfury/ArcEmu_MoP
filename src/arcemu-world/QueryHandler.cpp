@@ -495,7 +495,7 @@ void WorldSession::HandleInrangeQuestgiverQuery(WorldPacket & recv_data)
 	WorldPacket data(SMSG_QUESTGIVER_STATUS_MULTIPLE, 3 + count * (1 + 8 + 4));
 
 	size_t pos = data.bitwpos();
-	data.WriteBits(count, 21);      // placeholder
+    data.WriteBits(count, 21); // placeholder
 
 
 	for (itr = _player->m_objectsInRange.begin(); itr != _player->m_objectsInRange.end(); ++itr)

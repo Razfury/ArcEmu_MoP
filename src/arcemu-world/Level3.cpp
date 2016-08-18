@@ -2804,8 +2804,14 @@ bool ChatHandler::HandleCreatureSpawnCommand(const char* args, WorldSession* m_s
 	}
 
 	CreatureSpawn* sp = new CreatureSpawn;
+
 	//sp->displayid = info->DisplayID;
-	gender = info->GenerateModelId(&sp->displayid);
+    uint32 DisplayID = info->Male_DisplayID ? info->Male_DisplayID : info->Female_DisplayID;
+    gender = DisplayID == info->Male_DisplayID ? 1 : 0;
+    //info->GenerateModelId(&DisplayID);
+    printf("Chosen display id %u \n", DisplayID);
+    sp->displayid = DisplayID;
+
 	sp->entry = entry;
 	sp->form = 0;
 	sp->id = objmgr.GenerateCreatureSpawnID();
@@ -2830,7 +2836,6 @@ bool ChatHandler::HandleCreatureSpawnCommand(const char* args, WorldSession* m_s
 	sp->Item3SlotDisplay = 0;
 	sp->CanFly = 0;
 	sp->phase = m_session->GetPlayer()->GetPhase();
-
 
 	Creature* p = m_session->GetPlayer()->GetMapMgr()->CreateCreature(entry);
 	ARCEMU_ASSERT(p != NULL);

@@ -125,11 +125,27 @@ void WorldSession::HandleQuestgiverHelloOpcode(WorldPacket & recv_data)
 
 	LOG_DEBUG("WORLD: Received CMSG_QUESTGIVER_HELLO.");
 
-	uint64 guid;
+    ObjectGuid guid;
 
-	recv_data >> guid;
+    guid[5] = recv_data.ReadBit();
+    guid[6] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+    guid[2] = recv_data.ReadBit();
+    guid[1] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
 
-	Creature* qst_giver = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[3]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[2]);
+
+	Creature* qst_giver = _player->GetMapMgr()->GetCreature(GUID_LOPART_TEST(guid));
 
 	if(!qst_giver)
 	{
@@ -338,7 +354,6 @@ void WorldSession::HandleQuestlogRemoveQuestOpcode(WorldPacket & recvPacket)
 
 void WorldSession::HandleQuestQueryOpcode(WorldPacket & recv_data)
 {
-
 	CHECK_INWORLD_RETURN
 
 	LOG_DEBUG("WORLD: Received CMSG_QUEST_QUERY");
@@ -387,11 +402,26 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode(WorldPacket & recv_data)
 
 	LOG_DEBUG("WORLD: Received CMSG_QUESTGIVER_REQUESTREWARD_QUEST.");
 
-	uint64 guid;
-	uint32 quest_id;
+	ObjectGuid guid;
+	uint32 questId;
 
-	recv_data >> guid;
-	recv_data >> quest_id;
+    guid[6] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[1] = recv_data.ReadBit();
+    guid[2] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
+    guid[5] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(guid[3]);
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[4]);
 
 	bool bValid = false;
 	Quest* qst = NULL;
@@ -401,7 +431,7 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode(WorldPacket & recv_data)
 
 	if(guidtype == HIGHGUID_TYPE_UNIT)
 	{
-		Creature* quest_giver = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+		Creature* quest_giver = _player->GetMapMgr()->GetCreature(GUID_LOPART_TEST(guid));
 		if(quest_giver)
 			qst_giver = quest_giver;
 		else
@@ -409,15 +439,15 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode(WorldPacket & recv_data)
 		if(quest_giver->isQuestGiver())
 		{
 			bValid = true;
-			qst = quest_giver->FindQuest(quest_id, QUESTGIVER_QUEST_END);
+			qst = quest_giver->FindQuest(questId, QUESTGIVER_QUEST_END);
 			if(!qst)
-				qst = quest_giver->FindQuest(quest_id, QUESTGIVER_QUEST_START);
+                qst = quest_giver->FindQuest(questId, QUESTGIVER_QUEST_START);
 
 			/*if(!qst)
 				qst = QuestStorage.LookupEntry(quest_id);*/
 			if(!qst)
 			{
-				LOG_ERROR("WARNING: Cannot get reward for quest %u, as it doesn't exist at Unit %u.", quest_id, quest_giver->GetEntry());
+                LOG_ERROR("WARNING: Cannot get reward for quest %u, as it doesn't exist at Unit %u.", questId, quest_giver->GetEntry());
 				return;
 			}
 			status = sQuestMgr.CalcQuestStatus(qst_giver, GetPlayer(), qst, (uint8)quest_giver->GetQuestRelation(qst->id), false);
@@ -433,11 +463,11 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode(WorldPacket & recv_data)
 		bValid = quest_giver->isQuestGiver();
 		if(bValid)
 		{
-			qst = quest_giver->FindQuest(quest_id, QUESTGIVER_QUEST_END);
+            qst = quest_giver->FindQuest(questId, QUESTGIVER_QUEST_END);
 			/*if(!qst) sQuestMgr.FindQuest(quest_id);*/
 			if(!qst)
 			{
-				LOG_ERROR("WARNING: Cannot get reward for quest %u, as it doesn't exist at GO %u.", quest_id, quest_giver->GetEntry());
+                LOG_ERROR("WARNING: Cannot get reward for quest %u, as it doesn't exist at GO %u.", questId, quest_giver->GetEntry());
 				return;
 			}
 			status = sQuestMgr.CalcQuestStatus(qst_giver, GetPlayer(), qst, (uint8)quest_giver->GetQuestRelation(qst->id), false);
@@ -473,21 +503,40 @@ void WorldSession::HandleQuestgiverCompleteQuestOpcode(WorldPacket & recvPacket)
 
 	LOG_DEBUG("WORLD: Received CMSG_QUESTGIVER_COMPLETE_QUEST.");
 
-	uint64 guid;
-	uint32 quest_id;
+    ObjectGuid playerGuid;
+    uint32 questId;
+    bool autoCompleteMode; // 0 - standard complete quest mode with npc, 1 - auto-complete mode
 
-	recvPacket >> guid;
-	recvPacket >> quest_id;
+    recvPacket >> questId;
+
+    playerGuid[4] = recvPacket.ReadBit();
+    playerGuid[2] = recvPacket.ReadBit();
+    playerGuid[1] = recvPacket.ReadBit();
+    playerGuid[5] = recvPacket.ReadBit();
+    playerGuid[6] = recvPacket.ReadBit();
+    playerGuid[7] = recvPacket.ReadBit();
+    playerGuid[3] = recvPacket.ReadBit();
+    autoCompleteMode = recvPacket.ReadBit();
+    playerGuid[0] = recvPacket.ReadBit();
+
+    recvPacket.ReadByteSeq(playerGuid[0]);
+    recvPacket.ReadByteSeq(playerGuid[2]);
+    recvPacket.ReadByteSeq(playerGuid[1]);
+    recvPacket.ReadByteSeq(playerGuid[4]);
+    recvPacket.ReadByteSeq(playerGuid[3]);
+    recvPacket.ReadByteSeq(playerGuid[6]);
+    recvPacket.ReadByteSeq(playerGuid[7]);
+    recvPacket.ReadByteSeq(playerGuid[5]);
 
 	bool bValid = false;
 	Quest* qst = NULL;
 	Object* qst_giver = NULL;
 	uint32 status = 0;
-	uint32 guidtype = GET_TYPE_FROM_GUID(guid);
+	uint32 guidtype = GET_TYPE_FROM_GUID(playerGuid);
 
 	if(guidtype == HIGHGUID_TYPE_UNIT)
 	{
-		Creature* quest_giver = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+        Creature* quest_giver = _player->GetMapMgr()->GetCreature(GUID_LOPART_TEST(playerGuid));
 		if(quest_giver)
 			qst_giver = quest_giver;
 		else
@@ -495,12 +544,12 @@ void WorldSession::HandleQuestgiverCompleteQuestOpcode(WorldPacket & recvPacket)
 		if(quest_giver->isQuestGiver())
 		{
 			bValid = true;
-			qst = quest_giver->FindQuest(quest_id, QUESTGIVER_QUEST_END);
+			qst = quest_giver->FindQuest(questId, QUESTGIVER_QUEST_END);
 			/*if(!qst)
 				sQuestMgr.FindQuest(quest_id);*/
 			if(!qst)
 			{
-				LOG_ERROR("WARNING: Cannot complete quest %u, as it doesn't exist at Unit %u.", quest_id, quest_giver->GetEntry());
+				LOG_ERROR("WARNING: Cannot complete quest %u, as it doesn't exist at Unit %u.", questId, quest_giver->GetEntry());
 				return;
 			}
 			status = sQuestMgr.CalcQuestStatus(qst_giver, GetPlayer(), qst, (uint8)quest_giver->GetQuestRelation(qst->id), false);
@@ -508,7 +557,7 @@ void WorldSession::HandleQuestgiverCompleteQuestOpcode(WorldPacket & recvPacket)
 	}
 	else if(guidtype == HIGHGUID_TYPE_GAMEOBJECT)
 	{
-		GameObject* quest_giver = _player->GetMapMgr()->GetGameObject(GET_LOWGUID_PART(guid));
+        GameObject* quest_giver = _player->GetMapMgr()->GetGameObject(GUID_LOPART_TEST(playerGuid));
 		if(quest_giver)
 			qst_giver = quest_giver;
 		else
@@ -516,11 +565,11 @@ void WorldSession::HandleQuestgiverCompleteQuestOpcode(WorldPacket & recvPacket)
 		bValid = quest_giver->isQuestGiver();
 		if(bValid)
 		{
-			qst = quest_giver->FindQuest(quest_id, QUESTGIVER_QUEST_END);
+			qst = quest_giver->FindQuest(questId, QUESTGIVER_QUEST_END);
 			/*if(!qst) sQuestMgr.FindQuest(quest_id);*/
 			if(!qst)
 			{
-				LOG_ERROR("WARNING: Cannot complete quest %u, as it doesn't exist at GO %u.", quest_id, quest_giver->GetEntry());
+				LOG_ERROR("WARNING: Cannot complete quest %u, as it doesn't exist at GO %u.", questId, quest_giver->GetEntry());
 				return;
 			}
 			status = sQuestMgr.CalcQuestStatus(qst_giver, GetPlayer(), qst, (uint8)quest_giver->GetQuestRelation(qst->id), false);
@@ -564,21 +613,34 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket & recvPacket)
 
 	LOG_DEBUG("WORLD: Received CMSG_QUESTGIVER_CHOOSE_REWARD.");
 
-	uint64 guid;
-	uint32 quest_id;
-	uint32 reward_slot;
+    ObjectGuid guid;
+	uint32 questId, reward;
 
-	recvPacket >> guid;
-	recvPacket >> quest_id;
-	recvPacket >> reward_slot;
+    recvPacket >> reward;     // 5.x - reward value is now an item ID and not slot ID
+    recvPacket >> questId;
 
-	if(reward_slot >= 6)
-		return;
+    guid[2] = recvPacket.ReadBit();
+    guid[6] = recvPacket.ReadBit();
+    guid[0] = recvPacket.ReadBit();
+    guid[5] = recvPacket.ReadBit();
+    guid[1] = recvPacket.ReadBit();
+    guid[3] = recvPacket.ReadBit();
+    guid[7] = recvPacket.ReadBit();
+    guid[4] = recvPacket.ReadBit();
+
+    recvPacket.ReadByteSeq(guid[1]);
+    recvPacket.ReadByteSeq(guid[2]);
+    recvPacket.ReadByteSeq(guid[5]);
+    recvPacket.ReadByteSeq(guid[7]);
+    recvPacket.ReadByteSeq(guid[0]);
+    recvPacket.ReadByteSeq(guid[3]);
+    recvPacket.ReadByteSeq(guid[6]);
+    recvPacket.ReadByteSeq(guid[4]);
 
 	bool bValid = false;
 	Quest* qst = NULL;
 	Object* qst_giver = NULL;
-	uint32 guidtype = GET_TYPE_FROM_GUID(guid);
+	uint32 guidtype = GET_TYPE_FROM_GUID(guid); //! TODO
 
 	if(guidtype == HIGHGUID_TYPE_UNIT)
 	{
@@ -590,7 +652,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket & recvPacket)
 		if(quest_giver->isQuestGiver())
 		{
 			bValid = true;
-			qst = QuestStorage.LookupEntry(quest_id);
+			qst = QuestStorage.LookupEntry(questId);
 		}
 	}
 	else if(guidtype == HIGHGUID_TYPE_GAMEOBJECT)
@@ -603,7 +665,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket & recvPacket)
 		//bValid = quest_giver->isQuestGiver();
 		//if(bValid)
 		bValid = true;
-		qst = QuestStorage.LookupEntry(quest_id);
+		qst = QuestStorage.LookupEntry(questId);
 	}
 
 	if(!qst_giver)
@@ -620,7 +682,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket & recvPacket)
 
 	//FIX ME: Some Quest givers talk in the end of the quest.
 	//   qst_giver->SendChatMessage(CHAT_MSG_MONSTER_SAY,LANG_UNIVERSAL,qst->GetQuestEndMessage().c_str());
-	QuestLogEntry* qle = _player->GetQuestLogForEntry(quest_id);
+	QuestLogEntry* qle = _player->GetQuestLogForEntry(questId);
 
 	if(!qle && !qst->is_repeatable)
 	{
@@ -641,14 +703,13 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket & recvPacket)
 	}*/
 
 	//check for room in inventory for all items
-	if(!sQuestMgr.CanStoreReward(GetPlayer(), qst, reward_slot))
+	if(!sQuestMgr.CanStoreReward(GetPlayer(), qst, reward))
 	{
 		sQuestMgr.SendQuestFailed(FAILED_REASON_INV_FULL, qst, GetPlayer());
 		return;
 	}
 
-
-	sQuestMgr.OnQuestFinished(GetPlayer(), qst, qst_giver, reward_slot);
+	sQuestMgr.OnQuestFinished(GetPlayer(), qst, qst_giver, reward);
 	//if(qst_giver->GetTypeId() == TYPEID_UNIT) qst->LUA_SendEvent(TO< Creature* >( qst_giver ),GetPlayer(),ON_QUEST_COMPLETEQUEST);
 
 	if(qst->next_quest_id)

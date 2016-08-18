@@ -679,17 +679,40 @@ void QuestMgr::BuildQuestUpdateAddItem(WorldPacket* data, uint32 itemid, uint32 
 
 void QuestMgr::SendQuestUpdateAddKill(Player* plr, uint32 questid, uint32 entry, uint32 count, uint32 tcount, uint64 guid)
 {
-	WorldPacket data(32);
-	data.SetOpcode(SMSG_QUESTUPDATE_ADD_KILL);
-	data << questid << entry << count << tcount << guid;
+    ObjectGuid _guid = guid;
+	WorldPacket data (SMSG_QUESTUPDATE_ADD_KILL, 22); // SMSG_QUESTUPDATE_ADD_CREDIT
+
+    data << uint16(count); // New count (old + new)
+    data << uint8(0); // Objective type TODO
+    data << uint32(questid);
+    data << uint32(tcount); // Required mob count
+    data << uint32(entry); // Required mob id
+
+    data.WriteBit(_guid[0]);
+    data.WriteBit(_guid[4]);
+    data.WriteBit(_guid[2]);
+    data.WriteBit(_guid[6]);
+    data.WriteBit(_guid[1]);
+    data.WriteBit(_guid[5]);
+    data.WriteBit(_guid[7]);
+    data.WriteBit(_guid[3]);
+
+    data.WriteByteSeq(_guid[2]);
+    data.WriteByteSeq(_guid[7]);
+    data.WriteByteSeq(_guid[3]);
+    data.WriteByteSeq(_guid[0]);
+    data.WriteByteSeq(_guid[4]);
+    data.WriteByteSeq(_guid[5]);
+    data.WriteByteSeq(_guid[1]);
+    data.WriteByteSeq(_guid[6]);
+
 	plr->GetSession()->SendPacket(&data);
 }
 
 void QuestMgr::BuildQuestUpdateComplete(WorldPacket* data, Quest* qst)
 {
 	data->Initialize(SMSG_QUESTUPDATE_COMPLETE);
-
-	*data << qst->id;
+	*data << uint32(qst->id);
 }
 
 void QuestMgr::SendPushToPartyResponse(Player* plr, Player* pTarget, uint8 response)

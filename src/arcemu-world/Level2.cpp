@@ -157,7 +157,6 @@ bool ChatHandler::CreateGuildCommand(const char* args, WorldSession* m_session)
 
 bool ChatHandler::HandleDeleteCommand(const char* args, WorldSession* m_session)
 {
-
 	uint64 guid = m_session->GetPlayer()->GetSelection();
 	if(guid == 0)
 	{
@@ -165,7 +164,7 @@ bool ChatHandler::HandleDeleteCommand(const char* args, WorldSession* m_session)
 		return true;
 	}
 
-	Creature* unit = m_session->GetPlayer()->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+	Creature* unit = m_session->GetPlayer()->GetMapMgr()->GetCreature(GUID_LOPART_TEST(guid));
 	if(!unit)
 	{
 		SystemMessage(m_session, "You should select a creature.");
@@ -443,7 +442,6 @@ bool ChatHandler::HandleKillCommand(const char* args, WorldSession* m_session)
 	}
 	else
 	{
-
 		// Cast insta-kill.
 		SpellEntry* se = dbcSpell.LookupEntryForced(5);
 		if(se == NULL)
@@ -667,6 +665,7 @@ bool ChatHandler::HandleMonsterYellCommand(const char* args, WorldSession* m_ses
 		RedSystemMessage(m_session, "Please select a creature or player before using this command.");
 		return true;
 	}
+
 	if(crt->IsPlayer())
 	{
 		WorldPacket* data = this->FillMessageData(CHAT_MSG_YELL, LANG_UNIVERSAL, args, crt->GetGUID(), 0);

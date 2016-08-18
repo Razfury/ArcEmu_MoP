@@ -20,24 +20,26 @@
 
 #include "StdAfx.h"
 
-//Pakcet Building
+//Packet Building
 /////////////////
 
 WorldPacket* WorldSession::BuildQuestQueryResponse(Quest* qst)
 {
-	WorldPacket* data = new WorldPacket(SMSG_QUEST_QUERY_RESPONSE, 248);
+	WorldPacket* data = new WorldPacket(SMSG_QUEST_QUERY_RESPONSE, 100);
 	LocalizedQuest* lci = (language > 0) ? sLocalizationMgr.GetLocalizedQuest(qst->id, language) : NULL;
 
 	*data << uint32(qst->id);
-	data->WriteBit(1);                                   // has data
-	//data->WriteBits(questTurnTextWindow.size(), 10);
-	data->WriteBits(strlen(qst->title), 9);
-	//data->WriteBits(questCompletedText.size(), 11);
-	data->WriteBits(strlen(qst->details), 12);
+    data->WriteBit(1); // has data
+    data->WriteBits(strlen(qst->incompletetext) + 1, 10);
+    data->WriteBits(strlen(qst->title) + 1, 9);
+    data->WriteBits(strlen(qst->completiontext) + 1, 11);
+    data->WriteBits(strlen(qst->details) + 1, 12);
+
+    /////////
 	//data->WriteBits(questTurnTargetName.size(), 8);
 	//data->WriteBits(qst->questGiverTargetName.size(), 8);
 	//data->WriteBits(questGiverTextWindow.size(), 10);
-	data->WriteBits(strlen(qst->endtext), 9);
+	data->WriteBits(strlen(qst->endtext) + 1, 9);
 	//data->WriteBits(quest->m_questObjectives.size(), 19);
 	//data->WriteBits(questObjectives.size(), 12);
 
@@ -213,7 +215,6 @@ void QuestLogEntry::Init(Quest* quest, Player* plr, uint32 slot)
 				plr->quest_mobs.insert(quest->required_mob[i]);
 		}
 	}
-
 
 	// update slot
 	plr->SetQuestLogSlot(this, slot);
@@ -561,9 +562,8 @@ void QuestLogEntry::UpdatePlayerFields()
 
 void QuestLogEntry::SendQuestComplete()
 {
-	WorldPacket data(4);
-	data.SetOpcode(SMSG_QUESTUPDATE_COMPLETE);
-	data << m_quest->id;
+	WorldPacket data(SMSG_QUESTUPDATE_COMPLETE, 4);
+	data << uint32(m_quest->id);
 	m_plr->GetSession()->SendPacket(&data);
 	m_plr->UpdateNearbyGameObjects();
 	CALL_QUESTSCRIPT_EVENT(this, OnQuestComplete)(m_plr, this);
@@ -578,4 +578,3 @@ void QuestLogEntry::Complete()
 {
 	completed = QUEST_COMPLETE;
 }
-
