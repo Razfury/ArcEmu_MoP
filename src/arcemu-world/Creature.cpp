@@ -1177,10 +1177,10 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
 {
 	m_spawn = spawn;
 	proto = CreatureProtoStorage.LookupEntry(spawn->entry);
-	if(proto == NULL)
+	if (proto == NULL)
 		return false;
 	creature_info = CreatureNameStorage.LookupEntry(spawn->entry);
-	if(creature_info == NULL)
+	if (creature_info == NULL)
 		return false;
 
 	spawnid = spawn->id;
@@ -1197,7 +1197,7 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
 	//SetHealth( (mode ? long2int32(proto->Health * 1.5)  : proto->Health));
 	//SetBaseHealth((mode ? long2int32(proto->Health * 1.5)  : proto->Health));
 	//SetMaxHealth( (mode ? long2int32(proto->Health * 1.5)  : proto->Health));
-	if(proto->MinHealth > proto->MaxHealth)
+	if (proto->MinHealth > proto->MaxHealth)
 	{
 		proto->MaxHealth = proto->MinHealth + 1;
 		SaveToDB();
@@ -1208,9 +1208,9 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
 	// difficutly coefficient
 	float diff_coeff = 1.0f;
 
-	if(creature_info->Rank == ELITE_WORLDBOSS)
+	if (creature_info->Rank == ELITE_WORLDBOSS)
 		diff_coeff = CalcHPCoefficient(info, mode, true);
-	else if(creature_info->Type != UNIT_TYPE_CRITTER)
+	else if (creature_info->Type != UNIT_TYPE_CRITTER)
 		diff_coeff = CalcHPCoefficient(info, mode, false);
 
 	health = static_cast< uint32 >(health * diff_coeff);
@@ -1232,26 +1232,26 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
 	// uint32 gender = creature_info->GenerateModelId(&model);
 	// setGender(gender);
 
-	SetDisplayId(spawn->displayid);
-	SetNativeDisplayId(spawn->displayid);
+	SetDisplayId(creature_info->Male_DisplayID);
+	SetNativeDisplayId(creature_info->Male_DisplayID);
 	SetMount(spawn->MountedDisplayID);
 
 	EventModelChange();
 
 	setLevel(proto->MinLevel + (RandomUInt(proto->MaxLevel - proto->MinLevel)));
 
-	if(mode && info)
+	if (mode && info)
 		modLevel(min(73 - getLevel(), info->lvl_mod_a));
 
-	for(uint32 i = 0; i < 7; ++i)
+	for (uint32 i = 0; i < 7; ++i)
 		SetResistance(i, proto->Resistances[i]);
 
 	SetBaseAttackTime(MELEE, proto->AttackTime);
 
 	float dmg_coeff = CalcDMGCoefficient(info, mode);
 
-	SetMinDamage((mode ? proto->MinDamage * dmg_coeff  : proto->MinDamage));
-	SetMaxDamage((mode ? proto->MaxDamage * dmg_coeff  : proto->MaxDamage));
+	SetMinDamage((mode ? proto->MinDamage * dmg_coeff : proto->MinDamage));
+	SetMaxDamage((mode ? proto->MaxDamage * dmg_coeff : proto->MaxDamage));
 
 	SetBaseAttackTime(RANGED, proto->RangedAttackTime);
 	SetMinRangedDamage(proto->RangedMinDamage);
@@ -1261,7 +1261,7 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
 	SetEquippedItem(OFFHAND, spawn->Item2SlotDisplay);
 	SetEquippedItem(RANGED, spawn->Item3SlotDisplay);
 
-	SetFaction(spawn->factionid);
+	SetFaction(proto->Faction);
 	SetUInt32Value(UNIT_FIELD_FLAGS, spawn->flags);
 	SetEmoteState(spawn->emote_state);
 	SetBoundingRadius(proto->BoundingRadius);
@@ -1276,36 +1276,36 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
 	m_aiInterface->timed_emotes = objmgr.GetTimedEmoteList(spawn->id);
 
 	// not a neutral creature
-	if(!(m_factionDBC->RepListId == -1 && m_faction->HostileMask == 0 && m_faction->FriendlyMask == 0))
+	if (!(m_factionDBC->RepListId == -1 && m_faction->HostileMask == 0 && m_faction->FriendlyMask == 0))
 	{
 		GetAIInterface()->m_canCallForHelp = true;
 	}
 
 	// set if creature can shoot or not.
-	if(proto->CanRanged == 1)
+	if (proto->CanRanged == 1)
 		GetAIInterface()->m_canRangedAttack = true;
 	else
 		m_aiInterface->m_canRangedAttack = false;
 
-//SETUP NPC FLAGS
+	//SETUP NPC FLAGS
 	SetUInt32Value(UNIT_NPC_FLAGS, proto->NPCFLags);
 
-	if(isVendor())
+	if (isVendor())
 		m_SellItems = objmgr.GetVendorList(GetEntry());
 
-	if(isQuestGiver())
+	if (isQuestGiver())
 		_LoadQuests();
 
-	if(isTrainer() | isProf())
+	if (isTrainer() | isProf())
 		mTrainer = objmgr.GetTrainer(GetEntry());
 
-	if(isAuctioner())
+	if (isAuctioner())
 		auctionHouse = sAuctionMgr.GetAuctionHouse(GetEntry());
 
 	//load resistances
-	for(uint8 x = 0; x < 7; x++)
+	for (uint8 x = 0; x < 7; x++)
 		BaseResistance[x] = GetResistance(x);
-	for(uint8 x = 0; x < 5; x++)
+	for (uint8 x = 0; x < 5; x++)
 		BaseStats[x] = GetStat(x);
 
 	BaseDamage[0] = GetMinDamage();
@@ -1321,13 +1321,13 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
 	SetUInt32Value(UNIT_FIELD_BYTES_1, spawn->bytes1);
 	SetUInt32Value(UNIT_FIELD_BYTES_2, spawn->bytes2);
 
-////////////AI
+	////////////AI
 
 	// kek
-	for(list<AI_Spell*>::iterator itr = proto->spells.begin(); itr != proto->spells.end(); ++itr)
+	for (list<AI_Spell*>::iterator itr = proto->spells.begin(); itr != proto->spells.end(); ++itr)
 	{
 		// Load all spells that are not bound to a specific difficulty, OR mathces this maps' difficulty
-		if((*itr)->instance_mode == mode || (*itr)->instance_mode == AISPELL_ANY_DIFFICULTY)
+		if ((*itr)->instance_mode == mode || (*itr)->instance_mode == AISPELL_ANY_DIFFICULTY)
 			m_aiInterface->addSpellToList(*itr);
 	}
 
@@ -1339,7 +1339,7 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
 
 	GetAIInterface()->SetWalk();
 
-	if(isattackable(spawn) && !(proto->isTrainingDummy) && !IsVehicle() )
+	if (isattackable(spawn) && !(proto->isTrainingDummy) && !IsVehicle())
 	{
 		GetAIInterface()->SetAllowedToEnterCombat(true);
 	}
@@ -1350,7 +1350,7 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
 	}
 
 	// load formation data
-	if(spawn->form != NULL)
+	if (spawn->form != NULL)
 	{
 		m_aiInterface->m_formationLinkSqlId = spawn->form->fol;
 		m_aiInterface->m_formationFollowDistance = spawn->form->dist;
@@ -1363,36 +1363,36 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
 		m_aiInterface->m_formationFollowAngle = 0;
 	}
 
-//////////////AI
+	//////////////AI
 
 	myFamily = dbcCreatureFamily.LookupEntry(creature_info->Family);
 
 
-//HACK!
-	if(m_uint32Values[UNIT_FIELD_DISPLAYID] == 17743 ||
-	        m_uint32Values[UNIT_FIELD_DISPLAYID] == 20242 ||
-	        m_uint32Values[UNIT_FIELD_DISPLAYID] == 15435 ||
-	        (creature_info->Family == UNIT_TYPE_MISC))
+	//HACK!
+	if (m_uint32Values[UNIT_FIELD_DISPLAYID] == 17743 ||
+		m_uint32Values[UNIT_FIELD_DISPLAYID] == 20242 ||
+		m_uint32Values[UNIT_FIELD_DISPLAYID] == 15435 ||
+		(creature_info->Family == UNIT_TYPE_MISC))
 	{
 		m_useAI = false;
 	}
 
-	if(spawn->CanFly == 1)
+	if (spawn->CanFly == 1)
 		GetAIInterface()->SetFly();
-	else if(spawn->CanFly == 2)
+	else if (spawn->CanFly == 2)
 		GetAIInterface()->onGameobject = true;
 	/* more hacks! */
-	if(proto->Mana != 0)
+	if (proto->Mana != 0)
 		SetPowerType(POWER_TYPE_MANA);
 	else
 		SetPowerType(0);
 
-	if(proto->guardtype == GUARDTYPE_CITY)
+	if (proto->guardtype == GUARDTYPE_CITY)
 		m_aiInterface->m_isGuard = true;
 	else
 		m_aiInterface->m_isGuard = false;
 
-	if(proto->guardtype == GUARDTYPE_NEUTRAL)
+	if (proto->guardtype == GUARDTYPE_NEUTRAL)
 		m_aiInterface->m_isNeutralGuard = true;
 	else
 		m_aiInterface->m_isNeutralGuard = false;
@@ -1400,21 +1400,21 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
 	m_aiInterface->UpdateSpeeds();
 
 	/* creature death state */
-	if(spawn->death_state == CREATURE_STATE_APPEAR_DEAD)
+	if (spawn->death_state == CREATURE_STATE_APPEAR_DEAD)
 	{
 		m_limbostate = true;
 		SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, U_DYN_FLAG_DEAD);
 	}
-	else if(spawn->death_state == CREATURE_STATE_DEAD)
+	else if (spawn->death_state == CREATURE_STATE_DEAD)
 	{
 		SetHealth(0);
 		m_limbostate = true;
 		setDeathState(CORPSE);
 	}
 	m_invisFlag = static_cast<uint8>(proto->invisibility_type);
-	if(m_invisFlag > 0)
+	if (m_invisFlag > 0)
 		m_invisible = true;
-	if(spawn->stand_state)
+	if (spawn->stand_state)
 		SetStandState((uint8)spawn->stand_state);
 
 	m_aiInterface->EventAiInterfaceParamsetFinish();
@@ -1423,13 +1423,13 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
 	this->m_position.z = spawn->z;
 	this->m_position.o = spawn->o;
 
-	if( IsVehicle() ){
-		AddVehicleComponent( proto->Id, proto->vehicleid );
-		SetFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK );
-		setAItoUse( false );
+	if (IsVehicle()){
+		AddVehicleComponent(proto->Id, proto->vehicleid);
+		SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+		setAItoUse(false);
 	}
 
-	if( proto->rooted != 0 )
+	if (proto->rooted != 0)
 		Root();
 
 	return true;
