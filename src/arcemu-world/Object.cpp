@@ -1205,8 +1205,6 @@ void Object::RemoveFromWorld(bool free_guid)
 	event_Relocate();
 }
 
-
-
 //! Set uint32 property
 void Object::SetUInt32Value(const uint32 index, const uint32 value)
 {
@@ -2106,6 +2104,8 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
 	if (!Caster || !Target || !Dmg)
 		return;
 
+    printf("GOT DMG %u FULL_DMG %u BLOCKED %u ABSORBED %u \n", Damage, Dmg->full_damage, BlockedDamage, Abs);
+
 	size_t maxsize = 4 + 5 + 5 + 4 + 4 + 1 + 4 + 4 + 4 + 4 + 4 + 1 + 4 + 4 + 4 + 4 + 4 * 12;
     WorldPacket data(SMSG_ATTACKERSTATEUPDATE, maxsize); // we guess size
 
@@ -2144,7 +2144,7 @@ void Object::SendAttackerStateUpdate(Object* Caster, Object* Target, dealdamage*
 	data << uint32(HitStatus);
 	data << Caster->GetNewGUID();
     data << Target->GetNewGUID();
-    data << uint32(Dmg->full_damage); // Full damage
+    data << uint32(Damage); // Real damage
     data << uint32(Overkill < 0 ? 0 : Overkill); // Overkill
     data << uint8(1); // Damage type counter / swing type
 

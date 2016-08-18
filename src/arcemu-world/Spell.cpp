@@ -2251,7 +2251,7 @@ void Spell::SendSpellStart()
 		data << uint8(powerType);
 		}*/
 
-		data << uint8(m_spellInfo->powerType);
+		data << uint8(GetProto()->powerType);
         data << int32(p_caster->GetPower(GetProto()->powerType)); // I think?
 		//data << int32(m_caster->GetPower((Powers)m_spellInfo->PowerType));
 	}
@@ -2262,7 +2262,7 @@ void Spell::SendSpellStart()
 	data.WriteByteSeq(casterGuid[7]);
 	data.WriteByteSeq(casterGuid[1]);
 
-	data << uint8(extra_cast_number);
+	data << uint8(extra_cast_number); // cast count
 
 	data.WriteByteSeq(casterUnitGuid[7]);
 	data.WriteByteSeq(casterUnitGuid[0]);
@@ -2279,7 +2279,7 @@ void Spell::SendSpellStart()
 	data.WriteByteSeq(casterUnitGuid[6]);
 	data.WriteByteSeq(casterUnitGuid[3]);
 
-	data << uint32(m_spellInfo->Id); // same as GetProto()->Id
+	data << uint32(GetProto()->Id);
 
 	if (hasAmmoDisplayId)
 		data << uint32(0);
@@ -2297,8 +2297,7 @@ void Spell::SendSpellStart()
 	data.WriteByteSeq(casterGuid[3]);
 
     if (hasElevation)
-        data << float(m_missilePitch);
-		//data << float(m_targets.GetElevation());
+        data << float(m_missilePitch); // Elevation
 
 	for (uint8 i = 0; i < runeCooldownPassedCount; ++i)
 	{
@@ -2672,9 +2671,9 @@ void Spell::SendSpellGo()
     data.WriteBit(casterGuid[3]);
     data.FlushBits();
 
-    //data.PutBits(missCountPos, missCount, 24);
-    //data.PutBits(missTypeCountPos, missTypeCount, 25);
-    //data.PutBits(hitCountPos, hitCount, 24);
+    data.PutBits(missCountPos, missCount, 24);
+    data.PutBits(missTypeCountPos, missTypeCount, 25);
+    data.PutBits(hitCountPos, hitCount, 24);
 
     data.WriteByteSeq(targetGuid[5]);
     data.WriteByteSeq(targetGuid[2]);
@@ -2837,7 +2836,7 @@ void Spell::SendSpellGo()
         //    data << uint8(powerType);
         //}
 
-        data << uint8(m_spellInfo->powerType);
+        data << uint8(GetProto()->powerType);
         data << int32(p_caster->GetPower(GetProto()->powerType)); // I think?
         //data << int32(m_caster->GetPower((Powers)m_spellInfo->PowerType));
     }
@@ -2863,7 +2862,7 @@ void Spell::SendSpellGo()
     if (hasDestUnkByte)
         data << uint8(0);
 
-    data << uint8(extra_cast_number); // m_cast_count I think?
+    data << uint8(extra_cast_number); // m_cast_count
 
     data.WriteByteSeq(casterGuid[5]);
     data.WriteByteSeq(casterUnitGuid[2]);
@@ -2873,11 +2872,10 @@ void Spell::SendSpellGo()
     if (hasTargetString)
         data.WriteString(m_targets.m_strTarget);
 
-    data << uint32(m_spellInfo->Id);
+    data << uint32(GetProto()->Id);
 
     if (hasElevation)
-        data << float(m_missilePitch);
-        //data << m_targets.GetElevation();
+        data << float(m_missilePitch); // Elevation
 
     data.WriteByteSeq(casterUnitGuid[0]);
     data.WriteByteSeq(casterUnitGuid[3]);
@@ -3022,9 +3020,24 @@ void Spell::writeSpellMissedTargets(WorldPacket* data)
 
 void Spell::SendLogExecute(uint32 damage, uint64 & targetGuid)
 {
+    ObjectGuid guid = m_caster->GetGUID();
 	WorldPacket data(SMSG_SPELLLOGEXECUTE, 37);
-	data << m_caster->GetNewGUID();
-	data << GetProto()->Id;
+	
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[2]);
+    data.WriteBits(0, 19); // EffCount
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(0); // HasSpellCastLogData
+	data << uint32(GetProto()->Id);
+
+    // well shit
+
+    /*
 	data << uint32(1);
 	data << GetProto()->SpellVisual;
 	data << uint32(1);
@@ -3032,6 +3045,7 @@ void Spell::SendLogExecute(uint32 damage, uint64 & targetGuid)
 		data << targetGuid;
 	if(damage)
 		data << damage;
+        */
 	m_caster->SendMessageToSet(&data, true);
 }
 

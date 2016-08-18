@@ -2200,18 +2200,18 @@ void Player::InitVisibleUpdateBits()
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_TARGET + 1);
 
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_HEALTH);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 0);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 1);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 2);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 3);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 4);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 5);
 
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXHEALTH);
+	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 0);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 1);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 2);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 3);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 4);
-	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_MAXPOWER + 5);
 
 	Player::m_visibleUpdateMask.SetBit(UNIT_VIRTUAL_ITEM_SLOT_ID);
 	Player::m_visibleUpdateMask.SetBit(UNIT_VIRTUAL_ITEM_SLOT_ID + 1);
@@ -10544,7 +10544,6 @@ void Player::_UpdateMaxSkillCounts()
 #endif
 		if (new_max < 1)
 			new_max = 1;
-
 
 		if (itr->second.MaximumValue != new_max)
 		{

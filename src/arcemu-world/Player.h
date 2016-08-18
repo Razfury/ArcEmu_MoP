@@ -933,7 +933,6 @@ public:
 	void _ModifySkillMaximum(uint32 SkillLine, uint32 NewMax);
 	void _LearnSkillSpells(uint32 SkillLine, uint32 Current);
 
-
 	void RecalculateHonor();
 
 	LfgMatch* m_lfgMatch;

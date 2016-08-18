@@ -7942,6 +7942,7 @@ void Unit::SendPowerUpdate(bool self)
 {
 	uint32 amount = GetUInt32Value(UNIT_FIELD_POWER + GetPowerType());
 	ObjectGuid guid = GetGUID();
+    printf("power amt: %u ptype %u \n", amount, GetPowerType());
 
 	WorldPacket data(SMSG_POWER_UPDATE, 8 + 4 + 1 + 4);
 	data.WriteBit(guid[4]);
@@ -7978,6 +7979,7 @@ void Unit::UpdatePowerAmm()
 
     uint32 amount = GetUInt32Value(UNIT_FIELD_POWER + GetPowerType());
     ObjectGuid guid = GetGUID();
+    printf("power amm amt: %u ptype %u \n", amount, GetPowerType());
 
     WorldPacket data(SMSG_POWER_UPDATE, 8 + 4 + 1 + 4);
     data.WriteBit(guid[4]);
