@@ -1780,30 +1780,50 @@ enum MonsterMoveType
 	MonsterMoveFacingAngle = 4
 };
 
-// packet struct not updated, so i disabled it!!
 void AIInterface::SendMoveToPacket()
-{
-	/*WorldPacket data(SMSG_MONSTER_MOVE, 100);
-	ObjectGuid guid = m_Unit->GetGUID();
-	//ObjectGuid transport = m_Unit->GetTransGUID();
-	//MonsterMoveType type = GetMonsterMoveType(moveSpline);
-	//G3D::Vector3 const& firstPoint = moveSpline.spline.getPoint(moveSpline.spline.first());
+{/*
+    ObjectGuid guid = m_Unit->GetGUID();
+    ObjectGuid transport = 0;
 
-	data << float(m_Unit->GetPositionZ());
-	data << float(m_Unit->GetPositionX());
-	data << uint32(0); // moveSpline.GetId());
-	data << float(m_Unit->GetPositionY());
+	WorldPacket data(SMSG_MONSTER_MOVE, 100);
+
+    if (m_currentMoveSpline.size() == 0)
+    {
+        data << float(m_Unit->GetPositionZ());
+        data << float(m_Unit->GetPositionX());
+        data << uint32(getMSTime()); // moveSpline.GetId());
+        data << float(m_Unit->GetPositionY());
+    }
+    else
+    {
+        SplinePoint & splinestart = m_currentMoveSpline[0];
+
+        data << float(splinestart.pos.z);
+        data << float(splinestart.pos.x);
+        data << uint32(getMSTime()); // moveSpline.GetId());
+        data << float(splinestart.pos.y);
+    }
+
 	data << float(0.f); // Most likely transport Y
 	data << float(0.f); // Most likely transport Z
 	data << float(0.f); // Most likely transport X
 
 	data.WriteBit(1); // Parabolic speed // esi+4Ch
 	data.WriteBit(guid[0]);
-	data.WriteBits(0, 3); //Type
 
-	/*if ((m_currentMoveSpline.size() == MonsterMoveFacingTarget)
+    uint8 type = SPLINEFLAG_NONE;
+    if (m_splineFlags & SPLINEFLAG_FINALPOINT)
+        type = MonsterMoveFacingSpot;
+    else if (m_splineFlags & SPLINEFLAG_FINALTARGET)
+        type = MonsterMoveFacingTarget;
+    else
+        type = MonsterMoveFacingAngle;
+
+	data.WriteBits(type, 3); // Type
+
+	if (m_splineFlags & SPLINEFLAG_FINALTARGET)
 	{
-		ObjectGuid targetGuid = moveSpline.facing.target;
+        ObjectGuid targetGuid = m_Unit->GetTargetGUID();
 		data.WriteBit(targetGuid[6]);
 		data.WriteBit(targetGuid[4]);
 		data.WriteBit(targetGuid[3]);
@@ -1821,31 +1841,31 @@ void AIInterface::SendMoveToPacket()
 	//uint32 uncompressedSplineCount = moveSpline.splineflags & MoveSplineFlag::UncompressedPath ? moveSpline.splineflags.cyclic ? moveSpline.spline.getPointCount() - 2 : moveSpline.spline.getPointCount() - 3 : 1;
 	data.WriteBits(0, 20); // uncompressedSplineCount, 20);
 
-	data.WriteBit(!0); // moveSpline.splineflags.raw());
+	data.WriteBit(1); // moveSpline.splineflags.raw());
 	data.WriteBit(guid[3]);
 	data.WriteBit(1);
 	data.WriteBit(1);
 	data.WriteBit(1);
-	data.WriteBit(!0); // moveSpline.Duration());
+    data.WriteBit(!m_currentSplineTotalMoveTime); // moveSpline.Duration());
 	data.WriteBit(guid[7]);
 	data.WriteBit(guid[4]);
 	data.WriteBit(1);
 	data.WriteBit(guid[5]);
 
-	//int32 compressedSplineCount = moveSpline.splineflags & MoveSplineFlag::UncompressedPath ? 0 : moveSpline.spline.getPointCount() - 3;
-	data.WriteBits(0, 22); // compressedSplineCount, 22); // WP count
+    int32 compressedSplineCount = m_currentMoveSpline.size() - 2;
+	data.WriteBits(compressedSplineCount, 22); // WP count
 
 	data.WriteBit(guid[6]);
 	data.WriteBit(0); // Fake bit
 
-	//data.WriteBit(transport[7]);
-	//data.WriteBit(transport[1]);
-	//data.WriteBit(transport[3]);
-	//data.WriteBit(transport[0]);
-	//data.WriteBit(transport[6]);
-	//data.WriteBit(transport[4]);
-	//data.WriteBit(transport[5]);
-	//data.WriteBit(transport[2]);
+	data.WriteBit(transport[7]);
+	data.WriteBit(transport[1]);
+	data.WriteBit(transport[3]);
+	data.WriteBit(transport[0]);
+	data.WriteBit(transport[6]);
+	data.WriteBit(transport[4]);
+	data.WriteBit(transport[5]);
+	data.WriteBit(transport[2]);
 
 	data.WriteBit(0); // Send no block
 	data.WriteBit(0);
@@ -1854,11 +1874,28 @@ void AIInterface::SendMoveToPacket()
 
 	data.FlushBits();
 
-	//if (compressedSplineCount)
-		//WriteLinearPath(moveSpline.spline, data);
+    SplinePoint & splinestart = m_currentMoveSpline[0];
+    SplinePoint & finalpoint = m_currentMoveSpline[m_currentMoveSpline.size() - 1];
+    if (compressedSplineCount)
+    {
+        float midx = (finalpoint.pos.x + splinestart.pos.x) * 0.5f;
+        float midy = (finalpoint.pos.y + splinestart.pos.y) * 0.5f;
+        float midz = (finalpoint.pos.z + splinestart.pos.z) * 0.5f;
+
+        for (uint32 i = 1; i < m_currentMoveSpline.size() - 1; ++i)
+        {
+            float tmpx = (midx - m_currentMoveSpline[i].pos.x) * 4;
+            float tmpy = (midy - m_currentMoveSpline[i].pos.y) * 4;
+            float tmpz = (midz - m_currentMoveSpline[i].pos.z) * 4;
+
+            //pack it
+            data << uint32(int(tmpx) & 0x7FF | ((int(tmpy) & 0x7FF) << 11) | ((int(tmpz) & 0x3FF) << 22));
+        }
+    }
 
 	data.WriteByteSeq(guid[1]);
-	/*data.WriteByteSeq(transport[6]);
+
+	data.WriteByteSeq(transport[6]);
 	data.WriteByteSeq(transport[4]);
 	data.WriteByteSeq(transport[1]);
 	data.WriteByteSeq(transport[7]);
@@ -1880,23 +1917,27 @@ void AIInterface::SendMoveToPacket()
 	//	data << point.y << point.x << point.z;
 	//}
 
-	if (m_currentMoveSpline.size() == MonsterMoveFacingTarget)
+    data << finalpoint.pos.x;
+    data << finalpoint.pos.y;
+    data << finalpoint.pos.z;
+
+	if (m_splineFlags & SPLINEFLAG_FINALTARGET)
 	{
-	//	ObjectGuid targetGuid = moveSpline.facing.target;
-	//	data.WriteByteSeq(targetGuid[5]);
-	//	data.WriteByteSeq(targetGuid[7]);
-	//	data.WriteByteSeq(targetGuid[0]);
-	//	data.WriteByteSeq(targetGuid[4]);
-	//	data.WriteByteSeq(targetGuid[3]);
-	//	data.WriteByteSeq(targetGuid[2]);
-	//	data.WriteByteSeq(targetGuid[6]);
-	//	data.WriteByteSeq(targetGuid[1]);
+        ObjectGuid targetGuid = m_Unit->GetTargetGUID();;
+		data.WriteByteSeq(targetGuid[5]);
+		data.WriteByteSeq(targetGuid[7]);
+		data.WriteByteSeq(targetGuid[0]);
+		data.WriteByteSeq(targetGuid[4]);
+		data.WriteByteSeq(targetGuid[3]);
+		data.WriteByteSeq(targetGuid[2]);
+		data.WriteByteSeq(targetGuid[6]);
+		data.WriteByteSeq(targetGuid[1]);
 	}
 
 	data.WriteByteSeq(guid[5]);
 
-	//if (m_currentMoveSpline.size() == MonsterMoveFacingAngle)
-		//data << float(splinestart.setoff);
+	if (m_currentSplineFinalOrientation)
+        data << float(m_currentSplineFinalOrientation); // Facing angle
 
 	data.WriteByteSeq(guid[3]);
 
@@ -1905,20 +1946,23 @@ void AIInterface::SendMoveToPacket()
 
 	data.WriteByteSeq(guid[6]);
 
-	//if (type == MonsterMoveFacingPoint)
-		//data << moveSpline.facing.f.x << moveSpline.facing.f.y << moveSpline.facing.f.z;
+    if (m_splineFlags & SPLINEFLAG_FINALPOINT)
+        data << m_Unit->GetPositionX() << m_Unit->GetPositionY() << m_Unit->GetPositionZ();
+        //moveSpline.facing.f.x << moveSpline.facing.f.y << moveSpline.facing.f.z;
 
 	data.WriteByteSeq(guid[0]);
 	data.WriteByteSeq(guid[7]);
 	data.WriteByteSeq(guid[2]);
-	data.WriteByteSeq(guid[4]);*/
+	data.WriteByteSeq(guid[4]);
 
-	//if (moveSpline.Duration())
-		//data << uint32(moveSpline.Duration());
+    if (m_currentSplineTotalMoveTime)
+        data << uint32(m_currentSplineTotalMoveTime);*/
 
+    //! Don't send until it's fixed
 	//m_Unit->SendMessageToSet(&data, true);
 
-	/*WorldPacket data(SMSG_MONSTER_MOVE, 100);
+    /*
+	WorldPacket data(SMSG_MONSTER_MOVE, 100);
 
 	data << m_Unit->GetNewGUID();
 	data << uint8(0); //vehicle seat index

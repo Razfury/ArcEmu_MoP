@@ -184,8 +184,8 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recv_data)
 
 	if (ci)
 	{
-		data.WriteBits(strlen(ci->SubName) ? strlen(ci->SubName) + 1 : 0, 11);
-		data.WriteBits(6, 22);
+		data.WriteBits(ci->SubName ? strlen(ci->SubName) + 1 : 0, 11);
+		data.WriteBits(6, 22); // Max creature quest items
 		data.WriteBits(0, 11);
 
 		for (int i = 0; i < 8; i++)
@@ -197,15 +197,15 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recv_data)
 		}
 
 		data.WriteBit(ci->Leader);
-		data.WriteBits(strlen(ci->info_str), 6);
+		data.WriteBits(strlen(ci->info_str) + 1 + 1, 6);
 		data.FlushBits();
 
 		data << uint32(ci->killcredit[0]);
-		data << uint32(ci->Female_DisplayID2);
+        data << uint32(ci->Male_DisplayID);
 		data << uint32(ci->Female_DisplayID);
 		data << uint32(ci->expansion);
 		data << uint32(ci->Type);
-		data << float(ci->unkfloat1);
+		data << float(ci->unkfloat1); // HP modifier
 		data << uint32(ci->Flags1);
 		data << uint32(ci->Flags2);
 		data << uint32(ci->Rank);
@@ -215,17 +215,17 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recv_data)
 		if (ci->SubName != "")
 			data << ci->SubName;
 
-		data << uint32(ci->Male_DisplayID);
-		data << uint32(ci->Male_DisplayID2); 
+		data << uint32(ci->Male_DisplayID2);
+        data << uint32(ci->Female_DisplayID2);
 
 		if (ci->info_str != "")
-			data << ci->info_str;
+			data << ci->info_str; // "Directions" for guard
 
-		for (uint32 i = 0; i < 6; ++i)
+		for (uint32 i = 0; i < 6; ++i) // Max creature quest items
 			data << uint32(ci->QuestItems[i]);
 
 		data << uint32(ci->killcredit[1]);
-		data << float(ci->unkfloat2);
+		data << float(ci->unkfloat2); // Mana modifier
 		data << uint32(ci->Family);
 
 		LOG_DEBUG("WORLD: Sent SMSG_CREATURE_QUERY_RESPONSE");
@@ -584,12 +584,18 @@ void WorldSession::HandleAchievmentQueryOpcode(WorldPacket & recv_data)
 #endif
 }
 
+void WorldSession::HandleRealmNameQueryOpcode(WorldPacket& recvPacket)
+{
+    uint32 realmId;
+    recvPacket >> realmId;
+    SendRealmNameQueryOpcode(realmId);
+}
+
 void WorldSession::SendRealmNameQueryOpcode(uint32 realmId)
 {
 		bool found = false;
 
 		uint32 realmcount = Config.RealmConfig.GetIntDefault("LogonServer", "RealmCount", 1);
-
 	
 		if (realmcount > 0)
 		{
@@ -616,13 +622,4 @@ void WorldSession::SendRealmNameQueryOpcode(uint32 realmId)
 		}
 
 		SendPacket(&data);
-
-	
-}
-
-void WorldSession::HandleRealmNameQueryOpcode(WorldPacket& recvPacket)
-{
-	uint32 realmId;
-	recvPacket >> realmId;
-	SendRealmNameQueryOpcode(realmId);
 }
