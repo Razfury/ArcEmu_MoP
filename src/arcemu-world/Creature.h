@@ -98,18 +98,21 @@ struct CreatureInfo
 	uint32 Flags2;
 	uint32 Type;
 	uint32 Family;
-	uint32 expansion;
 	uint32 Rank;
 	uint32 killcredit[2];
 	uint32 Male_DisplayID;
 	uint32 Female_DisplayID;
 	uint32 Male_DisplayID2;
 	uint32 Female_DisplayID2;
-	float unkfloat1;
-	float unkfloat2;
+	float  ModHP;
+	float  ModMana;
+    float  ModArmor;
+    float  ModManaExtra;
 	uint8  Leader;
 	uint32 QuestItems[6];
 	uint32 waypointid;
+    ////////////////////
+
 	bool   RacialLeader;
 	uint32 MovementType;
 
@@ -144,9 +147,6 @@ struct CreatureProto
 	uint32 MinLevel;
 	uint32 MaxLevel;
 	uint32 Faction;
-	uint32 MinHealth;
-	uint32 MaxHealth;
-	uint32 Mana;
 	float  Scale;
 	uint32	NPCFLags;
 	uint32 AttackTime;
@@ -165,11 +165,11 @@ struct CreatureProto
 	uint32 boss;
 	uint32 money;
 	uint32 invisibility_type;
-	float	walk_speed;//base movement
-	float	run_speed;//most of the time mobs use this
+	float walk_speed; // Base movement
+	float run_speed; // Most of the time mobs use this
 	float fly_speed;
 	uint32 extra_a9_flags;
-	uint32 AISpells[ MAX_CREATURE_PROTO_SPELLS ];
+	uint32 AISpells[MAX_CREATURE_PROTO_SPELLS];
 	uint32 AISpellsFlags;
 	uint32 modImmunities;
 	uint32 isTrainingDummy;
@@ -178,6 +178,7 @@ struct CreatureProto
 	uint32 spelldataid;
 	uint32 vehicleid;
 	uint32 rooted;
+    uint32 expansion;
 
 	/* AI Stuff */
 	bool m_canRangedAttack;
@@ -338,6 +339,43 @@ struct Trainer;
 
 
 uint8 get_byte(uint32 buffer, uint32 index);
+
+#define MAX_CREATURE_BASE_HP 2
+#define CURRENT_CONTENT_EXP 4
+
+// Defines base stats for creatures (used to calculate HP/mana/armor).
+struct CreatureBaseStats
+{
+    uint32 BaseHealth[MAX_CREATURE_BASE_HP];
+    uint32 BaseMana;
+    uint32 BaseArmor;
+
+    // Helpers
+
+    uint32 GenerateHealth(Creature const* info) const
+    {
+        
+        return uint32(ceil(BaseHealth[(CURRENT_CONTENT_EXP > info->GetProto()->expansion) ? 0 : 1] * info->GetCreatureInfo()->ModHealth));
+    }
+
+    uint32 GenerateMana(Creature const* info) const
+    {
+        // Mana can be 0
+        if (!BaseMana)
+            return 0;
+
+        return uint32(ceil(BaseMana * info->GetCreatureInfo()->ModMana * info->GetCreatureInfo()->ModManaExtra));
+    }
+
+    uint32 GenerateArmor(Creature const* info) const
+    {
+        return uint32(ceil(BaseArmor * info->GetCreatureInfo()->ModArmor));
+    }
+
+    static CreatureBaseStats const* GetBaseStats(uint8 level, uint8 unitClass);
+};
+
+typedef HM_NAMESPACE::hash_map<uint16, CreatureBaseStats> CreatureBaseStatsContainer;
 
 ///////////////////
 /// Creature object
