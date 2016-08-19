@@ -18,11 +18,6 @@
  *
  */
 
-//
-//
-// WorldSession.h
-//
-
 #ifndef __WORLDSESSION_H
 #define __WORLDSESSION_H
 
@@ -434,6 +429,7 @@ class SERVER_DECL WorldSession
 		void HandleGameobjReportUseOpCode(WorldPacket & recv_data);  // CMSG_GAMEOBJ_REPORT_USE
 
         void HandleRequestHotfixOpcode(WorldPacket & recv_data);
+        void SendBroadcastText(uint32 entry);
 
 		// 4.3.4 15595
 		void HandleUITimeRequestOpcode(WorldPacket & recv_data); // empty opcode

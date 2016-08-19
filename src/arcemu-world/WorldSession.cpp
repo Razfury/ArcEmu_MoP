@@ -759,8 +759,7 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleSetFactionInactiveOpcode;
 
 	// Player Interaction
-	WorldPacketHandlers[CMSG_GAMEOBJ_USE].handler =
-	    &WorldSession::HandleGameObjectUse;
+	WorldPacketHandlers[CMSG_GAMEOBJ_USE].handler = &WorldSession::HandleGameObjectUse;
 	WorldPacketHandlers[CMSG_PLAYED_TIME].handler =
 	    &WorldSession::HandlePlayedTimeOpcode;
 	WorldPacketHandlers[CMSG_SETSHEATHED].handler =
@@ -915,8 +914,7 @@ void WorldSession::InitPacketHandlerTable()
 	WorldPacketHandlers[CMSG_GOSSIP_SELECT_OPTION].handler =
 	    &WorldSession::HandleGossipSelectOptionOpcode;
 	WorldPacketHandlers[CMSG_SPIRIT_HEALER_ACTIVATE].handler = &WorldSession::HandleSpiritHealerActivateOpcode;
-	WorldPacketHandlers[CMSG_NPC_TEXT_QUERY].handler =
-	    &WorldSession::HandleNpcTextQueryOpcode;
+	WorldPacketHandlers[CMSG_NPC_TEXT_QUERY].handler = &WorldSession::HandleNpcTextQueryOpcode;
 	WorldPacketHandlers[CMSG_BINDER_ACTIVATE].handler =
 	    &WorldSession::HandleBinderActivateOpcode;
 	WorldPacketHandlers[CMSG_ACTIVATETAXIEXPRESS].handler =
@@ -1621,7 +1619,6 @@ void WorldSession::HandleLearnTalentOpcode(WorldPacket & recv_data)
 	recv_data >> talent_id >> requested_rank >> unk;
 
 	_player->LearnTalent(talent_id, requested_rank);
-
 }
 
 void WorldSession::HandleUnlearnTalents(WorldPacket & recv_data)

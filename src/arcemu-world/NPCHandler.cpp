@@ -538,23 +538,59 @@ void WorldSession::HandleNpcTextQueryOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	WorldPacket data;
 	uint32 textID;
-	uint64 targetGuid;
+	ObjectGuid guid;
 	GossipText* pGossip;
 
 	recv_data >> textID;
 	LOG_DETAIL("WORLD: CMSG_NPC_TEXT_QUERY ID '%u'", textID);
 
-	recv_data >> targetGuid;
-	GetPlayer()->SetTargetGUID(targetGuid);
+    guid[4] = recv_data.ReadBit();
+    guid[5] = recv_data.ReadBit();
+    guid[1] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
+    guid[2] = recv_data.ReadBit();
+    guid[6] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[3]);
+    recv_data.ReadByteSeq(guid[6]);
+
+    GetPlayer()->SetTargetGUID(guid);
 
 	pGossip = NpcTextStorage.LookupEntry(textID);
 	LocalizedNpcText* lnc = (language > 0) ? sLocalizationMgr.GetLocalizedNpcText(textID, language) : NULL;
 
-	data.Initialize(SMSG_NPC_TEXT_UPDATE);
+	WorldPacket data(SMSG_NPC_TEXT_UPDATE, 1 + 4 + 64);
 	data << textID;
+    data << uint32(64);
 
+    // 8 = Maximum gossip text options
+    //! TODO define the maximum amount of gossip text options
+    for (uint8 i = 0; i < 8; ++i)
+    {
+        if (pGossip)
+            data << float(pGossip->Texts[i].Prob);
+        else
+            data << float(0);
+    }
+
+    data << textID;
+
+    for (int i = 0; i < 8 - 1; i++)
+        data << uint32(0);
+
+    data.WriteBit(1); // Has data
+    data.FlushBits();
+
+    /*
 	if(pGossip)
 	{
 		for(uint8 i = 0; i < 8; i++)
@@ -610,7 +646,7 @@ void WorldSession::HandleNpcTextQueryOpcode(WorldPacket & recv_data)
 			}
 		}
 	}
-
+    */
 	SendPacket(&data);
 	return;
 }

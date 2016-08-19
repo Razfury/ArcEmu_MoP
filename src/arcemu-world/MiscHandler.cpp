@@ -1593,6 +1593,7 @@ void WorldSession::HandleGameObjectUse(WorldPacket & recv_data)
 	SpellCastTargets targets;
 	Spell* spell = NULL;
 	SpellEntry* spellInfo = NULL;
+    printf("CMSG_GAMEOBJ_USE GUID %u \n", guid);
 	LOG_DEBUG("WORLD: CMSG_GAMEOBJ_USE: [GUID %d]", guid);
 
 	GameObject* obj = _player->GetMapMgr()->GetGameObject((uint32)guid);
@@ -2658,6 +2659,8 @@ void WorldSession::HandleGameobjReportUseOpCode(WorldPacket & recv_data)
     recv_data.ReadByteSeq(guid[2]);
     recv_data.ReadByteSeq(guid[4]);
 
+    printf("REPORT USE GUID %u \n", guid);
+
 	GameObject* gameobj = _player->GetMapMgr()->GetGameObject((uint32)guid);
 	if(gameobj == NULL)
 		return;
@@ -2807,6 +2810,9 @@ void WorldSession::HandleRequestHotfixOpcode(WorldPacket & recv_data)
         //! TODO
         switch (type)
         {
+            case 35137211: // DB2_REPLY_BROADCASTTEXT !TODO define it
+                SendBroadcastText(entry);
+                break;
         //case DB2_REPLY_ITEM:
           //  SendItemDb2Reply(entry);
           //  break;
@@ -2821,6 +2827,62 @@ void WorldSession::HandleRequestHotfixOpcode(WorldPacket & recv_data)
     }
 
     delete[] guids;
+}
+
+void WorldSession::SendBroadcastText(uint32 entry)
+{
+    GossipText* pGossip = pGossip = NpcTextStorage.LookupEntry(entry);
+    LocalizedNpcText* lnc = (language > 0) ? sLocalizationMgr.GetLocalizedNpcText(entry, language) : NULL;
+
+    uint16 normalTextLength = 0, altTextLength = 0;
+
+    if (lnc)
+    {
+        normalTextLength = strlen(lnc->Texts[0][0]) + 1;
+        altTextLength = strlen(lnc->Texts[0][1]) + 1;
+    }
+    else
+    {
+        normalTextLength = strlen(pGossip->Texts[0].Text[0]) + 1;
+        altTextLength = strlen(pGossip->Texts[0].Text[1]) + 1;
+    }
+
+    ByteBuffer buffer;
+    buffer << uint32(entry);
+    buffer << uint32(0); // Language
+    buffer << uint16(normalTextLength);
+
+    if (normalTextLength)
+    {
+        if (lnc)
+            buffer << lnc->Texts[0][0];
+        else
+            buffer << pGossip->Texts[0].Text[0];
+    }
+
+    buffer << uint16(altTextLength);
+
+    if (altTextLength)
+    {
+        if (lnc)
+            buffer << lnc->Texts[0][1];
+        else
+            buffer << pGossip->Texts[0].Text[1];
+    }
+
+    for (uint8 i = 0; i < 8; ++i) // Max gossip text options
+        buffer << uint32(0);
+
+    buffer << uint32(1);
+
+    WorldPacket data(SMSG_DB_REPLY, 4 + 4 + 4 + buffer.size());
+    data << uint32(entry);
+    data << uint32(getMSTime());
+    data << uint32(35137211); // DB2_REPLY_BROADCASTTEXT
+    data << uint32(buffer.size());
+    data.append(buffer);
+    
+    SendPacket(&data);
 }
 
 void WorldSession::HandleReturnToGraveyardOpcode(WorldPacket & recv_data)
