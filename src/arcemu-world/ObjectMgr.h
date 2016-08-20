@@ -677,6 +677,16 @@ class SERVER_DECL ObjectMgr : public Singleton < ObjectMgr >, public EventableOb
 		void LoadWorldStateTemplates();
 		std::multimap< uint32, WorldState >* GetWorldStatesForMap( uint32 map ) const;
 
+        //! To-Do move this
+        uint16 MAKE_PAIR16(uint8 l, uint8 h)
+        {
+            return uint16(l | (uint16(h) << 8));
+        }
+
+        CreatureBaseStatsContainer _creatureBaseStatsStore;
+        CreatureBaseStats const* GetCreatureBaseStats(uint8 level, uint8 unitClass);
+        void LoadCreatureBaseStats();
+
 #undef ENABLE_ALWAYS_SERIOUS_MODE_GCC_STL_HACK
 
 // it's for private persons (pps)

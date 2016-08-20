@@ -1132,7 +1132,7 @@ void Creature::ChannelLinkUpGO(uint32 SqlId)
 
 void Creature::ChannelLinkUpCreature(uint32 SqlId)
 {
-    if (!m_mapMgr)		// shouldn't happen
+    if (!m_mapMgr) // shouldn't happen
         return;
 
     Creature* go = m_mapMgr->GetSqlIdCreature(SqlId);
@@ -1173,6 +1173,11 @@ uint8 get_byte(uint32 buffer, uint32 index)
     return (uint8)buffer;
 }
 
+CreatureBaseStats const* CreatureBaseStats::GetBaseStats(uint8 level, uint8 unitClass)
+{
+    return objmgr.GetCreatureBaseStats(level, unitClass);
+}
+
 bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
 {
     m_spawn = spawn;
@@ -1182,6 +1187,14 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
     creature_info = CreatureNameStorage.LookupEntry(spawn->entry);
     if (creature_info == NULL)
         return false;
+
+    setLevel(proto->MinLevel + (RandomUInt(proto->MaxLevel - proto->MinLevel)));
+
+    if (mode && info)
+        modLevel(min(73 - getLevel(), info->lvl_mod_a));
+
+    //! To-Do implement unit_class (https://trinitycore.atlassian.net/wiki/display/tc/creature_template)
+    CreatureBaseStats const* stats = objmgr.GetCreatureBaseStats(getLevel(), 1);
 
     spawnid = spawn->id;
     m_phase = spawn->phase;
@@ -1194,18 +1207,7 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
     SetEntry(proto->Id);
     SetScale(proto->Scale);
 
-    //SetHealth( (mode ? long2int32(proto->Health * 1.5)  : proto->Health));
-    //SetBaseHealth((mode ? long2int32(proto->Health * 1.5)  : proto->Health));
-    //SetMaxHealth( (mode ? long2int32(proto->Health * 1.5)  : proto->Health));
-    
-    //! TODO calculate hp
-    //if (proto->MinHealth > proto->MaxHealth)
-    //{
-       //proto->MaxHealth = proto->MinHealth + 1;
-        //SaveToDB();
-    //}
-
-    uint32 health = 0; // proto->MinHealth + RandomUInt(proto->MaxHealth - proto->MinHealth);
+    uint32 health = stats->GenerateHealth(creature_info, proto->expansion);
 
     // difficutly coefficient
     float diff_coeff = 1.0f;
@@ -1221,29 +1223,26 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
     SetMaxHealth(health);
     SetBaseHealth(health);
 
-    //SetMaxPower(POWER_TYPE_MANA, proto->Mana);
-    //SetBaseMana(proto->Mana);
-    //SetPower(POWER_TYPE_MANA, proto->Mana);
+    uint32 mana = stats->GenerateMana(creature_info);
+    
+    SetMaxPower(POWER_TYPE_MANA, mana);
+    SetBaseMana(mana);
+    SetPower(POWER_TYPE_MANA, mana);
 
     // Whee, thank you blizz, I love patch 2.2! Later on, we can randomize male/female mobs! xD
     // Determine gender (for voices)
     //if(spawn->displayid != creature_info->Male_DisplayID)
     //	setGender(1);   // Female
 
-    // uint32 model = 0;
-    // uint32 gender = creature_info->GenerateModelId(&model);
-    // setGender(gender);
+    //uint32 model = 0;
+    //uint8 gender = creature_info->GenerateModelId(&model);
+    //setGender(gender);
 
-    SetDisplayId(creature_info->Male_DisplayID);
-    SetNativeDisplayId(creature_info->Male_DisplayID);
+    SetDisplayId(spawn->displayid);
+    SetNativeDisplayId(spawn->displayid);
     SetMount(spawn->MountedDisplayID);
 
     EventModelChange();
-
-    setLevel(proto->MinLevel + (RandomUInt(proto->MaxLevel - proto->MinLevel)));
-
-    if (mode && info)
-        modLevel(min(73 - getLevel(), info->lvl_mod_a));
 
     for (uint32 i = 0; i < 7; ++i)
         SetResistance(i, proto->Resistances[i]);
@@ -1263,7 +1262,7 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
     SetEquippedItem(OFFHAND, spawn->Item2SlotDisplay);
     SetEquippedItem(RANGED, spawn->Item3SlotDisplay);
 
-    SetFaction(proto->Faction);
+    SetFaction(spawn->factionid);
     SetUInt32Value(UNIT_FIELD_FLAGS, spawn->flags);
     SetEmoteState(spawn->emote_state);
     SetBoundingRadius(proto->BoundingRadius);
@@ -1445,6 +1444,9 @@ void Creature::Load(CreatureProto* proto_, float x, float y, float z, float o)
     if (!creature_info)
         return;
 
+    //! To-Do implement unit_class (https://trinitycore.atlassian.net/wiki/display/tc/creature_template)
+    CreatureBaseStats const* stats = objmgr.GetCreatureBaseStats(getLevel(), 1);
+
     if (proto_->isTrainingDummy == 0 && !IsVehicle())
     {
         GetAIInterface()->SetAllowedToEnterCombat(true);
@@ -1462,15 +1464,17 @@ void Creature::Load(CreatureProto* proto_, float x, float y, float z, float o)
     SetEntry(proto->Id);
     SetScale(proto->Scale);
 
-    uint32 health = 0; // proto->MinHealth + RandomUInt(proto->MaxHealth - proto->MinHealth);
+    uint32 health = stats->GenerateHealth(creature_info, proto->expansion);
 
     SetHealth(health);
     SetMaxHealth(health);
     SetBaseHealth(health);
 
-    //SetMaxPower(POWER_TYPE_MANA, proto->Mana);
-    //SetBaseMana(proto->Mana);
-    //SetPower(POWER_TYPE_MANA, proto->Mana);
+    uint32 mana = stats->GenerateMana(creature_info);
+    
+    SetMaxPower(POWER_TYPE_MANA, mana);
+    SetBaseMana(mana);
+    SetPower(POWER_TYPE_MANA, mana);
 
     uint32 model = 0;
     uint8 gender = creature_info->GenerateModelId(&model);
@@ -1502,8 +1506,8 @@ void Creature::Load(CreatureProto* proto_, float x, float y, float z, float o)
     SetBoundingRadius(proto->BoundingRadius);
     SetCombatReach(proto->CombatReach);
     original_emotestate = 0;
-    // set position
 
+    // set position
     m_position.ChangeCoords(x, y, z, o);
     m_spawnLocation.ChangeCoords(x, y, z, o);
 

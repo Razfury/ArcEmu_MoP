@@ -179,6 +179,7 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recv_data)
 	WorldPacket data(SMSG_CREATURE_QUERY_RESPONSE, 500);
 
 	CreatureInfo *ci = CreatureNameStorage.LookupEntry(entry);
+    CreatureProto *cp = CreatureProtoStorage.LookupEntry(entry);
 	data << uint32(entry);
 	data.WriteBit(ci != 0);
 
@@ -203,9 +204,9 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recv_data)
 		data << uint32(ci->killcredit[0]);
         data << uint32(ci->Male_DisplayID);
 		data << uint32(ci->Female_DisplayID);
-		data << uint32(ci->expansion);
+		data << uint32(cp->expansion);
 		data << uint32(ci->Type);
-		data << float(ci->unkfloat1); // HP modifier
+		data << float(ci->ModHP);
 		data << uint32(ci->Flags1);
 		data << uint32(ci->Flags2);
 		data << uint32(ci->Rank);
@@ -225,7 +226,7 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recv_data)
 			data << uint32(ci->QuestItems[i]);
 
 		data << uint32(ci->killcredit[1]);
-		data << float(ci->unkfloat2); // Mana modifier
+		data << float(ci->ModMana);
 		data << uint32(ci->Family);
 
 		LOG_DEBUG("WORLD: Sent SMSG_CREATURE_QUERY_RESPONSE");

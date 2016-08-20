@@ -352,24 +352,23 @@ struct CreatureBaseStats
 
     // Helpers
 
-    uint32 GenerateHealth(Creature const* info) const
+    uint32 GenerateHealth(CreatureInfo const* info, uint8 expansion) const
     {
-        
-        return uint32(ceil(BaseHealth[(CURRENT_CONTENT_EXP > info->GetProto()->expansion) ? 0 : 1] * info->GetCreatureInfo()->ModHealth));
+        return uint32(ceil(BaseHealth[(CURRENT_CONTENT_EXP > expansion) ? 0 : 1] * info->ModHP));
     }
 
-    uint32 GenerateMana(Creature const* info) const
+    uint32 GenerateMana(CreatureInfo const* info) const
     {
         // Mana can be 0
         if (!BaseMana)
             return 0;
 
-        return uint32(ceil(BaseMana * info->GetCreatureInfo()->ModMana * info->GetCreatureInfo()->ModManaExtra));
+        return uint32(ceil(BaseMana * info->ModMana * info->ModManaExtra));
     }
 
-    uint32 GenerateArmor(Creature const* info) const
+    uint32 GenerateArmor(CreatureInfo const* info) const
     {
-        return uint32(ceil(BaseArmor * info->GetCreatureInfo()->ModArmor));
+        return uint32(ceil(BaseArmor * info->ModArmor));
     }
 
     static CreatureBaseStats const* GetBaseStats(uint8 level, uint8 unitClass);
