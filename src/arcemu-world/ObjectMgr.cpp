@@ -3590,3 +3590,69 @@ std::multimap< uint32, WorldState >* ObjectMgr::GetWorldStatesForMap( uint32 map
 	else
 		return itr->second;
 }
+
+CreatureBaseStats const* ObjectMgr::GetCreatureBaseStats(uint8 level, uint8 unitClass)
+{
+    CreatureBaseStatsContainer::const_iterator it = _creatureBaseStatsStore.find(MAKE_PAIR16(level, unitClass));
+
+    if (it != _creatureBaseStatsStore.end())
+        return &(it->second);
+
+    struct DefaultCreatureBaseStats : public CreatureBaseStats
+    {
+        DefaultCreatureBaseStats()
+        {
+            BaseArmor = 1;
+            for (uint8 j = 0; j < MAX_CREATURE_BASE_HP; ++j)
+                BaseHealth[j] = 1;
+            BaseMana = 0;
+        }
+    };
+    static const DefaultCreatureBaseStats def_stats;
+    return &def_stats;
+}
+
+void ObjectMgr::LoadCreatureBaseStats()
+{
+    QueryResult* result = WorldDatabase.Query("SELECT level, class, OldContentBaseHP, CurrentContentBaseHP, basemana, basearmor FROM creature_basestats");
+
+    if (!result)
+    {
+        Log.Error("MySQL", "Cannot load creature base stats!");
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint8 Level = fields[0].GetInt8();
+        uint8 Class = fields[1].GetInt8();
+
+        CreatureBaseStats stats;
+
+        for (uint8 i = 0; i < MAX_CREATURE_BASE_HP; ++i)
+            stats.BaseHealth[i] = fields[i + 2].GetUInt32();
+
+        stats.BaseMana = fields[4].GetUInt32();
+        stats.BaseArmor = fields[5].GetUInt32();
+
+        for (uint8 i = 0; i < MAX_CREATURE_BASE_HP; ++i)
+        {
+            if (stats.BaseHealth[i] < 1)
+            {
+                sLog.Error("MySQL", "Creature base stats for class %u, level %u has invalid zero base HP[%u] - set to 1", Class, Level, i);
+                stats.BaseHealth[i] = 1;
+            }
+        }
+
+        _creatureBaseStatsStore[MAKE_PAIR16(Level, Class)] = stats;
+
+        ++count;
+    } while (result->NextRow());
+
+    delete result;
+
+    Log.Success("ObjectMgr", "Loaded %u creature base stats.", count);
+}

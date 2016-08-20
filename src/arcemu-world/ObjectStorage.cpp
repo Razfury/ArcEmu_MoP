@@ -20,13 +20,14 @@
 
 #include "StdAfx.h"
 
+// c = uint8?
 /** Table formats converted to strings
  */
 const char * gItemPrototypeFormat						= "uuuusuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuffuffuuuuuuuuuufuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuusuuuuuuuuuuuuuuuuuuuuuuuuuuuuu";
 const char * gItemNameFormat							= "usu";
-const char * gCreatureNameFormat						= "usssuuuuuuuuuuffcuuuuuuu";
+const char * gCreatureNameFormat						= "usssuuuuuuuuuuffffcuuuuuuu";
 const char * gGameObjectNameFormat						= "uuussssuuuuuuuuuuuuuuuuuuuuuuuufuuuuuu";
-const char * gCreatureProtoFormat						= "uuuuuuufuuuffuuffuuuuuuuuffsuuufffuuuuuuuuuuuuuuuuu";
+const char * gCreatureProtoFormat						= "uuuufuuuffuuffuuuuuuuuffsuuufffuuuuuuuuuuuuuuuuuuu";
 const char * gDisplayBoundingFormat						= "ufffffff";
 const char * gVendorRestrictionEntryFormat				= "uuuuuuuu";
 const char * gAreaTriggerFormat							= "ucuusffffuu";
@@ -151,10 +152,10 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 				}
 			}
 
-			if(!cn->MinHealth)
-				cn->MinHealth = 1;
-			if(!cn->MaxHealth)
-				cn->MaxHealth = 1;
+			//if(!cn->MinHealth)
+				//cn->MinHealth = 1;
+			//if(!cn->MaxHealth)
+				//cn->MaxHealth = 1;
 			if(cn->AttackType > SCHOOL_ARCANE)
 				cn->AttackType = SCHOOL_NORMAL;
 

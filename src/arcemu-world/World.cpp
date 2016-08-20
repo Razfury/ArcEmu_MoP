@@ -379,6 +379,10 @@ bool World::SetInitialWorldSettings()
 
 #define MAKE_TASK(sp, ptr) tl.AddTask(new Task(new CallbackP0<sp>(sp::getSingletonPtr(), &sp::ptr)))
 	// Fill the task list with jobs to do.
+
+    // Additions here (that otherwise would be tasks)
+    objmgr.LoadCreatureBaseStats();
+    
 	TaskList tl;
 	Storage_FillTaskList(tl);
 
@@ -598,7 +602,6 @@ void World::Update(time_t diff)
 		TerminateProcess(GetCurrentProcess(), 0);
 #endif
 }
-
 
 void World::SendGlobalMessage(WorldPacket* packet, WorldSession* self)
 {
