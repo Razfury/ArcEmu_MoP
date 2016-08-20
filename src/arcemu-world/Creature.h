@@ -98,7 +98,6 @@ struct CreatureInfo
 	uint32 Flags2;
 	uint32 Type;
 	uint32 Family;
-	uint32 expansion;
 	uint32 Rank;
 	uint32 killcredit[2];
 	uint32 Male_DisplayID;

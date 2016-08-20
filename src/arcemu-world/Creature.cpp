@@ -1435,7 +1435,6 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
 	return true;
 }
 
-
 void Creature::Load(CreatureProto* proto_, float x, float y, float z, float o)
 {
 	proto = proto_;
@@ -1501,8 +1500,8 @@ void Creature::Load(CreatureProto* proto_, float x, float y, float z, float o)
 	SetBoundingRadius(proto->BoundingRadius);
 	SetCombatReach(proto->CombatReach);
 	original_emotestate = 0;
-	// set position
 
+	// set position
 	m_position.ChangeCoords(x, y, z, o);
 	m_spawnLocation.ChangeCoords(x, y, z, o);
 

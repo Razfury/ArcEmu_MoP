@@ -203,7 +203,8 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recv_data)
 		data << uint32(ci->killcredit[0]);
         data << uint32(ci->Male_DisplayID);
 		data << uint32(ci->Female_DisplayID);
-		data << uint32(ci->expansion);
+		//data << uint32(ci->expansion);
+        data << uint32(0);
 		data << uint32(ci->Type);
 		data << float(ci->unkfloat1); // HP modifier
 		data << uint32(ci->Flags1);
