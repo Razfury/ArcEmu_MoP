@@ -665,7 +665,6 @@ class SERVER_DECL ObjectMgr : public Singleton < ObjectMgr >, public EventableOb
 			return Entries[n];
 		}
 
-
 #ifdef ENABLE_ACHIEVEMENTS
 		void LoadAchievementCriteriaList();
 		AchievementCriteriaEntryList const & GetAchievementCriteriaByType(AchievementCriteriaTypes type);

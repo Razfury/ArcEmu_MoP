@@ -208,7 +208,7 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recv_data)
 		data << uint32(ci->Type);
 		data << float(ci->ModHP);
 		data << uint32(ci->Flags1);
-		data << uint32(ci->Flags2);
+		data << uint32(0); // Flags2
 		data << uint32(ci->Rank);
 		data << uint32(ci->waypointid);
 		data << ci->Name;

@@ -3614,7 +3614,7 @@ CreatureBaseStats const* ObjectMgr::GetCreatureBaseStats(uint8 level, uint8 unit
 
 void ObjectMgr::LoadCreatureBaseStats()
 {
-    QueryResult* result = WorldDatabase.Query("SELECT level, class, OldContentBaseHP, CurrentContentBaseHP, basemana, basearmor FROM creature_classlevelstats");
+    QueryResult* result = WorldDatabase.Query("SELECT level, class, OldContentBaseHP, CurrentContentBaseHP, basemana, basearmor FROM creature_basestats");
 
     if (!result)
     {

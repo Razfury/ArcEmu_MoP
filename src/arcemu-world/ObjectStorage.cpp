@@ -25,9 +25,9 @@
  */
 const char * gItemPrototypeFormat						= "uuuusuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuffuffuuuuuuuuuufuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuusuuuuuuuuuuuuuuuuuuuuuuuuuuuuu";
 const char * gItemNameFormat							= "usu";
-const char * gCreatureNameFormat						= "usssuuuuuuuuuuuffffcuuuuuuu";
+const char * gCreatureNameFormat						= "usssuuuuuuuuuuffffcuuuuuuu";
 const char * gGameObjectNameFormat						= "uuussssuuuuuuuuuuuuuuuuuuuuuuuufuuuuuu";
-const char * gCreatureProtoFormat						= "uuuufuuuffuuffuuuuuuuuffsuuufffuuuuuuuuuuuuuuuuuu";
+const char * gCreatureProtoFormat						= "uuuufuuuffuuffuuuuuuuuffsuuufffuuuuuuuuuuuuuuuuuuu";
 const char * gDisplayBoundingFormat						= "ufffffff";
 const char * gVendorRestrictionEntryFormat				= "uuuuuuuu";
 const char * gAreaTriggerFormat							= "ucuusffffuu";

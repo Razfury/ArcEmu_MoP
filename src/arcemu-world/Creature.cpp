@@ -1193,8 +1193,7 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
     if (mode && info)
         modLevel(min(73 - getLevel(), info->lvl_mod_a));
 
-    //! To-Do implement unit_class (https://trinitycore.atlassian.net/wiki/display/tc/creature_template)
-    CreatureBaseStats const* stats = objmgr.GetCreatureBaseStats(getLevel(), 1);
+    CreatureBaseStats const* stats = objmgr.GetCreatureBaseStats(getLevel(), proto->unitClass);
 
     spawnid = spawn->id;
     m_phase = spawn->phase;
@@ -1444,8 +1443,7 @@ void Creature::Load(CreatureProto* proto_, float x, float y, float z, float o)
     if (!creature_info)
         return;
 
-    //! To-Do implement unit_class (https://trinitycore.atlassian.net/wiki/display/tc/creature_template)
-    CreatureBaseStats const* stats = objmgr.GetCreatureBaseStats(getLevel(), 1);
+    CreatureBaseStats const* stats = objmgr.GetCreatureBaseStats(getLevel(), proto->unitClass);
 
     if (proto_->isTrainingDummy == 0 && !IsVehicle())
     {

@@ -95,7 +95,6 @@ struct CreatureInfo
 	char* SubName;
 	char* info_str;
 	uint32 Flags1;
-	uint32 Flags2;
 	uint32 Type;
 	uint32 Family;
 	uint32 Rank;
@@ -111,10 +110,6 @@ struct CreatureInfo
 	uint8  Leader;
 	uint32 QuestItems[6];
 	uint32 waypointid;
-    ////////////////////
-
-	bool   RacialLeader;
-	uint32 MovementType;
 
 	std::string lowercase_name;
 	NpcMonsterSay* MonsterSay[NUM_MONSTER_SAY_EVENTS];
@@ -179,6 +174,7 @@ struct CreatureProto
 	uint32 vehicleid;
 	uint32 rooted;
     uint32 expansion;
+    uint32 unitClass;
 
 	/* AI Stuff */
 	bool m_canRangedAttack;
@@ -336,7 +332,6 @@ class GossipScript;
 class AuctionHouse;
 struct Trainer;
 #define CALL_SCRIPT_EVENT(obj, func) if(obj->IsInWorld() && obj->IsCreature() && TO< Creature* >(obj)->GetScript() != NULL) TO< Creature* >(obj)->GetScript()->func
-
 
 uint8 get_byte(uint32 buffer, uint32 index);
 
