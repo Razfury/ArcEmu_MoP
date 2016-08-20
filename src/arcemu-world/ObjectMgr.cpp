@@ -3628,7 +3628,7 @@ void ObjectMgr::LoadCreatureBaseStats()
         Field* fields = result->Fetch();
 
         uint8 Level = fields[0].GetInt8();
-        uint8 Class = fields[0].GetInt8();
+        uint8 Class = fields[1].GetInt8();
 
         CreatureBaseStats stats;
 
