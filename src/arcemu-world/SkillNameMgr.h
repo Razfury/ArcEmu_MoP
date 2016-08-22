@@ -74,9 +74,9 @@ class SkillNameMgr
 
 		SkillNameMgr()
 		{
-			DBCStorage< skilllineentry >::iterator itr = dbcSkillLine.end();
+			DBCStorage< SkillLineEntry >::iterator itr = dbcSkillLine.end();
 			--itr;
-			skilllineentry* skillline = *itr;
+            SkillLineEntry* skillline = *itr;
 
 			//This will become the size of the skill name lookup table
 			maxskill = skillline->id;

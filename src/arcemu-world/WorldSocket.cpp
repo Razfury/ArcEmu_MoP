@@ -23,7 +23,14 @@
 #include "StdAfx.h"
 #include "AuthCodes.h"
 
-
+/*
+    if ECHO_PACKET_LOG_TO_CONSOLE is defined,
+    you will see every sent/received packet
+    in your world console
+    !To-Do maybe move this to config
+    and make a function to not log
+    some packets that we don't want to
+*/
 #define ECHO_PACKET_LOG_TO_CONSOLE 1
 
 #pragma pack(push, 1)

@@ -18,19 +18,17 @@
  *
  */
 
-//! 4-bit flag
 enum AURA_FLAGS
 {
     AFLAG_EMPTY			= 0x0,
-    AFLAG_EFFECT_1		= 0x1,
-    AFLAG_EFFECT_2		= 0x2,
-    AFLAG_EFFECT_3		= 0x4,
-    AFLAG_NOT_CASTER	= 0x8,
+    AFLAG_CASTER		= 0x01,
+    AFLAG_POSITIVE		= 0x02,
+    AFLAG_DURATION		= 0x04,
+    AFLAG_ANY_EFFECT_AMOUNT_SENT = 0x08,
+    AFLAG_NEGATIVE      = 0x10,
     AFLAG_SET			= 0x9,
     AFLAG_CANCELLABLE	= 0x10,
-    AFLAG_DURATION		= 0x20,
-    AFLAG_HIDE			= 0x40, // Seems to hide the aura and tell client the aura was removed
-    AFLAG_NEGATIVE		= 0x80
+    AFLAG_HIDE			= 0x40 // Seems to hide the aura and tell client the aura was removed
 };
 
 enum AURA_INTERNAL_USAGE_FLAGS

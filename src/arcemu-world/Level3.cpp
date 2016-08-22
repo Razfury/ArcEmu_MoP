@@ -2550,7 +2550,7 @@ bool ChatHandler::HandleTriggerpassCheatCommand(const char* args, WorldSession* 
 
 bool ChatHandler::HandleResetSkillsCommand(const char* args, WorldSession* m_session)
 {
-	skilllineentry* se;
+    SkillLineEntry* se;
 	Player* plr = getSelectedChar(m_session, true);
 	if(!plr) return true;
 
@@ -3333,7 +3333,7 @@ bool ChatHandler::HandleLookupSkillCommand(const char* args, WorldSession* m_ses
 	uint32 count = 0;
 	for(uint32 index = 0; index < dbcSkillLine.GetNumRows(); ++index)
 	{
-		skilllineentry* skill = dbcSkillLine.LookupRow(index);
+		SkillLineEntry* skill = dbcSkillLine.LookupRow(index);
 		string y = string(skill->Name);
 		arcemu_TOLOWER(y);
 		if(FindXinYString(x, y))

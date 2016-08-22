@@ -30,6 +30,11 @@ class Creature;
 class MovementInfo;
 struct TrainerSpell;
 
+// Used in SMSG_DB_REPLY
+#define DB2_REPLY_BROADCASTTEXT                35137211
+#define DB2_REPLY_ITEM                         1344507586
+#define DB2_REPLY_ITEM_SPARSE                  2442913102
+
 //#define SESSION_CAP 5
 #define CHECK_INWORLD_RETURN if(_player == NULL || !_player->IsInWorld()) { return; }
 
@@ -426,10 +431,12 @@ class SERVER_DECL WorldSession
 		void HandleSetSheathedOpcode(WorldPacket & recv_data);
 		void HandleCompleteCinematic(WorldPacket & recv_data);
 		void HandleInspectOpcode(WorldPacket & recv_data);
-		void HandleGameobjReportUseOpCode(WorldPacket & recv_data);  // CMSG_GAMEOBJ_REPORT_USE
+		void HandleGameobjReportUseOpCode(WorldPacket & recv_data);
 
         void HandleRequestHotfixOpcode(WorldPacket & recv_data);
         void SendBroadcastText(uint32 entry);
+        void SendItemDB2Reply(uint32 entry);
+        void SendItemSparseDB2Reply(uint32 entry);
 
 		// 4.3.4 15595
 		void HandleUITimeRequestOpcode(WorldPacket & recv_data); // empty opcode

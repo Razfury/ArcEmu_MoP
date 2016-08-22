@@ -379,7 +379,7 @@ enum Opcodes
 	SMSG_VICTIMSTATEUPDATE_OBSOLETE = 0x14B,	// not used in client
 	SMSG_DAMAGE_DONE_OBSOLETE = 0x14C,	// not used in client
 	SMSG_DAMAGE_TAKEN_OBSOLETE = 0x14D,	// not used in client
-	SMSG_CANCEL_COMBAT = 0x14E,	// implemented
+    SMSG_CANCEL_COMBAT = 0x0534, // 18414
 	SMSG_SPELLBREAKLOG = 0x14F,	/// TODO: implement, same struct as SMSG_SPELLDISMISSLOG
 	SMSG_SPELLHEALLOG = 0x150,	// implemented
 	SMSG_SPELLENERGIZELOG = 0x151,	// implemented

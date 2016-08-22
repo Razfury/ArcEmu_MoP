@@ -1096,12 +1096,12 @@ void Pet::UpdateSpellList(bool showLearnSpells)
 
 	if(s || s2)
 	{
-		skilllinespell* sls;
-		uint32 rowcount = dbcSkillLineSpell.GetNumRows();
+        SkillLineAbilityEntry* sls;
+		uint32 rowcount = dbcSkillLineAbilityEntry.GetNumRows();
 		SpellEntry* sp;
 		for(uint32 idx = 0; idx < rowcount; ++idx)
 		{
-			sls = dbcSkillLineSpell.LookupRow(idx);
+			sls = dbcSkillLineAbilityEntry.LookupRow(idx);
 			// Update existing spell, or add new "automatic-acquired" spell
 			if((sls->skillId == s || sls->skillId == s2) && sls->learnOnGetSkill == 2)
 			{

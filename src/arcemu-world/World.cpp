@@ -377,6 +377,7 @@ bool World::SetInitialWorldSettings()
 
 	new SpellFactoryMgr;
 
+    // Database loading below!
 #define MAKE_TASK(sp, ptr) tl.AddTask(new Task(new CallbackP0<sp>(sp::getSingletonPtr(), &sp::ptr)))
 	// Fill the task list with jobs to do.
 

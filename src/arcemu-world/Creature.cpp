@@ -1234,11 +1234,14 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
     //	setGender(1);   // Female
 
     //uint32 model = 0;
-    //uint8 gender = creature_info->GenerateModelId(&model);
+    //uint32 gender = creature_info->GenerateModelId(&model);
     //setGender(gender);
 
-    SetDisplayId(spawn->displayid);
-    SetNativeDisplayId(spawn->displayid);
+    //! Hack
+    SetDisplayId(creature_info->Male_DisplayID);
+    SetNativeDisplayId(creature_info->Male_DisplayID);
+    //SetDisplayId(spawn->displayid);
+    //SetNativeDisplayId(spawn->displayid);
     SetMount(spawn->MountedDisplayID);
 
     EventModelChange();
@@ -1261,7 +1264,9 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
     SetEquippedItem(OFFHAND, spawn->Item2SlotDisplay);
     SetEquippedItem(RANGED, spawn->Item3SlotDisplay);
 
-    SetFaction(spawn->factionid);
+    //! Hack
+    SetFaction(proto->Faction);
+    //SetFaction(spawn->factionid);
     SetUInt32Value(UNIT_FIELD_FLAGS, spawn->flags);
     SetEmoteState(spawn->emote_state);
     SetBoundingRadius(proto->BoundingRadius);

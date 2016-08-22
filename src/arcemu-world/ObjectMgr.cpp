@@ -381,9 +381,9 @@ void ObjectMgr::LoadSpellSkills()
 	uint32 i;
 //	int total = sSkillStore.GetNumRows();
 
-	for(i = 0; i < dbcSkillLineSpell.GetNumRows(); i++)
+    for (i = 0; i < dbcSkillLineAbilityEntry.GetNumRows(); i++)
 	{
-		skilllinespell* sp = dbcSkillLineSpell.LookupRowForced(i);
+        SkillLineAbilityEntry* sp = dbcSkillLineAbilityEntry.LookupRowForced(i);
 		if(sp)
 		{
 			mSpellSkills[sp->spellId] = sp;
@@ -392,7 +392,7 @@ void ObjectMgr::LoadSpellSkills()
 	Log.Success("ObjectMgr", "%u spell skills loaded.", mSpellSkills.size());
 }
 
-skilllinespell* ObjectMgr::GetSpellSkill(uint32 id)
+SkillLineAbilityEntry* ObjectMgr::GetSpellSkill(uint32 id)
 {
 	return mSpellSkills[id];
 }
@@ -403,7 +403,7 @@ SpellEntry* ObjectMgr::GetNextSpellRank(SpellEntry* sp, uint32 level)
 	if(sp == NULL)
 		return NULL;
 
-	skilllinespell* skill = GetSpellSkill(sp->Id);
+    SkillLineAbilityEntry* skill = GetSpellSkill(sp->Id);
 	if(skill != NULL && skill->forward_spellid > 0)
 	{
 		SpellEntry* sp1 = dbcSpell.LookupEntry(skill->forward_spellid);
@@ -1957,7 +1957,7 @@ void ObjectMgr::LoadTrainers()
 				if(ts.RequiredSkillLine == 0 && ts.pCastRealSpell != NULL && ts.pCastRealSpell->eff[1].Effect == SPELL_EFFECT_SKILL)
 				{
 					uint32 skill = ts.pCastRealSpell->eff[1].EffectMiscValue;
-					skilllineentry* sk = dbcSkillLine.LookupEntryForced(skill);
+                    SkillLineEntry* sk = dbcSkillLine.LookupEntryForced(skill);
 					ARCEMU_ASSERT(sk != NULL);
 					if(sk->type == SKILL_TYPE_PROFESSION)
 						ts.IsProfession = true;

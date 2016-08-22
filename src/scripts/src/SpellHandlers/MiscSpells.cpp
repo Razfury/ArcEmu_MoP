@@ -181,14 +181,14 @@ bool NorthRendInscriptionResearch(uint32 i, Spell* s)
 	{
 		// Type 0 = Major, 1 = Minor
 		uint32 glyphType = (s->GetProto()->Id == 61177) ? 0 : 1;
-		skilllinespell* sls;
-		uint32 num_sl = dbcSkillLineSpell.GetNumRows();
+		SkillLineAbilityEntry* sls;
+		uint32 num_sl = dbcSkillLineAbilityEntry.GetNumRows();
 		std::vector<uint32> discoverableGlyphs;
 
 		// how many of these are the right type (minor/major) of glyph, and learnable by the player
 		for(uint32 idx = 0; idx < num_sl; ++idx)
 		{
-			sls = dbcSkillLineSpell.LookupRow(idx);
+            sls = dbcSkillLineAbilityEntry.LookupRow(idx);
 			if(sls->skillId == SKILL_INSCRIPTION && sls->forward_spellid == 0)
 			{
 				SpellEntry* se1 = dbcSpell.LookupEntryForced(sls->spellId);

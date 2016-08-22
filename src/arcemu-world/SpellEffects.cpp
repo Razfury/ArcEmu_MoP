@@ -1609,7 +1609,7 @@ void Spell::SpellEffectCreateItem(uint32 i)
 	if(p_caster != NULL)
 	{
 
-		skilllinespell* skill = objmgr.GetSpellSkill(spellid);
+		SkillLineAbilityEntry* skill = objmgr.GetSpellSkill(spellid);
 
 		// potions learned by discovery variables
 		uint32 cast_chance = 5;
@@ -3094,7 +3094,7 @@ void Spell::SpellEffectSkillStep(uint32 i) // Skill Step
 	if(skill == 242)
 		skill = SKILL_LOCKPICKING; // somehow for lockpicking misc is different than the skill :s
 
-	skilllineentry* sk = dbcSkillLine.LookupEntryForced(skill);
+	SkillLineEntry* sk = dbcSkillLine.LookupEntryForced(skill);
 
 	if(!sk) return;
 
@@ -3417,7 +3417,7 @@ void Spell::SpellEffectEnchantItemTemporary(uint32 i)  // Enchant Item Temporary
 	if(Slot < 0)
 		return; // Apply failed
 
-	skilllinespell* skill = objmgr.GetSpellSkill(GetProto()->Id);
+	SkillLineAbilityEntry* skill = objmgr.GetSpellSkill(GetProto()->Id);
 	if(skill != NULL)
 		DetermineSkillUp(skill->skillId, itemTarget->GetProto()->ItemLevel);
 }
@@ -3567,10 +3567,10 @@ void Spell::SpellEffectOpenLockItem(uint32 i)
 void Spell::SpellEffectProficiency(uint32 i)
 {
 	uint32 skill = 0;
-	skilllinespell* skillability = objmgr.GetSpellSkill(GetProto()->Id);
+	SkillLineAbilityEntry* skillability = objmgr.GetSpellSkill(GetProto()->Id);
 	if(skillability)
 		skill = skillability->skillId;
-	skilllineentry* sk = dbcSkillLine.LookupEntryForced(skill);
+	SkillLineEntry* sk = dbcSkillLine.LookupEntryForced(skill);
 	if(skill)
 	{
 		if(playerTarget)

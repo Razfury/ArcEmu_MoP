@@ -1654,7 +1654,7 @@ void WorldSession::HandleUnlearnSkillOpcode(WorldPacket & recv_data)
 	if(points_remaining == _player->GetPrimaryProfessionPoints())
 	{
 		// we unlearned a skill so we enable a new one to be learned
-		skilllineentry* sk = dbcSkillLine.LookupEntryForced(skill_line);
+		SkillLineEntry* sk = dbcSkillLine.LookupEntryForced(skill_line);
 		if(!sk)
 			return;
 		if(sk->type == SKILL_TYPE_PROFESSION && points_remaining < 2)

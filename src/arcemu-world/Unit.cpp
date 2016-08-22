@@ -18,11 +18,6 @@
  *
  */
 
-// Last edited by:	$Author$
-// revision:		$Rev$
-// date:		$Date$
-
-
 #include "StdAfx.h"
 #include "MovementStructures.h"
 
@@ -1583,7 +1578,7 @@ uint32 Unit::HandleProc(uint32 flag, Unit* victim, SpellEntry* CastingSpell, boo
 						if(CastingSpell == NULL)
 							continue;//this should not occur unless we made a fuckup somewhere
 						//only trigger effect for specified spells
-						skilllinespell* skillability = objmgr.GetSpellSkill(CastingSpell->Id);
+						SkillLineAbilityEntry* skillability = objmgr.GetSpellSkill(CastingSpell->Id);
 						if(!skillability)
 							continue;
 						if(skillability->skillId != SKILL_DESTRUCTION)
@@ -3274,7 +3269,6 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 		else
 			SubClassSkill = SKILL_UNARMED;
 
-
 		//chances in feral form don't depend on weapon skill
 		if(pr->IsInFeralForm())
 		{
@@ -3286,7 +3280,8 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 			}
 		}
 
-		self_skill += pr->_GetSkillLineCurrent(SubClassSkill);
+		//self_skill += pr->_GetSkillLineCurrent(SubClassSkill);
+        self_skill += pr->getLevel() * 5;
 		crit = GetFloatValue(PLAYER_CRIT_PERCENTAGE);
 	}
 	else
@@ -3497,14 +3492,14 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 	chances[5] = chances[4] + crit;
 	chances[6] = chances[5] + crush;
 
-	//printf("%s:-\n", IsPlayer() ? "Player" : "Mob");
-	//printf(" miss: %.2f\n", chances[0]);
-	//printf("dodge: %.2f\n", dodge);
-	//printf("parry: %.2f\n", parry);
-	//printf("glanc: %.2f\n", glanc);
-	//printf("block: %.2f\n", block);
-	//printf(" crit: %.2f\n", crit);
-	//printf("crush: %.2f\n", crush);
+	printf("%s:-\n", IsPlayer() ? "Player" : "Mob");
+	printf("miss: %.2f\n", chances[0]);
+	printf("dodge: %.2f\n", dodge);
+	printf("parry: %.2f\n", parry);
+	printf("glanc: %.2f\n", glanc);
+	printf("block: %.2f\n", block);
+	printf("crit: %.2f\n", crit);
+	printf("crush: %.2f\n", crush);
 
 //--------------------------------roll------------------------------------------------------
 	float Roll = RandomFloat(100.0f);
@@ -3517,7 +3512,6 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 		r = 5;
 //--------------------------------postroll processing---------------------------------------
 	uint32 abs = 0;
-
 
 	//trigger hostile action in ai
 	pVictim->GetAIInterface()->HandleEvent(EVENT_HOSTILEACTION, this, 0);
@@ -6330,65 +6324,165 @@ void Unit::SendFullAuraUpdate()
 {
 	// not updated packet struct && opcode - DISABLED
     /*
-	WorldPacket data(SMSG_AURA_UPDATE_ALL, 200);
+    WorldPacket data(SMSG_AURA_UPDATE);
 
-	data << WoWGuid(GetNewGUID());
+    ObjectGuid guid = GetGUID();
+    ObjectGuid targetGuid = GetTargetGUID();
 
-	uint32 Updates = 0;
+    uint32 auraCount = 0;
+    for (uint32 i = MAX_TOTAL_AURAS_START; i < MAX_TOTAL_AURAS_END; ++i)
+    {
+    Aura* aura = m_auras[i];
+    if (aura)
+    ++auraCount;
+    }
 
-	for(uint32 i = MAX_TOTAL_AURAS_START; i < MAX_TOTAL_AURAS_END; ++i)
-	{
-		Aura* aur = m_auras[ i ];
+    data.WriteBit(targetGuid[7]);
+    data.WriteBit(1); // Is AURA_UPDATE_ALL
+    data.WriteBits(auraCount, 24); // Aura Count
+    data.WriteBit(targetGuid[6]);
+    data.WriteBit(targetGuid[1]);
+    data.WriteBit(targetGuid[3]);
+    data.WriteBit(targetGuid[0]);
+    data.WriteBit(targetGuid[4]);
+    data.WriteBit(targetGuid[2]);
+    data.WriteBit(targetGuid[5]);
 
-		if(aur != NULL)
-		{
-			uint8 Flags = uint8(aur->GetAuraFlags());
 
-			Flags = (AFLAG_EFFECT_1 | AFLAG_EFFECT_2 | AFLAG_EFFECT_3);
+    for (uint32 i = MAX_TOTAL_AURAS_START; i < MAX_TOTAL_AURAS_END; ++i)
+    {
+    Aura* aura = m_auras[i];
+    uint8 flags = 0;
 
-			if(aur->IsPositive())
-				Flags |= AFLAG_CANCELLABLE;
-			else
-				Flags |= AFLAG_NEGATIVE;
+    if (aura->IsPositive())
+    flags |= AFLAG_CANCELLABLE;
+    else
+    flags |= AFLAG_NEGATIVE;
 
-			if(aur->GetDuration() != 0)
-				Flags |= AFLAG_DURATION;
+    if (aura->GetDuration() != 0) //! TODO also  !(AttributesEx5 & SPELL_ATTR5_HIDE_DURATION)
+    flags |= AFLAG_DURATION;
 
-			data << uint8(aur->m_visualSlot);
-			data << uint32(aur->GetSpellId());
-			data << uint8(Flags);
-			data << uint8(getLevel());
-			data << uint8(m_auraStackCount[ aur->m_visualSlot ]);
 
-			if((Flags & AFLAG_NOT_CASTER) == 0)
-				data << WoWGuid(aur->GetCasterGUID());
+    data.WriteBit(1); // Not remove
 
-			if(Flags & AFLAG_DURATION)
-			{
-				data << uint32(aur->GetDuration());
-				data << uint32(aur->GetTimeLeft());
-			}
+    if (flags & AFLAG_ANY_EFFECT_AMOUNT_SENT)
+    {
+    uint8 effCount = 0;
+    for (uint32 i = 0; i < 32; ++i) // MAX_SPELL_EFFECTS
+    if (aura->GetSpellProto()->HasEffect(i))
+    ++effCount;
 
-			++Updates;
-		}
-	}
-	SendMessageToSet(&data, true);
+    data.WriteBits(effCount, 22);
+    }
+    else
+    data.WriteBits(0, 22);
+
+    data.WriteBit(!(flags & AFLAG_CASTER));
+
+    if (!(flags & AFLAG_CASTER))
+    {
+    ObjectGuid casterGuid = aura->GetCasterGUID();
+    data.WriteBit(casterGuid[3]);
+    data.WriteBit(casterGuid[4]);
+    data.WriteBit(casterGuid[6]);
+    data.WriteBit(casterGuid[1]);
+    data.WriteBit(casterGuid[5]);
+    data.WriteBit(casterGuid[2]);
+    data.WriteBit(casterGuid[0]);
+    data.WriteBit(casterGuid[7]);
+    }
+
+    data.WriteBits(0, 22); // Unk effect count
+    data.WriteBit(flags & AFLAG_DURATION); // HasDuration
+    data.WriteBit(flags & AFLAG_DURATION); // HasMaxDuration
+    }
+
+    data.FlushBits();
+
+    for (uint32 i = MAX_TOTAL_AURAS_START; i < MAX_TOTAL_AURAS_END; ++i)
+    {
+    Aura* aura = m_auras[i];
+    uint8 flags = aura->GetAuraFlags();
+
+    if (aura->IsPositive())
+    flags |= AFLAG_CANCELLABLE;
+    else
+    flags |= AFLAG_NEGATIVE;
+
+    if (aura->GetDuration() != 0) //! TODO also  !(AttributesEx5 & SPELL_ATTR5_HIDE_DURATION)
+    flags |= AFLAG_DURATION;
+
+    if (flags & AFLAG_CASTER)
+    {
+    ObjectGuid casterGuid = aura->GetCasterGUID();
+    data.WriteByteSeq(casterGuid[3]);
+    data.WriteByteSeq(casterGuid[2]);
+    data.WriteByteSeq(casterGuid[1]);
+    data.WriteByteSeq(casterGuid[6]);
+    data.WriteByteSeq(casterGuid[4]);
+    data.WriteByteSeq(casterGuid[0]);
+    data.WriteByteSeq(casterGuid[5]);
+    data.WriteByteSeq(casterGuid[7]);
+    }
+
+    data << uint8(flags);
+
+    Unit* caster = aura->GetUnitCaster();
+
+    if (caster)
+    data << uint16(caster->getLevel());
+    else
+    data << uint16(sWorld.m_levelCap);
+
+    data << uint32(aura->GetSpellId());
+
+    if (flags & AFLAG_DURATION)
+    {
+    data << uint32(aura->GetDuration());
+    data << uint32(aura->GetTimeLeft());
+    }
+
+    data << uint8(m_auraStackCount[aura->m_visualSlot]);
+    data << uint32(0); // Effect mask
+
+    if (flags & AFLAG_ANY_EFFECT_AMOUNT_SENT)
+    {
+    for (uint32 i = 0; i < 32; ++i) // MAX_SPELL_EFFECTS
+    {
+    //if (aura->GetSpellProto()->HasEffect)
+    data << float(0.f);
+    }
+    }
+
+    data << uint8(aura->m_visualSlot);
+    }
+
+    data.WriteByteSeq(targetGuid[2]);
+    data.WriteByteSeq(targetGuid[6]);
+    data.WriteByteSeq(targetGuid[7]);
+    data.WriteByteSeq(targetGuid[1]);
+    data.WriteByteSeq(targetGuid[3]);
+    data.WriteByteSeq(targetGuid[4]);
+    data.WriteByteSeq(targetGuid[0]);
+    data.WriteByteSeq(targetGuid[5]);
+
+    SendMessageToSet(&data, true);
 
 	LOG_DEBUG("Full Aura Update: GUID: " I64FMT " - Updates: %u", GetGUID(), Updates);*/
 }
 
 void Unit::SendAuraUpdate(uint32 AuraSlot, bool remove)
 {
-	Aura* aura = m_auras[ AuraSlot ];
+    Aura* aura = m_auras[AuraSlot];
 
     ARCEMU_ASSERT(aura != NULL);
 
-	WorldPacket data(SMSG_AURA_UPDATE);
+    WorldPacket data(SMSG_AURA_UPDATE);
 
     ObjectGuid guid = GetGUID();
     ObjectGuid targetGuid = GetTargetGUID();
 
-    uint8 flags = (AFLAG_EFFECT_1 | AFLAG_EFFECT_2 | AFLAG_EFFECT_3);
+    uint8 flags = aura->GetAuraFlags();
 
     if (aura->IsPositive())
         flags |= AFLAG_CANCELLABLE;
@@ -6414,9 +6508,9 @@ void Unit::SendAuraUpdate(uint32 AuraSlot, bool remove)
     {
         data.WriteBits(0, 22); //! TODO effect counter
 
-        data.WriteBit(!(flags & AFLAG_NOT_CASTER) == 0);
+        data.WriteBit(!(flags & AFLAG_CASTER));
 
-        if ((flags & AFLAG_NOT_CASTER) == 0)
+        if (!(flags & AFLAG_CASTER))
         {
             ObjectGuid casterGuid = aura->GetCasterGUID();
             data.WriteBit(casterGuid[3]);
@@ -6438,7 +6532,7 @@ void Unit::SendAuraUpdate(uint32 AuraSlot, bool remove)
 
     if (!remove)
     {
-        if ((flags & AFLAG_NOT_CASTER) == 0)
+        if (!(flags & AFLAG_CASTER))
         {
             ObjectGuid casterGuid = aura->GetCasterGUID();
             data.WriteByteSeq(casterGuid[3]);
@@ -6470,8 +6564,6 @@ void Unit::SendAuraUpdate(uint32 AuraSlot, bool remove)
 
         data << uint8(m_auraStackCount[aura->m_visualSlot]);
         data << uint32(0); // Effect mask
-
-        data << float(0.f); //! TODO for each effect, float (amount)
     }
 
     data << uint8(aura->m_visualSlot);
@@ -6485,7 +6577,7 @@ void Unit::SendAuraUpdate(uint32 AuraSlot, bool remove)
     data.WriteByteSeq(targetGuid[0]);
     data.WriteByteSeq(targetGuid[5]);
 
-	SendMessageToSet(&data, true);
+    SendMessageToSet(&data, true);
 }
 
 uint32 Unit::ModVisualAuraStackCount(Aura* aur, int32 count)

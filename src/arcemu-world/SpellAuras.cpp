@@ -4316,7 +4316,7 @@ void Aura::EventPeriodicLeech(uint32 amount)
 			if(aura->GetSpellProto()->SpellClassOptions.SpellFamilyName != 5)
 				continue;
 
-			skilllinespell* sk = objmgr.GetSpellSkill(aura->GetSpellId());
+			SkillLineAbilityEntry* sk = objmgr.GetSpellSkill(aura->GetSpellId());
 			if(sk == NULL || sk->skillId != SKILL_AFFLICTION)
 				continue;
 
@@ -4961,7 +4961,11 @@ void Aura::SpellAuraFeignDeath(bool apply)
 			if(p_target->hasStateFlag(UF_ATTACKING))
 				p_target->clearStateFlag(UF_ATTACKING);
 
-			p_target->GetSession()->OutPacket(SMSG_CANCEL_COMBAT);
+            WorldPacket data(SMSG_CANCEL_COMBAT, 8);
+            data << uint32(0);
+            data << uint32(0);
+            p_target->SendPacket(&data);
+
 			p_target->GetSession()->OutPacket(SMSG_CANCEL_AUTO_REPEAT);
 		}
 		else

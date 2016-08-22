@@ -2810,15 +2810,15 @@ void WorldSession::HandleRequestHotfixOpcode(WorldPacket & recv_data)
         //! TODO
         switch (type)
         {
-            case 35137211: // DB2_REPLY_BROADCASTTEXT !TODO define it
+        case DB2_REPLY_BROADCASTTEXT:
                 SendBroadcastText(entry);
                 break;
-        //case DB2_REPLY_ITEM:
-          //  SendItemDb2Reply(entry);
-          //  break;
-        //case DB2_REPLY_SPARSE:
-          //  SendItemSparseDb2Reply(entry);
-           // break;
+        case DB2_REPLY_ITEM:
+            SendItemDB2Reply(entry);
+            break;
+        case DB2_REPLY_ITEM_SPARSE:
+            SendItemSparseDB2Reply(entry);
+            break;
         default:
             Log.Error("MiscHandler", "CMSG_REQUEST_HOTFIX: Received unknown hotfix type: %u", type);
             recv_data.clear();
@@ -2827,6 +2827,165 @@ void WorldSession::HandleRequestHotfixOpcode(WorldPacket & recv_data)
     }
 
     delete[] guids;
+}
+
+void WorldSession::SendItemDB2Reply(uint32 entry)
+{
+    ItemPrototype* proto = ItemPrototypeStorage.LookupEntry(entry);
+    if (!proto)
+        return;
+
+    WorldPacket data(SMSG_DB_REPLY);
+    data << uint32(entry);
+    data << uint32(getMSTime());
+    data << uint32(DB2_REPLY_ITEM);
+
+    ByteBuffer buff;
+    buff << uint32(proto->ItemId);
+    buff << uint32(proto->Class);
+    buff << uint32(proto->SubClass);
+    buff << int32(0); // Sound override subclass
+    buff << uint32(proto->LockMaterial);
+    buff << uint32(proto->DisplayInfoID);
+    buff << uint32(proto->InventoryType);
+    buff << uint32(proto->SheathID);
+
+    data << uint32(buff.size());
+    data.append(buff);
+
+    SendPacket(&data);
+}
+
+#define MAX_ITEM_PROTO_DAMAGES 2
+#define MAX_ITEM_PROTO_SOCKETS 3
+#define MAX_ITEM_PROTO_SPELLS  5
+#define MAX_ITEM_PROTO_STATS  10
+
+void WorldSession::SendItemSparseDB2Reply(uint32 entry)
+{
+    ItemPrototype* proto = ItemPrototypeStorage.LookupEntry(entry);
+    if (!proto)
+        return;
+
+    WorldPacket data(SMSG_DB_REPLY);
+    data << uint32(entry);
+    data << uint32(getMSTime());
+    data << uint32(DB2_REPLY_ITEM_SPARSE);
+
+    ByteBuffer buff;
+    buff << uint32(proto->ItemId);
+    buff << uint32(proto->Quality);
+    buff << uint32(proto->Flags);
+    buff << uint32(proto->Flags2);
+    buff << uint32(0); // Flags 3
+    buff << float(1.0f);
+    buff << float(1.0f);
+    buff << uint32(proto->MaxCount);
+    buff << int32(proto->BuyPrice);
+    buff << uint32(proto->SellPrice);
+    buff << uint32(proto->InventoryType);
+    buff << int32(proto->AllowableClass);
+    buff << int32(proto->AllowableRace);
+    buff << uint32(proto->ItemLevel);
+    buff << uint32(proto->RequiredLevel);
+    buff << uint32(proto->RequiredSkill);
+    buff << uint32(proto->RequiredSkillRank);
+    buff << uint32(0); // Required spell
+    buff << uint32(proto->RequiredPlayerRank1); // Honor rank
+    buff << uint32(proto->RequiredPlayerRank2); // City rank
+    buff << uint32(proto->RequiredFactionStanding); // Reputation faction
+    buff << uint32(proto->RequiredFaction); // Reputation rank
+    buff << int32(proto->MaxCount);
+    buff << int32(0); // Stackable
+    buff << uint32(proto->ContainerSlots);
+
+    for (uint32 x = 0; x < MAX_ITEM_PROTO_STATS; ++x)
+        buff << uint32(proto->Stats[x].Type);
+
+    for (uint32 x = 0; x < MAX_ITEM_PROTO_STATS; ++x)
+        buff << int32(proto->Stats[x].Value);
+
+    for (uint32 x = 0; x < MAX_ITEM_PROTO_STATS; ++x)
+        buff << int32(0); // Unk
+
+    for (uint32 x = 0; x < MAX_ITEM_PROTO_STATS; ++x)
+        buff << int32(0); // Unk
+
+    buff << uint32(proto->ScalingStatsEntry);
+    buff << uint32(0); // Damage type
+    buff << uint32(proto->Delay);
+    buff << float(40); // Ranged range
+
+    for (uint32 x = 0; x < MAX_ITEM_PROTO_SPELLS; ++x)
+        buff << int32(0);
+
+    for (uint32 x = 0; x < MAX_ITEM_PROTO_SPELLS; ++x)
+        buff << uint32(0);
+
+    for (uint32 x = 0; x < MAX_ITEM_PROTO_SPELLS; ++x)
+        buff << int32(0);
+
+    for (uint32 x = 0; x < MAX_ITEM_PROTO_SPELLS; ++x)
+        buff << int32(0);
+
+    for (uint32 x = 0; x < MAX_ITEM_PROTO_SPELLS; ++x)
+        buff << uint32(0);
+
+    for (uint32 x = 0; x < MAX_ITEM_PROTO_SPELLS; ++x)
+        buff << int32(0);
+
+    buff << uint32(proto->Bonding);
+
+    // item name
+    std::string name = proto->Name1;
+    buff << uint16(name.length());
+    if (name.length())
+        buff << name;
+
+    for (uint32 i = 0; i < 3; ++i) // Other 3 names
+        buff << uint16(0);
+
+    std::string description = proto->Description;
+    buff << uint16(description.length());
+    if (description.length())
+        buff << description;
+
+    buff << uint32(proto->PageId); // Text
+    buff << uint32(proto->PageLanguage);
+    buff << uint32(proto->PageMaterial);
+    buff << uint32(proto->QuestId);
+    buff << uint32(proto->LockId);
+    buff << int32(proto->LockMaterial);
+    buff << uint32(proto->SheathID);
+    buff << int32(proto->RandomPropId);
+    buff << int32(proto->RandomSuffixId);
+    buff << uint32(proto->ItemSet);
+
+    buff << uint32(0); // Area
+    buff << uint32(proto->MapID);
+    buff << uint32(proto->BagFamily);
+    buff << uint32(proto->TotemCategory);
+
+    for (uint32 x = 0; x < MAX_ITEM_PROTO_SOCKETS; ++x)
+        buff << uint32(proto->Sockets[x].SocketColor);
+
+    for (uint32 x = 0; x < MAX_ITEM_PROTO_SOCKETS; ++x)
+        buff << uint32(proto->Sockets[x].Unk);
+
+    buff << uint32(proto->SocketBonus);
+    buff << uint32(proto->GemProperties);
+    buff << float(proto->ArmorDamageModifier);
+    buff << int32(proto->ExistingDuration);
+    buff << uint32(proto->ItemLimitCategory);
+    buff << uint32(proto->HolidayId);
+    buff << float(proto->ScalingStatsFlag); // StatScalingFactor
+    buff << uint32(0); // CurrencySubstitutionId
+    buff << uint32(0); // CurrencySubstitutionCount
+
+    data << uint32(buff.size());
+    data.append(buff);
+
+    SendPacket(&data);
 }
 
 void WorldSession::SendBroadcastText(uint32 entry)
@@ -2878,7 +3037,7 @@ void WorldSession::SendBroadcastText(uint32 entry)
     WorldPacket data(SMSG_DB_REPLY, 4 + 4 + 4 + buffer.size());
     data << uint32(entry);
     data << uint32(getMSTime());
-    data << uint32(35137211); // DB2_REPLY_BROADCASTTEXT
+    data << uint32(DB2_REPLY_BROADCASTTEXT);
     data << uint32(buffer.size());
     data.append(buffer);
     

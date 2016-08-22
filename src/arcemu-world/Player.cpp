@@ -43,21 +43,6 @@ static const uint8 glyphMask[81] =
 	63 //lvl 80, 3 Minor 3 Major
 };
 
-static const float crit_to_dodge[MAX_PLAYER_CLASSES] = {
-	0.0f,      // empty
-	1.1f,      // Warrior
-	1.0f,      // Paladin
-	1.6f,      // Hunter
-	2.0f,      // Rogue
-	1.0f,      // Priest
-	1.0f,      // DK?
-	1.0f,      // Shaman
-	1.0f,      // Mage
-	1.0f,      // Warlock
-	0.0f,      // empty
-	1.7f       // Druid
-};
-
 Player::Player(uint32 guid)
 	:
 	disableAppear(false),
@@ -824,7 +809,6 @@ bool Player::Create(WorldPacket & data)
 	// Gold Starting Amount
 	SetGold(sWorld.GoldStartAmount);
 
-
 	for (uint32 x = 0; x < 7; x++)
 		SetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT + x, 1.00);
 
@@ -840,7 +824,7 @@ bool Player::Create(WorldPacket & data)
 
 	m_FirstLogin = true;
 
-	skilllineentry* se;
+	SkillLineEntry* se;
 	for (std::list<CreateInfo_SkillStruct>::iterator ss = info->skills.begin(); ss != info->skills.end(); ++ss)
 	{
 		se = dbcSkillLine.LookupEntry(ss->skillid);
@@ -2102,11 +2086,11 @@ void Player::addSpell(uint32 spell_id)
 		return;
 
 	// Add the skill line for this spell if we don't already have it.
-	skilllinespell* sk = objmgr.GetSpellSkill(spell_id);
+    SkillLineAbilityEntry* sk = objmgr.GetSpellSkill(spell_id);
 	SpellEntry* spell = dbcSpell.LookupEntry(spell_id);
 	if (sk && !_HasSkillLine(sk->skillId))
 	{
-		skilllineentry* skill = dbcSkillLine.LookupEntry(sk->skillId);
+        SkillLineEntry* skill = dbcSkillLine.LookupEntry(sk->skillId);
 		uint32 max = 1;
 		switch (skill->type)
 		{
@@ -3781,7 +3765,7 @@ void Player::OnPushToWorld()
 	}
 
 	m_changingMaps = false;
-	SendFullAuraUpdate();
+	//SendFullAuraUpdate(); // Updates all auras; To-Do!
 
 	m_ItemInterface->HandleItemDurations();
 
@@ -4711,7 +4695,11 @@ void Player::KillPlayer()
 
 	EventDeath();
 
-	m_session->OutPacket(SMSG_CANCEL_COMBAT);
+    WorldPacket data(SMSG_CANCEL_COMBAT, 8);
+    data << uint32(0);
+    data << uint32(0);
+    SendPacket(&data);
+
 	m_session->OutPacket(SMSG_CANCEL_AUTO_REPEAT);
 
 	SetMovement(MOVE_ROOT, 0);
@@ -5213,37 +5201,42 @@ float Player::GetDefenseChance(uint32 opLevel)
 
 #define BASE_BLOCK_CHANCE 5.0f
 #define BASE_PARRY_CHANCE 5.0f
+#define PLAYER_DODGE_CAP_PCT 80
+#define PLAYER_PARRY_CAP_PCT 80
+#define GT_MAX_LEVEL 100 // To-Do move this to DBC files
 
+//! To-Do recheck this shit
 // Gets dodge chances before defense skill is applied
 float Player::GetDodgeChance()
 {
-	uint32 pClass = (uint32)getClass();
-	float chance = 0.0f;
-	uint32 level = getLevel();
+    uint32 pClass = (uint32)getClass();
+    float chance = 0.0f;
+    uint32 level = getLevel();
 
-	if (level > sWorld.m_genLevelCap)
-		level = sWorld.m_genLevelCap;
+    if (level > sWorld.m_genLevelCap)
+        level = sWorld.m_genLevelCap;
 
-	if (level > PLAYER_LEVEL_CAP)
-		level = PLAYER_LEVEL_CAP;
+    if (level > PLAYER_LEVEL_CAP)
+        level = PLAYER_LEVEL_CAP;
 
-	// Base dodge + dodge from agility
+    if (level > GT_MAX_LEVEL)
+        level = GT_MAX_LEVEL;
 
-	gtClassLevelFloat *baseCrit = dbcMeleeCritBase.LookupEntry(pClass - 1);
-	gtClassLevelFloat *CritPerAgi = dbcMeleeCrit.LookupEntry(level - 1 + (pClass - 1) * 100);
-	uint32 agi = GetStat(STAT_AGILITY);
+    // Dodge from agility
+    gtClassLevelFloat *CritPerAgi = dbcMeleeCrit.LookupEntry(level - 1 + (pClass - 1) * GT_MAX_LEVEL);
+    uint32 agi = GetStat(STAT_AGILITY);
 
-	float tmp = 100.0f * (baseCrit->val + agi * CritPerAgi->val);
-	tmp *= crit_to_dodge[pClass];
-	chance += tmp;
+    float tmp = 100.0f * (agi * CritPerAgi->val);
+    tmp *= crit_to_dodge[pClass];
+    chance += tmp;
 
-	// Dodge from dodge rating
-	chance += CalcRating(PLAYER_RATING_MODIFIER_DODGE);
+    // Dodge from dodge rating
+    chance += CalcRating(PLAYER_RATING_MODIFIER_DODGE);
 
-	// Dodge from spells
-	chance += GetDodgeFromSpell();
+    // Dodge from spells
+    chance += GetDodgeFromSpell();
 
-	return max(chance, 0.0f);   // Make sure we don't have a negative chance
+    return min(max(chance, 0.0f), float(PLAYER_DODGE_CAP_PCT)); // Make sure we dont have a negative chance
 }
 
 // Gets block chances before defense skill is applied
@@ -5326,7 +5319,7 @@ void Player::UpdateChances()
 
 	// Critical
 	gtClassLevelFloat* baseCrit = dbcMeleeCritBase.LookupEntry(pClass - 1);
-	gtClassLevelFloat* CritPerAgi = dbcMeleeCrit.LookupEntry(pLevel - 1 + (pClass - 1) * 100);
+    gtClassLevelFloat * CritPerAgi = dbcMeleeCrit.LookupEntry(pLevel - 1 + (pClass - 1) * 100);
 
 	tmp = 100 * (baseCrit->val + GetStat(STAT_AGILITY) * CritPerAgi->val);
 
@@ -6998,10 +6991,10 @@ void Player::JumpToEndTaxiNode(TaxiPath* path)
 
 void Player::RemoveSpellsFromLine(uint32 skill_line)
 {
-	uint32 cnt = dbcSkillLineSpell.GetNumRows();
+	uint32 cnt = dbcSkillLineAbilityEntry.GetNumRows();
 	for (uint32 i = 0; i < cnt; i++)
 	{
-		skilllinespell* sp = dbcSkillLineSpell.LookupRowForced(i);
+        SkillLineAbilityEntry* sp = dbcSkillLineAbilityEntry.LookupRowForced(i);
 		if (sp)
 		{
 			if (sp->skillId == skill_line)
@@ -7430,7 +7423,7 @@ void Player::ClearCooldownsOnLine(uint32 skill_line, uint32 called_from)
 {
 	// found an easier way.. loop spells, check skill line
 	SpellSet::const_iterator itr = mSpells.begin();
-	skilllinespell* sk;
+    SkillLineAbilityEntry* sk;
 	for (; itr != mSpells.end(); ++itr)
 	{
 		if ((*itr) == called_from)	   // skip calling spell.. otherwise spammies! :D
@@ -8389,9 +8382,12 @@ void Player::EndDuel(uint8 WinCondition)
 		}
 	}
 
-	//Stop Players attacking so they don't kill the other player
-	m_session->OutPacket(SMSG_CANCEL_COMBAT);
-	DuelingWith->m_session->OutPacket(SMSG_CANCEL_COMBAT);
+	// Stop players from attacking so they don't kill the other player
+    data.Initialize(SMSG_CANCEL_COMBAT);
+    data << uint32(0);
+    data << uint32(0);
+    SendPacket(&data);
+    DuelingWith->SendPacket(&data);
 
 	SendAttackStop(DuelingWith);
 	DuelingWith->SendAttackStop(this);
@@ -10271,7 +10267,7 @@ void Player::RemoveFromBattlegroundQueue()
 
 void Player::_AddSkillLine(uint32 SkillLine, uint32 Curr_sk, uint32 Max_sk)
 {
-	skilllineentry* CheckedSkill = dbcSkillLine.LookupEntryForced(SkillLine);
+	SkillLineEntry* CheckedSkill = dbcSkillLine.LookupEntryForced(SkillLine);
 	if (!CheckedSkill)  //skill doesn't exist, exit here
 		return;
 
@@ -10422,13 +10418,13 @@ _LearnSkillSpells will look up the SkillLine from SkillLineAbility.dbc informati
 void Player::_LearnSkillSpells(uint32 SkillLine, uint32 curr_sk)
 {
 	// check for learn new spells (professions), from SkillLineAbility.dbc
-	skilllinespell* sls, *sl2;
-	uint32 rowcount = dbcSkillLineSpell.GetNumRows();
+    SkillLineAbilityEntry *sls, *sl2;
+	uint32 rowcount = dbcSkillLineAbilityEntry.GetNumRows();
 	SpellEntry* sp;
 	uint32 removeSpellId = 0;
 	for (uint32 idx = 0; idx < rowcount; ++idx)
 	{
-		sls = dbcSkillLineSpell.LookupRow(idx);
+		sls = dbcSkillLineAbilityEntry.LookupRow(idx);
 		// add new "automatic-acquired" spell
 		if ((sls->skillId == SkillLine) && (sls->learnOnGetSkill == 1))
 		{
@@ -10456,7 +10452,7 @@ void Player::_LearnSkillSpells(uint32 SkillLine, uint32 curr_sk)
 					// Adding a spell, now check if there was a previous spell, to remove
 					for (uint32 idx2 = 0; idx2 < rowcount; ++idx2)
 					{
-						sl2 = dbcSkillLineSpell.LookupRow(idx2);
+						sl2 = dbcSkillLineAbilityEntry.LookupRow(idx2);
 						if ((sl2->skillId == SkillLine) && (sl2->forward_spellid == sls->spellId))
 						{
 							removeSpellId = sl2->spellId;
@@ -10627,7 +10623,7 @@ void Player::_AddLanguages(bool All)
 	*/
 
 	PlayerSkill sk;
-	skilllineentry* en;
+	SkillLineEntry* en;
 	uint32 spell_id;
 	static uint32 skills[] = { SKILL_LANG_COMMON, SKILL_LANG_ORCISH, SKILL_LANG_DWARVEN, SKILL_LANG_DARNASSIAN, SKILL_LANG_TAURAHE, SKILL_LANG_THALASSIAN,
 		SKILL_LANG_TROLL, SKILL_LANG_GUTTERSPEAK, SKILL_LANG_DRAENEI, 0

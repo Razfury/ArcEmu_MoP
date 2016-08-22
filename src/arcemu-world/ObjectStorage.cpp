@@ -537,6 +537,17 @@ void ObjectMgr::LoadExtraGameObjectStuff()
 	new CallbackP2< SQLStorage< itype, storagetype< itype > >, const char *, const char *> \
     (&storage, &SQLStorage< itype, storagetype< itype > >::Load, tablename, format) ) )
 
+/*
+    Ok, so this is where we load tables like items, itemnames and so on.
+    ArcEmu automatically loads tables into structs.
+    For example struct ItemPrototype is for table names.
+    It just assigns the first fields to the first variable found in the struct and so on.
+    
+    If you want to modify a table, you need to update its format (ex. gItemPrototypeFormat),
+    update the structure (ex ItemPrototype), add the new variable at the end or wherever
+    it is in the database, and, of course, update the database itself.
+*/
+
 void Storage_FillTaskList(TaskList & tl)
 {
 	make_task(ItemPrototypeStorage, ItemPrototype, ArrayStorageContainer, "items", gItemPrototypeFormat);

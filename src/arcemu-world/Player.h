@@ -787,7 +787,7 @@ enum DUEL_WINNER
 
 struct PlayerSkill
 {
-	skilllineentry* Skill;
+    SkillLineEntry* Skill;
 	uint32 CurrentValue;
 	uint32 MaximumValue;
 	uint32 BonusValue;
@@ -799,6 +799,23 @@ enum SPELL_INDEX2
 {
 	SPELL_TYPE2_PALADIN_AURA = 1,
 	SPELL_TYPE3_DEATH_KNIGHT_AURA = 1,
+};
+
+// Crit/agility to dodge/agility coefficient multipliers; 3.2.0 increased required agility by 15%
+const float crit_to_dodge[MAX_PLAYER_CLASSES] =
+{
+    0.0f,             // Empty
+    0.85f / 1.15f,    // Warrior
+    1.00f / 1.15f,    // Paladin
+    1.11f / 1.15f,    // Hunter
+    2.00f / 1.15f,    // Rogue
+    1.00f / 1.15f,    // Priest
+    0.85f / 1.15f,    // DK
+    1.60f / 1.15f,    // Shaman
+    1.00f / 1.15f,    // Mage
+    0.97f / 1.15f,    // Warlock (?)
+    2.00f / 1.15f,    // Monk
+    2.00f / 1.15f     // Druid
 };
 
 #define PLAYER_RATING_MODIFIER_RANGED_SKILL						PLAYER_FIELD_COMBAT_RATING_1

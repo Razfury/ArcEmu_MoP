@@ -1769,7 +1769,12 @@ void Spell::finish(bool successful)
 		{
 			p_caster->EventAttackStop();
 			p_caster->SendAttackStop(p_caster->GetSelection());
-			p_caster->GetSession()->OutPacket(SMSG_CANCEL_COMBAT);
+            
+            WorldPacket data(SMSG_CANCEL_COMBAT, 8);
+            data << uint32(0);
+            data << uint32(0);
+            p_caster->SendPacket(&data);
+
 		}
 
 		if(m_requiresCP && !GetSpellFailed())
@@ -3813,7 +3818,7 @@ void Spell::DetermineSkillUp()
 	if(p_caster == NULL)
 		return;
 
-	skilllinespell* skill = objmgr.GetSpellSkill(GetProto()->Id);
+	SkillLineAbilityEntry* skill = objmgr.GetSpellSkill(GetProto()->Id);
 	if(skill == NULL)
 		return;
 
@@ -6110,7 +6115,7 @@ void Spell::DetermineSkillUp(uint32 skillid)
 	if(p_caster == NULL)
 		return;
 	float chance = 0.0f;
-	skilllinespell* skill = objmgr.GetSpellSkill(GetProto()->Id);
+	SkillLineAbilityEntry* skill = objmgr.GetSpellSkill(GetProto()->Id);
 	if(skill != NULL && skillid == skill->skillId && p_caster->_HasSkillLine(skillid))
 	{
 		uint32 amt = p_caster->_GetSkillLineCurrent(skillid, false);
@@ -6535,14 +6540,14 @@ uint8 Spell::GetErrorAtShapeshiftedCast(SpellEntry* spellInfo, uint32 form)
 		{
 			case FORM_TREE:
 				{
-					skilllinespell* sls = objmgr.GetSpellSkill(spellInfo->Id);
+					SkillLineAbilityEntry* sls = objmgr.GetSpellSkill(spellInfo->Id);
 					if(sls && sls->skillId == SPELLTREE_DRUID_RESTORATION)		// Restoration spells can be cast in Tree of Life form, for the rest: apply the default rules.
 						return 0;
 				}
 				break;
 			case FORM_MOONKIN:
 				{
-					skilllinespell* sls = objmgr.GetSpellSkill(spellInfo->Id);
+					SkillLineAbilityEntry* sls = objmgr.GetSpellSkill(spellInfo->Id);
 					if(sls && sls->skillId == SPELLTREE_DRUID_BALANCE)			// Balance spells can be cast in Moonkin form, for the rest: apply the default rules.
 						return 0;
 				}

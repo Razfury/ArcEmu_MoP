@@ -402,7 +402,7 @@ class SERVER_DECL ObjectMgr : public Singleton < ObjectMgr >, public EventableOb
 		typedef HM_NAMESPACE::hash_map<uint32, PlayerInfo*>                 PlayerNameMap;
 		typedef HM_NAMESPACE::hash_map<uint32, PlayerCreateInfo*>           PlayerCreateInfoMap;
 		typedef HM_NAMESPACE::hash_map<uint32, Guild*>                      GuildMap;
-		typedef HM_NAMESPACE::hash_map<uint32, skilllinespell*>             SLMap;
+        typedef HM_NAMESPACE::hash_map<uint32, SkillLineAbilityEntry*>      SLMap;
 		typedef HM_NAMESPACE::hash_map<uint32, std::vector<CreatureItem>*>  VendorMap;
 		typedef HM_NAMESPACE::hash_map<uint32, Transporter*>                TransportMap;
 		typedef HM_NAMESPACE::hash_map<uint32, Trainer*>                    TrainerMap;
@@ -508,7 +508,7 @@ class SERVER_DECL ObjectMgr : public Singleton < ObjectMgr >, public EventableOb
 		GM_Ticket* GetGMTicketByPlayer(uint64 playerGuid);
 		//std::list<GM_Ticket*>* GetGMTicketsByPlayer(uint64 playerGuid);
 
-		skilllinespell* GetSpellSkill(uint32 id);
+        SkillLineAbilityEntry* GetSpellSkill(uint32 id);
 		SpellEntry* GetNextSpellRank(SpellEntry* sp, uint32 level);
 
 		//Vendors
