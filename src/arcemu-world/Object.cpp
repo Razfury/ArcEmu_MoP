@@ -177,7 +177,7 @@ uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer* data, Player* target)
         // UPDATETYPE_CREATE_OBJECT2 for some gameobject types...
         if (IsGameObject())
         {
-            switch (GetByte(GAMEOBJECT_BYTES_1, 0))
+            switch (GetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH, 0))
             {
             case GAMEOBJECT_TYPE_TRAP:
             case GAMEOBJECT_TYPE_DUEL_ARBITER:

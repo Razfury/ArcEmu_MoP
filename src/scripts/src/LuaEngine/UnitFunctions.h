@@ -5438,7 +5438,7 @@ class LuaUnit
 			return 0;
 		}
 
-		/*static int SetTalentPoints(lua_State* L, Unit* ptr)
+		static int SetTalentPoints(lua_State* L, Unit* ptr)
 		{
 			TEST_PLAYER()
 			uint32 spec = luaL_checkint(L, 1); //0 or 1
@@ -5450,7 +5450,7 @@ class LuaUnit
 
 			TO_PLAYER(ptr)->smsg_TalentsInfo(false);
 			return 0;
-		}*/
+		}
 
 		static int GetTalentPoints(lua_State* L, Unit* ptr)
 		{
@@ -5937,12 +5937,12 @@ class LuaUnit
 			return 1;
 		}
 
-		/*static int StopPlayerAttack(lua_State* L, Unit* ptr)
+		static int StopPlayerAttack(lua_State* L, Unit* ptr)
 		{
 			TEST_PLAYER();
 			TO_PLAYER(ptr)->smsg_AttackStop(TO_PLAYER(ptr)->GetSelection());
 			return 0;
-		}*/
+		}
 
 		static int GetQuestObjectiveCompletion(lua_State* L, Unit* ptr)
 		{

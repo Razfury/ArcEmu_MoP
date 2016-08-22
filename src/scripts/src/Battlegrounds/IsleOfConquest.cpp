@@ -460,14 +460,14 @@ void IsleOfConquest::OnStart()
 void IsleOfConquest::OpenGates(){
 	for( uint32 i = 0; i < MAX_PLAYER_TEAMS; i++ ){
 		for( uint32 j = 0; j < 3; j++ ){
-			gates[ i ][ j ].dyngate->SetByte( GAMEOBJECT_BYTES_1, 0, 0 );
+			gates[ i ][ j ].dyngate->SetByte( GAMEOBJECT_FIELD_PERCENT_HEALTH, 0, 0 );
 			gates[ i ][ j ].dyngate->RemoveFlags( GAMEOBJECT_FLAG_NONSELECTABLE );
 		}
 	}
 
 	for( uint32 team = TEAM_ALLIANCE; team < MAX_PLAYER_TEAMS; team++ ){
 		for( uint32 i = 0; i < 2; i++ ){
-			towergates[ team ][ i ]->SetByte( GAMEOBJECT_BYTES_1, 0, 0 );
+			towergates[ team ][ i ]->SetByte( GAMEOBJECT_FIELD_PERCENT_HEALTH, 0, 0 );
 			towergates[ team ][ i ]->RemoveFlags( GAMEOBJECT_FLAG_UNTARGETABLE );
 		}
 	}
@@ -508,9 +508,9 @@ void IsleOfConquest::SpawnControlPoint(uint32 Id, uint32 Type)
                 controlpoint[ Id ].banner = SpawnGameObject(gi->ID, m_mapMgr->GetMapId(), ControlPointCoordinates[Id][0], ControlPointCoordinates[Id][1],
                 ControlPointCoordinates[Id][2], ControlPointCoordinates[Id][3], 0, 35, 1.0f);
 
-                controlpoint[ Id ].banner->SetByte(GAMEOBJECT_BYTES_1,GAMEOBJECT_BYTES_STATE, 1);
-                controlpoint[ Id ].banner->SetByte(GAMEOBJECT_BYTES_1,GAMEOBJECT_BYTES_TYPE_ID, gi->Type);
-                controlpoint[ Id ].banner->SetByte(GAMEOBJECT_BYTES_1,GAMEOBJECT_BYTES_ANIMPROGRESS, 100);
+                controlpoint[ Id ].banner->SetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH,GAMEOBJECT_BYTES_STATE, 1);
+                controlpoint[ Id ].banner->SetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH,GAMEOBJECT_BYTES_TYPE_ID, gi->Type);
+                controlpoint[ Id ].banner->SetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH,GAMEOBJECT_BYTES_ANIMPROGRESS, 100);
                 controlpoint[ Id ].banner->SetUInt32Value(8+8, 1);
                 controlpoint[ Id ].banner->SetUInt32Value(GAMEOBJECT_DISPLAYID, gi->DisplayID);
 
@@ -543,7 +543,7 @@ void IsleOfConquest::SpawnControlPoint(uint32 Id, uint32 Type)
                 controlpoint[ Id ].banner->SetNewGuid(m_mapMgr->GenerateGameobjectGuid());
                 controlpoint[ Id ].banner->SetUInt32Value(OBJECT_FIELD_ENTRY, gi->ID);
                 controlpoint[ Id ].banner->SetUInt32Value(GAMEOBJECT_DISPLAYID, gi->DisplayID);
-                controlpoint[ Id ].banner->SetByte(GAMEOBJECT_BYTES_1,GAMEOBJECT_BYTES_TYPE_ID, gi->Type);
+                controlpoint[ Id ].banner->SetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH,GAMEOBJECT_BYTES_TYPE_ID, gi->Type);
 
                 switch(Type)
                 {
@@ -607,9 +607,9 @@ void IsleOfConquest::SpawnControlPoint(uint32 Id, uint32 Type)
                 controlpoint[ Id ].aura = SpawnGameObject(gi_aura->ID, 628, ControlPointCoordinates[Id][0], ControlPointCoordinates[Id][1],
                 ControlPointCoordinates[Id][2], ControlPointCoordinates[Id][3], 0, 35, 5.0f);
 
-                controlpoint[ Id ].aura->SetByte(GAMEOBJECT_BYTES_1,GAMEOBJECT_BYTES_STATE, 1);
-                controlpoint[ Id ].aura->SetByte(GAMEOBJECT_BYTES_1,GAMEOBJECT_BYTES_TYPE_ID, 6);
-                controlpoint[ Id ].aura->SetByte(GAMEOBJECT_BYTES_1,GAMEOBJECT_BYTES_ANIMPROGRESS, 100);
+                controlpoint[ Id ].aura->SetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH,GAMEOBJECT_BYTES_STATE, 1);
+                controlpoint[ Id ].aura->SetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH,GAMEOBJECT_BYTES_TYPE_ID, 6);
+                controlpoint[ Id ].aura->SetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH,GAMEOBJECT_BYTES_ANIMPROGRESS, 100);
                 controlpoint[ Id ].aura->bannerauraslot = Id;
                 controlpoint[ Id ].aura->PushToWorld(m_mapMgr);
         }

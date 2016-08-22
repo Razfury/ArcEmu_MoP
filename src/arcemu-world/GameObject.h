@@ -64,7 +64,7 @@ enum GAMEOBJECT_OVERRIDES //by VLack
     GAMEOBJECT_AREAWIDE = 0x04,		//UNIMPLEMENTED, but will work like this: the Map will get marked that it contains an object like this, and on player movement these objects will get distance-checked to spawn them from a greater distance than normal if needed - for few objects on smaller maps, like on battlegrounds; maybe they'll get area-triggered, haven't decided yet.
     GAMEOBJECT_ONMOVEWIDE = 0x08,		//When this gameobject moves and sends updates about it's position, do so in the second range - MapMgr::ChangeObjectLocation, +/- 6 units wide instead of +/- 1.
     GAMEOBJECT_OVERRIDE_FLAGS = 0x10,	//UNIMPLEMENTED, Let the core decide about the flags sent in the A9 - example: 252 instead of 352 for Deeprun Tram.
-    GAMEOBJECT_OVERRIDE_BYTES1 = 0x20,	//UNIMPLEMENTED, Let the core use the full field instead an uint8 in GAMEOBJECT_BYTES_1, if the database creator knows what to do with it.
+    GAMEOBJECT_OVERRIDE_BYTES1 = 0x20,	//UNIMPLEMENTED, Let the core use the full field instead an uint8 in GAMEOBJECT_FIELD_PERCENT_HEALTH, if the database creator knows what to do with it.
     GAMEOBJECT_OVERRIDE_PARENTROT = 0x40,	//Makes it possible for the core to skip calculating these fields and use whatever was specified in the spawn.
     //Later other types might folow, or the upper bytes might get used for the AREAWIDE option in the overrides variable...
 };
@@ -311,9 +311,9 @@ class SERVER_DECL GameObject : public Object
 		void SetLevel(uint32 level) { SetUInt32Value(GAMEOBJECT_LEVEL, level); }
 		uint32 GetLevel() { return GetUInt32Value(GAMEOBJECT_LEVEL); }
 
-		void SetType(uint8 type) { SetByte(GAMEOBJECT_BYTES_1, 1, type); }
-		uint8 GetType() { return GetByte(GAMEOBJECT_BYTES_1, 1); }
-		GAMEOBJECT_TYPES GetGoType() const { return GAMEOBJECT_TYPES(GetByteValue(GAMEOBJECT_BYTES_1, 1)); }
+		void SetType(uint8 type) { SetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH, 1, type); }
+		uint8 GetType() { return GetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH, 1); }
+		GAMEOBJECT_TYPES GetGoType() const { return GAMEOBJECT_TYPES(GetByteValue(GAMEOBJECT_FIELD_PERCENT_HEALTH, 1)); }
 		
 		void SetFlags( uint32 flags ){ SetUInt32Value( GAMEOBJECT_FLAGS, flags ); }		
 		uint32 GetFlags(){ return GetUInt32Value( GAMEOBJECT_FLAGS ); }
@@ -326,10 +326,10 @@ class SERVER_DECL GameObject : public Object
 				return false;
 		}
 		
-		void SetArtKit( uint8 artkit ){ SetByte( GAMEOBJECT_BYTES_1, 2, artkit ); }
-		uint8 GetArtkKit(){ return GetByte( GAMEOBJECT_BYTES_1, 2 ); }
-		void SetAnimProgress( uint8 progress ){ SetByte( GAMEOBJECT_BYTES_1, 3, progress ); }
-		uint8 GetAnimProgress(){ return GetByte( GAMEOBJECT_BYTES_1, 3 ); }
+		void SetArtKit( uint8 artkit ){ SetByte( GAMEOBJECT_FIELD_PERCENT_HEALTH, 2, artkit ); }
+		uint8 GetArtkKit(){ return GetByte( GAMEOBJECT_FIELD_PERCENT_HEALTH, 2 ); }
+		void SetAnimProgress( uint8 progress ){ SetByte( GAMEOBJECT_FIELD_PERCENT_HEALTH, 3, progress ); }
+		uint8 GetAnimProgress(){ return GetByte( GAMEOBJECT_FIELD_PERCENT_HEALTH, 3 ); }
 		
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//void Damage( uint32 damage, uint64 AttackerGUID, uint64 ControllerGUID,  uint32 SpellID )

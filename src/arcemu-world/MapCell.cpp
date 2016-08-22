@@ -249,13 +249,13 @@ void MapCell::LoadObjects(CellSpawns* sp)
 			GameObject* go = _mapmgr->CreateGameObject((*i)->entry);
 			if(go->Load(*i))
 			{
-				//uint32 state = go->GetByte(GAMEOBJECT_BYTES_1, 0);
+				//uint32 state = go->GetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH, 0);
 
 				// FIX ME - burlex
 				/*
 				if(pInstance && pInstance->FindObject((*i)->stateNpcLink))
 				{
-					go->SetByte(GAMEOBJECT_BYTES_1, 0, (state ? 0 : 1));
+					go->SetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH, 0, (state ? 0 : 1));
 				}*/
 
 				go->m_loadedFromDB = true;

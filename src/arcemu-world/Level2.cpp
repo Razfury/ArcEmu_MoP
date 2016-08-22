@@ -858,7 +858,7 @@ bool ChatHandler::HandleGOSpawn(const char* args, WorldSession* m_session)
 	gs->x = go->GetPositionX();
 	gs->y = go->GetPositionY();
 	gs->z = go->GetPositionZ();
-	gs->state = go->GetByte(GAMEOBJECT_BYTES_1, 0);
+	gs->state = go->GetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH, 0);
 	//gs->stateNpcLink = 0;
 	gs->phase = go->GetPhase();
 	gs->overrides = go->GetOverrides();
@@ -949,7 +949,7 @@ bool ChatHandler::HandleGOInfo(const char* args, WorldSession* m_session)
 	SystemMessage(m_session, "%s SpawnID:%s%u",	MSG_COLOR_GREEN, MSG_COLOR_LIGHTBLUE, GObj->m_spawn != NULL ? GObj->m_spawn->id : 0);
 	SystemMessage(m_session, "%s Entry:%s%u",	MSG_COLOR_GREEN, MSG_COLOR_LIGHTBLUE, GObj->GetEntry());
 	SystemMessage(m_session, "%s Model:%s%u",	MSG_COLOR_GREEN, MSG_COLOR_LIGHTBLUE, GObj->GetUInt32Value(GAMEOBJECT_DISPLAYID));
-	SystemMessage(m_session, "%s State:%s%u",	MSG_COLOR_GREEN, MSG_COLOR_LIGHTBLUE, GObj->GetByte(GAMEOBJECT_BYTES_1, 0));
+	SystemMessage(m_session, "%s State:%s%u",	MSG_COLOR_GREEN, MSG_COLOR_LIGHTBLUE, GObj->GetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH, 0));
 	SystemMessage(m_session, "%s flags:%s%u",	MSG_COLOR_GREEN, MSG_COLOR_LIGHTBLUE, GObj->GetUInt32Value(GAMEOBJECT_FLAGS));
 	SystemMessage(m_session, "%s dynflags:%s%u", MSG_COLOR_GREEN, MSG_COLOR_LIGHTBLUE, GObj->GetUInt32Value(8+8));
 	SystemMessage(m_session, "%s faction:%s%u",	MSG_COLOR_GREEN, MSG_COLOR_LIGHTBLUE, GObj->GetFaction());
@@ -1103,17 +1103,17 @@ bool ChatHandler::HandleGOActivate(const char* args, WorldSession* m_session)
 		RedSystemMessage(m_session, "No selected GameObject...");
 		return true;
 	}
-	if(GObj->GetByte(GAMEOBJECT_BYTES_1, 0) == 1)
+	if(GObj->GetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH, 0) == 1)
 	{
 		// Close/Deactivate
-		GObj->SetByte(GAMEOBJECT_BYTES_1, 0, 0);
+		GObj->SetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH, 0, 0);
 		GObj->RemoveFlag(GAMEOBJECT_FLAGS, 1);
 		BlueSystemMessage(m_session, "Gameobject closed.");
 	}
 	else
 	{
 		// Open/Activate
-		GObj->SetByte(GAMEOBJECT_BYTES_1, 0, 1);
+		GObj->SetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH, 0, 1);
 		GObj->SetFlag(GAMEOBJECT_FLAGS, 1);
 		BlueSystemMessage(m_session, "Gameobject opened.");
 	}
@@ -1339,7 +1339,7 @@ bool ChatHandler::HandleGOAnimProgress(const char* args, WorldSession* m_session
 		return false;
 
 	uint32 ap = atol(args);
-	GObj->SetByte(GAMEOBJECT_BYTES_1, 3, static_cast<uint8>(ap));
+	GObj->SetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH, 3, static_cast<uint8>(ap));
 	BlueSystemMessage(m_session, "Set ANIMPROGRESS to %u", ap);
 	return true;
 }

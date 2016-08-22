@@ -359,7 +359,7 @@ void Player::SendLoot(uint64 guid, uint8 loot_type, uint32 mapid)
 	{
 		GameObject* pGO = GetMapMgr()->GetGameObject(GET_LOWGUID_PART(guid));
 		if(!pGO)return;
-		pGO->SetByte(GAMEOBJECT_BYTES_1, 0, 0);
+		pGO->SetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH, 0, 0);
 		pLoot = &pGO->loot;
 		m_currentLoot = pGO->GetGUID();
 	}

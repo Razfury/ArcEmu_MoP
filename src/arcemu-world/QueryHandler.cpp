@@ -493,7 +493,7 @@ void WorldSession::HandleInrangeQuestgiverQuery(WorldPacket & recv_data)
 	WorldPacket data(SMSG_QUESTGIVER_STATUS_MULTIPLE, 3 + count * (1 + 8 + 4));
 
 	size_t pos = data.bitwpos();
-    data.WriteBits(count, 21); // placeholder
+    data.WriteBits(count, 21); // Placeholder
 
 
 	for (itr = _player->m_objectsInRange.begin(); itr != _player->m_objectsInRange.end(); ++itr)
@@ -528,11 +528,7 @@ void WorldSession::HandleInrangeQuestgiverQuery(WorldPacket & recv_data)
 			byteData.WriteByteSeq(guid[0]);
 
 			++count;
-			data << pCreature->GetGUID();
-			data << uint8(sQuestMgr.CalcStatus(pCreature, _player));
-			++count;
 		}
-
 		else if (pGameObject->isQuestGiver())
 		{
 			ObjectGuid guid = pGameObject->GetGUID();
