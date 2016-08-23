@@ -1647,7 +1647,7 @@ void Creature::OnPushToWorld()
     SpellEntry* sp;
     for (; itr != proto->start_auras.end(); ++itr)
     {
-        sp = dbcSpell.LookupEntryForced((*itr));
+        sp = dbcSpellEntry.LookupEntryForced((*itr));
         if (sp == NULL) continue;
 
         CastSpell(this, sp, 0);
@@ -2094,7 +2094,7 @@ void Creature::Die(Unit* pAttacker, uint32 damage, uint32 spellid)
     {
         SpellEntry* killerspell;
         if (spellid)
-            killerspell = dbcSpell.LookupEntry(spellid);
+            killerspell = dbcSpellEntry.LookupEntry(spellid);
         else killerspell = NULL;
 
         HandleProc(PROC_ON_DIE, this, killerspell);

@@ -111,11 +111,11 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 				if( cn->AISpells[ i ] == 0 )
 					continue;
 
-				SpellEntry *sp = dbcSpell.LookupEntryForced( cn->AISpells[ i ] );
+				SpellEntry *sp = dbcSpellEntry.LookupEntryForced( cn->AISpells[ i ] );
 				if( sp == NULL )
 					continue;
 
-				if( ( sp->Attributes & ATTRIBUTES_PASSIVE ) == 0 )
+				if( ( sp->misc.Attributes & ATTRIBUTES_PASSIVE ) == 0 )
 					cn->castable_spells.push_back( sp->Id );
 				else
 					cn->start_auras.insert( sp->Id );
@@ -129,11 +129,11 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 					if( spe->Spells[ i ] == 0 )
 						continue;
 
-					SpellEntry *sp = dbcSpell.LookupEntryForced( spe->Spells[ i ] );
+					SpellEntry *sp = dbcSpellEntry.LookupEntryForced( spe->Spells[ i ] );
 					if( sp == NULL )
 						continue;
 
-					if( ( sp->Attributes & ATTRIBUTES_PASSIVE ) == 0 )
+					if( ( sp->misc.Attributes & ATTRIBUTES_PASSIVE ) == 0 )
 						cn->castable_spells.push_back( sp->Id );
 					else
 						cn->start_auras.insert( sp->Id );
@@ -209,7 +209,7 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 				Field* fields = result->Fetch();
 				entry = fields[0].GetUInt32();
 				cn = CreatureProtoStorage.LookupEntry(entry);
-				spe = dbcSpell.LookupEntryForced(fields[6].GetUInt32());
+				spe = dbcSpellEntry.LookupEntryForced(fields[6].GetUInt32());
 				if(spe == NULL)
 				{
 					Log.Error("AIAgent", "For %u has nonexistent spell %u.", fields[0].GetUInt32(), fields[6].GetUInt32());
@@ -257,21 +257,21 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 						continue;
 					}
 
-					sp->minrange = GetMinRange(dbcSpellRange.LookupEntry(sp->spell->rangeIndex));
-					sp->maxrange = GetMaxRange(dbcSpellRange.LookupEntry(sp->spell->rangeIndex));
+                    sp->minrange = GetMinRange(dbcSpellRange.LookupEntry(sp->spell->misc.rangeIndex));
+                    sp->maxrange = GetMaxRange(dbcSpellRange.LookupEntry(sp->spell->misc.rangeIndex));
 
 					//omg the poor darling has no clue about making ai_agents
 					if(sp->cooldown == (uint32) - 1)
 					{
 						//now this will not be exact cooldown but maybe a bigger one to not make him spam spells to often
 						int cooldown;
-						SpellDuration* sd = dbcSpellDuration.LookupEntry(sp->spell->DurationIndex);
+                        SpellDuration* sd = dbcSpellDuration.LookupEntry(sp->spell->misc.DurationIndex);
 						int Dur = 0;
 						int Casttime = 0; //most of the time 0
 						int RecoveryTime = sp->spell->RecoveryTime;
-						if(sp->spell->DurationIndex)
+                        if (sp->spell->misc.DurationIndex)
 							Dur =::GetDuration(sd);
-						Casttime = GetCastTime(dbcSpellCastTime.LookupEntry(sp->spell->CastingTimeIndex));
+                        Casttime = GetCastTime(dbcSpellCastTime.LookupEntry(sp->spell->misc.CastingTimeIndex));
 						cooldown = Dur + Casttime + RecoveryTime;
 						if(cooldown < 0)
 							sp->cooldown = 2000; //huge value that should not loop while adding some timestamp to it

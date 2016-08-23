@@ -1637,7 +1637,7 @@ void WorldSession::HandleGameObjectUse(WorldPacket & recv_data)
 			break;
 		case GAMEOBJECT_TYPE_CHEST://cast da spell
 			{
-				spellInfo = dbcSpell.LookupEntry(OPEN_CHEST);
+				spellInfo = dbcSpellEntry.LookupEntry(OPEN_CHEST);
 				spell = sSpellFactoryMgr.NewSpell(plyr, spellInfo, true, NULL);
 				_player->m_currentSpell = spell;
 				targets.m_unitTarget = obj->GetGUID();
@@ -1697,7 +1697,7 @@ void WorldSession::HandleGameObjectUse(WorldPacket & recv_data)
 						break;
 				}
 
-				SpellEntry* info = dbcSpell.LookupEntryForced(goinfo->SpellFocus);
+				SpellEntry* info = dbcSpellEntry.LookupEntryForced(goinfo->SpellFocus);
 				if(!info)
 					break;
 				spell = sSpellFactoryMgr.NewSpell(plyr, info, false, NULL);
@@ -1754,7 +1754,7 @@ void WorldSession::HandleGameObjectUse(WorldPacket & recv_data)
 					{
 						if(!obj->m_ritualtarget)
 							return;
-						info = dbcSpell.LookupEntryForced(goinfo->sound1);
+						info = dbcSpellEntry.LookupEntryForced(goinfo->sound1);
 						if(!info)
 							break;
 						Player* target = objmgr.GetPlayer(obj->m_ritualtarget);
@@ -1774,7 +1774,7 @@ void WorldSession::HandleGameObjectUse(WorldPacket & recv_data)
 						if(!psacrifice || !pCaster)
 							return;
 
-						info = dbcSpell.LookupEntryForced(goinfo->sound4);
+						info = dbcSpellEntry.LookupEntryForced(goinfo->sound4);
 						if(!info)
 							break;
 						spell = sSpellFactoryMgr.NewSpell(psacrifice, info, true, NULL);
@@ -1782,7 +1782,7 @@ void WorldSession::HandleGameObjectUse(WorldPacket & recv_data)
 						spell->prepare(&targets);
 
 						// summons demon
-						info = dbcSpell.LookupEntry(goinfo->sound1);
+						info = dbcSpellEntry.LookupEntry(goinfo->sound1);
 						spell = sSpellFactoryMgr.NewSpell(pCaster, info, true, NULL);
 						SpellCastTargets targets2;
 						targets2.m_unitTarget = pCaster->GetGUID();
@@ -1798,7 +1798,7 @@ void WorldSession::HandleGameObjectUse(WorldPacket & recv_data)
 						if(!pleader)
 							return;
 
-						info = dbcSpell.LookupEntry(goinfo->sound1);
+						info = dbcSpellEntry.LookupEntry(goinfo->sound1);
 						spell = sSpellFactoryMgr.NewSpell(pleader, info, true, NULL);
 						SpellCastTargets targets2(plr->GetGUID());
 						spell->prepare(&targets2);
@@ -1808,7 +1808,7 @@ void WorldSession::HandleGameObjectUse(WorldPacket & recv_data)
 					}
 					else if(goinfo->ID == 186811 || goinfo->ID == 181622)
 					{
-						info = dbcSpell.LookupEntryForced(goinfo->sound1);
+						info = dbcSpellEntry.LookupEntryForced(goinfo->sound1);
 						if(info == NULL)
 							return;
 						spell = sSpellFactoryMgr.NewSpell(_player->GetMapMgr()->GetPlayer(obj->m_ritualcaster), info, true, NULL);
@@ -2162,7 +2162,7 @@ void WorldSession::HandleSelfResurrectOpcode(WorldPacket & recv_data)
 	uint32 self_res_spell = _player->GetUInt32Value(PLAYER_SELF_RES_SPELL);
 	if(self_res_spell)
 	{
-		SpellEntry* sp = dbcSpell.LookupEntry(self_res_spell);
+		SpellEntry* sp = dbcSpellEntry.LookupEntry(self_res_spell);
 		Spell* s = sSpellFactoryMgr.NewSpell(_player, sp, true, NULL);
 		SpellCastTargets tgt;
 		tgt.m_unitTarget = _player->GetGUID();

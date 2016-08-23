@@ -443,7 +443,7 @@ bool ChatHandler::HandleKillCommand(const char* args, WorldSession* m_session)
 	else
 	{
 		// Cast insta-kill.
-		SpellEntry* se = dbcSpell.LookupEntryForced(5);
+		SpellEntry* se = dbcSpellEntry.LookupEntryForced(5);
 		if(se == NULL)
             return false;
 
@@ -451,7 +451,7 @@ bool ChatHandler::HandleKillCommand(const char* args, WorldSession* m_session)
 		Spell* sp = sSpellFactoryMgr.NewSpell(m_session->GetPlayer(), se, true, 0);
 		sp->prepare(&targets);
 
-		/*		SpellEntry * se = dbcSpell.LookupEntry(20479);
+		/*		SpellEntry * se = dbcSpellEntry.LookupEntry(20479);
 				if(se == 0) return false;
 
 				SpellCastTargets targets(target->GetGUID());
@@ -500,7 +500,7 @@ bool ChatHandler::HandleCastSpellCommand(const char* args, WorldSession* m_sessi
 	}
 
 	uint32 spellid = atol(args);
-	SpellEntry* spellentry = dbcSpell.LookupEntryForced(spellid);
+	SpellEntry* spellentry = dbcSpellEntry.LookupEntryForced(spellid);
 	if(!spellentry)
 	{
 		RedSystemMessage(m_session, "Invalid spell id!");
@@ -541,7 +541,7 @@ bool ChatHandler::HandleCastSpellNECommand(const char* args, WorldSession* m_ses
 	}
 
 	uint32 spellId = atol(args);
-	SpellEntry* spellentry = dbcSpell.LookupEntryForced(spellId);
+	SpellEntry* spellentry = dbcSpellEntry.LookupEntryForced(spellId);
 	if(!spellentry)
 	{
 		RedSystemMessage(m_session, "Invalid spell id!");
@@ -601,7 +601,7 @@ bool ChatHandler::HandleCastSelfCommand(const char* args, WorldSession* m_sessio
 	}
 
 	uint32 spellid = atol(args);
-	SpellEntry* spellentry = dbcSpell.LookupEntryForced(spellid);
+	SpellEntry* spellentry = dbcSpellEntry.LookupEntryForced(spellid);
 	if(!spellentry)
 	{
 		RedSystemMessage(m_session, "Invalid spell id!");
@@ -1268,7 +1268,7 @@ bool ChatHandler::HandleAddAIAgentCommand(const char* args, WorldSession* m_sess
 	sp->agent = static_cast<uint16>(atoi(agent));
 	sp->procChance = atoi(procChance);
 	/*	sp->procCount = atoi(procCount);*/
-	sp->spell = dbcSpell.LookupEntry(atoi(spellId));
+	sp->spell = dbcSpellEntry.LookupEntry(atoi(spellId));
 	sp->spellType = static_cast<uint8>(atoi(spellType));
 //	sp->spelltargetType = atoi(spelltargetType);
 	sp->floatMisc1 = (float)atof(floatMisc1);
@@ -1277,8 +1277,8 @@ bool ChatHandler::HandleAddAIAgentCommand(const char* args, WorldSession* m_sess
 	sp->procCount = 0;
 	sp->procCounter = 0;
 	sp->cooldowntime = 0;
-	sp->minrange = GetMinRange(dbcSpellRange.LookupEntry(dbcSpell.LookupEntry(atoi(spellId))->rangeIndex));
-	sp->maxrange = GetMaxRange(dbcSpellRange.LookupEntry(dbcSpell.LookupEntry(atoi(spellId))->rangeIndex));
+	sp->minrange = GetMinRange(dbcSpellRange.LookupEntry(dbcSpellEntry.LookupEntry(atoi(spellId))->misc.rangeIndex));
+    sp->maxrange = GetMaxRange(dbcSpellRange.LookupEntry(dbcSpellEntry.LookupEntry(atoi(spellId))->misc.rangeIndex));
 
 	target->GetProto()->spells.push_back(sp);
 

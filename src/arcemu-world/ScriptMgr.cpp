@@ -294,7 +294,7 @@ void ScriptMgr::DumpUnimplementedSpells()
 
 	of.open("unimplemented1.txt");
 
-	for(DBCStorage< SpellEntry >::iterator itr = dbcSpell.begin(); itr != dbcSpell.end(); ++itr)
+	for(DBCStorage< SpellEntry >::iterator itr = dbcSpellEntry.begin(); itr != dbcSpellEntry.end(); ++itr)
 	{
 		SpellEntry* sp = *itr;
 
@@ -329,7 +329,7 @@ void ScriptMgr::DumpUnimplementedSpells()
 
 	count = 0;
 
-	for(DBCStorage< SpellEntry >::iterator itr = dbcSpell.begin(); itr != dbcSpell.end(); ++itr)
+	for(DBCStorage< SpellEntry >::iterator itr = dbcSpellEntry.begin(); itr != dbcSpellEntry.end(); ++itr)
 	{
 		SpellEntry* sp = *itr;
 
@@ -377,7 +377,7 @@ void ScriptMgr::register_dummy_aura(uint32 entry, exp_handle_dummy_aura callback
 		LOG_ERROR("ScriptMgr is trying to register a script for Aura ID: %u even if there's already one for that Aura. Remove one of those scripts.", entry);
 	}
 
-	SpellEntry* sp = dbcSpell.LookupEntryForced(entry);
+	SpellEntry* sp = dbcSpellEntry.LookupEntryForced(entry);
 	if(sp == NULL)
 	{
 		LOG_ERROR("ScriptMgr is trying to register a dummy aura handler for Spell ID: %u which is invalid.", entry);
@@ -398,7 +398,7 @@ void ScriptMgr::register_dummy_spell(uint32 entry, exp_handle_dummy_spell callba
 		return;
 	}
 
-	SpellEntry* sp = dbcSpell.LookupEntryForced(entry);
+	SpellEntry* sp = dbcSpellEntry.LookupEntryForced(entry);
 	if(sp == NULL)
 	{
 		LOG_ERROR("ScriptMgr is trying to register a dummy handler for Spell ID: %u which is invalid.", entry);
@@ -494,7 +494,7 @@ void ScriptMgr::register_script_effect(uint32 entry, exp_handle_script_effect ca
 		return;
 	}
 
-	SpellEntry* sp = dbcSpell.LookupEntryForced(entry);
+	SpellEntry* sp = dbcSpellEntry.LookupEntryForced(entry);
 	if(sp == NULL)
 	{
 		LOG_ERROR("ScriptMgr tried to register a script effect handler for Spell %u, which is invalid.", entry);

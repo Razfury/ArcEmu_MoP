@@ -85,7 +85,7 @@ class ImprovedDevouringPlagueSpellProc : public SpellProc
 			dmg = CastingSpell->eff[0].EffectBasePoints + 1;
 
 			// Get total ticks
-			int ticks = GetDuration(dbcSpellDuration.LookupEntry(CastingSpell->DurationIndex)) / CastingSpell->eff[0].EffectAmplitude;
+            int ticks = GetDuration(dbcSpellDuration.LookupEntry(CastingSpell->misc.DurationIndex)) / CastingSpell->eff[0].EffectAmplitude;
 
 			dmg_overwrite[0] = dmg * ticks * (mOrigSpell->eff[0].EffectBasePoints + 1) / 100;
 
@@ -120,7 +120,7 @@ class VampiricTouchEnergizeSpellProc : public SpellProc
 
 		void Init(Object* obj)
 		{
-			mReplenishmentSpell = dbcSpell.LookupEntryForced(57669);
+			mReplenishmentSpell = dbcSpellEntry.LookupEntryForced(57669);
 		}
 
 		bool DoEffect(Unit* victim, SpellEntry* CastingSpell, uint32 flag, uint32 dmg, uint32 abs, int* dmg_overwrite, uint32 weapon_damage_type)
@@ -151,7 +151,7 @@ class VampiricTouchDispelDamageSpellProc : public SpellProc
 		bool DoEffect(Unit* victim, SpellEntry* CastingSpell, uint32 flag, uint32 dmg, uint32 abs, int* dmg_overwrite, uint32 weapon_damage_type)
 		{
 			// For PROC_ON_PRE_DISPELL_AURA_VICTIM, parameter dmg has aur->GetSpellId()
-			SpellEntry* sp = dbcSpell.LookupEntryForced(dmg);
+			SpellEntry* sp = dbcSpellEntry.LookupEntryForced(dmg);
 
 			if(CastingSpell == NULL || sp == NULL || sp->NameHash != SPELL_HASH_VAMPIRIC_TOUCH)
 				return true;
@@ -175,7 +175,7 @@ class EmpoweredRenewSpellProc : public SpellProc
 			dmg = CastingSpell->eff[0].EffectBasePoints + 1;
 
 			// Get total ticks
-			int ticks = GetDuration(dbcSpellDuration.LookupEntry(CastingSpell->DurationIndex)) / CastingSpell->eff[0].EffectAmplitude;
+            int ticks = GetDuration(dbcSpellDuration.LookupEntry(CastingSpell->misc.DurationIndex)) / CastingSpell->eff[0].EffectAmplitude;
 
 			// Total periodic effect is a single tick amount multiplied by number of ticks
 			dmg_overwrite[0] = dmg * ticks * (mOrigSpell->eff[0].EffectBasePoints + 1) / 100;

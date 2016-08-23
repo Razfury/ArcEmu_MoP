@@ -474,7 +474,7 @@ void Spell::SpellEffectInstantKill(uint32 i)
 			}
 			if(DemonicSacEffectSpellId)
 			{
-				SpellEntry* se = dbcSpell.LookupEntryForced(DemonicSacEffectSpellId);
+				SpellEntry* se = dbcSpellEntry.LookupEntryForced(DemonicSacEffectSpellId);
 				if(se && u_caster)
 					u_caster->CastSpell(u_caster, se, true);
 			}
@@ -489,7 +489,7 @@ void Spell::SpellEffectInstantKill(uint32 i)
 
 				//TO< Pet* >(u_caster)->Dismiss( true );
 
-				SpellEntry* se = dbcSpell.LookupEntry(5);
+				SpellEntry* se = dbcSpellEntry.LookupEntry(5);
 				if(TO< Pet* >(u_caster)->GetPetOwner() == NULL)
 					return;
 
@@ -506,7 +506,7 @@ void Spell::SpellEffectInstantKill(uint32 i)
 
 				//TO< Pet* >(unitTarget)->Dismiss( true );
 
-				SpellEntry* se = dbcSpell.LookupEntry(5);
+				SpellEntry* se = dbcSpellEntry.LookupEntry(5);
 
 				SpellCastTargets targets(unitTarget->GetGUID());
 				Spell* sp = sSpellFactoryMgr.NewSpell(p_caster, se, true, 0);
@@ -803,7 +803,7 @@ void Spell::SpellEffectSchoolDMG(uint32 i) // dmg school
 	if(!dmg)
 		return;
 
-	if(GetProto()->speed > 0 && m_triggeredSpell == false)
+	if(GetProto()->misc.speed > 0 && m_triggeredSpell == false)
 	{
 		m_caster->SpellNonMeleeDamageLog(unitTarget, GetProto()->Id, dmg, pSpellId == 0);
 	}
@@ -822,7 +822,7 @@ void Spell::SpellEffectSchoolDMG(uint32 i) // dmg school
 					_type = RANGED;
 				else
 				{
-					if(GetProto()->AttributesExC & FLAGS4_TYPE_OFFHAND)
+                    if (GetProto()->misc.AttributesExC & FLAGS4_TYPE_OFFHAND)
 						_type =  OFFHAND;
 					else
 						_type = MELEE;
@@ -1124,12 +1124,12 @@ void Spell::SpellEffectApplyAura(uint32 i)  // Apply Aura
 	if(itr == m_pendingAuras.end())
 	{
 		if(GetProto()->NameHash == SPELL_HASH_BLOOD_FRENZY && ProcedOnSpell)  //Warrior's Blood Frenzy
-			GetProto()->DurationIndex = ProcedOnSpell->DurationIndex;
+            GetProto()->misc.DurationIndex = ProcedOnSpell->misc.DurationIndex;
 
 		uint32 Duration = GetDuration();
 
 		// Handle diminishing returns, if it should be resisted, it'll make duration 0 here.
-		if(!(GetProto()->Attributes & ATTRIBUTES_PASSIVE)) // Passive
+        if (!(GetProto()->misc.Attributes & ATTRIBUTES_PASSIVE)) // Passive
 			::ApplyDiminishingReturnTimer(&Duration, unitTarget, GetProto());
 
 		if(!Duration)
@@ -1274,7 +1274,7 @@ void Spell::SpellEffectHeal(uint32 i) // Heal
 					if(unitTarget && unitTarget->IsPlayer() && pSpellId && unitTarget->GetHealthPct() < 30)
 					{
 						//check for that 10 second cooldown
-						SpellEntry* spellInfo = dbcSpell.LookupEntryForced(pSpellId);
+						SpellEntry* spellInfo = dbcSpellEntry.LookupEntryForced(pSpellId);
 						if(spellInfo)
 						{
 							//heal value is received by the level of current active talent :s
@@ -1392,7 +1392,7 @@ void Spell::SpellEffectHeal(uint32 i) // Heal
 
 						if(new_dmg > 0)
 						{
-							SpellEntry* spellInfo = dbcSpell.LookupEntry(18562);
+							SpellEntry* spellInfo = dbcSpellEntry.LookupEntry(18562);
 							Spell* spell = sSpellFactoryMgr.NewSpell(unitTarget, spellInfo, true, NULL);
 							spell->SetUnitTarget(unitTarget);
 							spell->Heal((int32)new_dmg);
@@ -1727,7 +1727,7 @@ void Spell::SpellEffectCreateItem(uint32 i)
 
 			if((learn_spell != 0) && (p_caster->getLevel() > 60) && !p_caster->HasSpell(learn_spell) && Rand(cast_chance))
 			{
-				SpellEntry* dspellproto = dbcSpell.LookupEntryForced(learn_spell);
+				SpellEntry* dspellproto = dbcSpellEntry.LookupEntryForced(learn_spell);
 
 				if(dspellproto != NULL)
 				{
@@ -1760,7 +1760,7 @@ void Spell::SpellEffectCreateItem(uint32 i)
 			// if something was discovered teach player that recipe and broadcast message
 			if(discovered_recipe != 0)
 			{
-				SpellEntry* se = dbcSpell.LookupEntryForced(discovered_recipe);
+				SpellEntry* se = dbcSpellEntry.LookupEntryForced(discovered_recipe);
 
 				if(se != NULL)
 				{
@@ -2386,7 +2386,7 @@ void Spell::SpellEffectEnergize(uint32 i) // Energize
 		case 31786: // Paladin - Spiritual Attunement
 			if(ProcedOnSpell)
 			{
-				SpellEntry* motherspell = dbcSpell.LookupEntryForced(pSpellId);
+				SpellEntry* motherspell = dbcSpellEntry.LookupEntryForced(pSpellId);
 				if(motherspell)
 				{
 					//heal amount from procspell (we only proceed on a heal spell)
@@ -2453,7 +2453,7 @@ void Spell::SpellEffectWeaponDmgPerc(uint32 i) // Weapon Percent damage
 			_type = RANGED;
 		else
 		{
-			if(GetProto()->AttributesExC & 0x1000000)
+            if (GetProto()->misc.AttributesExC & 0x1000000)
 				_type =  OFFHAND;
 			else
 				_type = MELEE;
@@ -2492,7 +2492,7 @@ void Spell::SpellEffectTriggerMissile(uint32 i) // Trigger Missile
 		return;
 	}
 
-	SpellEntry* spInfo = dbcSpell.LookupEntryForced(spellid);
+	SpellEntry* spInfo = dbcSpellEntry.LookupEntryForced(spellid);
 	if(spInfo == NULL)
 	{
 		LOG_ERROR("Spell %u ( %s ) has a trigger missle effect ( %u ) but has an invalid trigger spell ID. Spell needs fixing.", m_spellInfo->Id, m_spellInfo->Name, i);
@@ -2684,7 +2684,7 @@ void Spell::SpellEffectOpenLock(uint32 i) // Open Lock
 						return;
 
 				uint32 spellid = !gameObjTarget->GetInfo()->Unknown1 ? 23932 : gameObjTarget->GetInfo()->Unknown1;
-				SpellEntry* en = dbcSpell.LookupEntry(spellid);
+				SpellEntry* en = dbcSpellEntry.LookupEntry(spellid);
 				Spell* sp = sSpellFactoryMgr.NewSpell(p_caster, en, true, NULL);
 				SpellCastTargets tgt;
 				tgt.m_unitTarget = gameObjTarget->GetGUID();
@@ -2806,7 +2806,7 @@ void Spell::SpellEffectLearnSpell(uint32 i) // Learn Spell
 			}
 		}
 
-		if(!spellid || !dbcSpell.LookupEntryForced(spellid)) return;
+		if(!spellid || !dbcSpellEntry.LookupEntryForced(spellid)) return;
 
 		// learn me!
 		p_caster->addSpell(spellid);
@@ -2830,7 +2830,7 @@ void Spell::SpellEffectLearnSpell(uint32 i) // Learn Spell
 			playerTarget->addSpell(32605);
 
 		//smth is wrong here, first we add this spell to player then we may cast it on player...
-		SpellEntry* spellinfo = dbcSpell.LookupEntry(spellToLearn);
+		SpellEntry* spellinfo = dbcSpellEntry.LookupEntry(spellToLearn);
 		//remove specializations
 		switch(spellinfo->Id)
 		{
@@ -2958,7 +2958,7 @@ void Spell::SpellEffectDispel(uint32 i) // Dispel
 			aursp = aur->GetSpellProto();
 
 			//Nothing can dispel resurrection sickness;
-			if(!aur->IsPassive() && !(aursp->Attributes & ATTRIBUTES_IGNORE_INVULNERABILITY))
+            if (!aur->IsPassive() && !(aursp->misc.Attributes & ATTRIBUTES_IGNORE_INVULNERABILITY))
 			{
 				if(GetProto()->SpellCategories.DispelType == DISPEL_ALL)
 				{
@@ -2989,7 +2989,7 @@ void Spell::SpellEffectDispel(uint32 i) // Dispel
 				{
 					if(aursp->NameHash == SPELL_HASH_UNSTABLE_AFFLICTION)
 					{
-						SpellEntry* spellInfo = dbcSpell.LookupEntry(31117);
+						SpellEntry* spellInfo = dbcSpellEntry.LookupEntry(31117);
 						Spell* spell = sSpellFactoryMgr.NewSpell(u_caster, spellInfo, true, NULL);
 						spell->forced_basepoints[0] = (aursp->eff[0].EffectBasePoints + 1) * 9;   //damage effect
 						spell->ProcedOnSpell = GetProto();
@@ -3143,7 +3143,7 @@ void Spell::SpellEffectAddHonor(uint32 i)
 
 	uint32 val = GetProto()->eff[i].EffectBasePoints;
 
-	if(GetProto()->AttributesExB & ATTRIBUTESEXB_UNK4) val /= 10;
+    if (GetProto()->misc.AttributesExB & ATTRIBUTESEXB_UNK4) val /= 10;
 
 	val += 1;
 
@@ -3519,7 +3519,7 @@ void Spell::SpellEffectLearnPetSpell(uint32 i)
 		if(pPet->IsSummonedPet())
 			p_caster->AddSummonSpell(unitTarget->GetEntry(), GetProto()->eff[i].EffectTriggerSpell);
 
-		pPet->AddSpell(dbcSpell.LookupEntry(GetProto()->eff[i].EffectTriggerSpell), true);
+		pPet->AddSpell(dbcSpellEntry.LookupEntry(GetProto()->eff[i].EffectTriggerSpell), true);
 
 		// Send Packet
 		/*		WorldPacket data(SMSG_SET_EXTRA_AURA_INFO_OBSOLETE, 22);
@@ -3673,7 +3673,7 @@ void Spell::SpellEffectClearQuest(uint32 i)
 
 void Spell::SpellEffectTriggerSpell(uint32 i) // Trigger Spell
 {
-	SpellEntry* entry = dbcSpell.LookupEntryForced(GetProto()->eff[i].EffectTriggerSpell);
+	SpellEntry* entry = dbcSpellEntry.LookupEntryForced(GetProto()->eff[i].EffectTriggerSpell);
 	if(entry == NULL)
 		return;
 
@@ -3742,7 +3742,7 @@ void Spell::SpellEffectInterruptCast(uint32 i) // Interrupt Cast
 		// and InterruptFlags of target's casting spell
 		if(school
 			&& (TargetSpell->getState() == SPELL_STATE_CASTING
-			|| (TargetSpell->getState() == SPELL_STATE_PREPARING && TargetSpell->GetProto()->CastingTimeIndex > 0))
+            || (TargetSpell->getState() == SPELL_STATE_PREPARING && TargetSpell->GetProto()->misc.CastingTimeIndex > 0))
 			&& TargetSpell->GetProto()->PreventionType == PREVENTION_TYPE_SILENCE
 			&& ((TargetSpell->GetProto()->InterruptFlags & CAST_INTERRUPT_ON_INTERRUPT_SCHOOL)
 			|| (TargetSpell->GetProto()->ChannelInterruptFlags & CHANNEL_INTERRUPT_ON_4 )))
@@ -4331,7 +4331,7 @@ void Spell::SpellEffectFeedPet(uint32 i)  // Feed Pet
 	if(deltaLvl > 20) damage = damage >> 1;
 	damage *= 1000;
 
-	SpellEntry* spellInfo = dbcSpell.LookupEntry(GetProto()->eff[i].EffectTriggerSpell);
+	SpellEntry* spellInfo = dbcSpellEntry.LookupEntry(GetProto()->eff[i].EffectTriggerSpell);
 	Spell* sp = sSpellFactoryMgr.NewSpell(p_caster, spellInfo, true, NULL);
 	sp->forced_basepoints[0] = damage;
 	SpellCastTargets tgt;
@@ -4523,7 +4523,7 @@ void Spell::SpellEffectDestroyAllTotems(uint32 i)
 	for(std::vector< uint32 >::iterator itr = spellids.begin(); itr != spellids.end(); ++itr)
 	{
 		uint32 spellid = *itr;
-		SpellEntry* sp = dbcSpell.LookupEntry(spellid);
+		SpellEntry* sp = dbcSpellEntry.LookupEntry(spellid);
 
 		if(sp != NULL)
 		{
@@ -4711,7 +4711,7 @@ void Spell::SpellEffectDummyMelee(uint32 i)   // Normalized Weapon damage +
 	{
 		//count the number of sunder armors on target
 		uint32 sunder_count = 0;
-		SpellEntry* spellInfo = dbcSpell.LookupEntry(7386);
+		SpellEntry* spellInfo = dbcSpellEntry.LookupEntry(7386);
 		for(uint32 x = MAX_NEGATIVE_AURAS_EXTEDED_START; x < MAX_NEGATIVE_AURAS_EXTEDED_END; ++x)
 			if(unitTarget->m_auras[x] && unitTarget->m_auras[x]->GetSpellProto()->NameHash == SPELL_HASH_SUNDER_ARMOR)
 			{
@@ -4847,7 +4847,7 @@ void Spell::SpellEffectDummyMelee(uint32 i)   // Normalized Weapon damage +
 		_type = RANGED;
 	else
 	{
-		if(GetProto()->AttributesExC & 0x1000000)
+        if (GetProto()->misc.AttributesExC & 0x1000000)
 			_type =  OFFHAND;
 		else
 			_type = MELEE;
@@ -5127,7 +5127,7 @@ void Spell::SpellEffectTriggerSpellWithValue(uint32 i)
 {
 	if(!unitTarget) return;
 
-	SpellEntry* TriggeredSpell = dbcSpell.LookupEntryForced(GetProto()->eff[i].EffectTriggerSpell);
+	SpellEntry* TriggeredSpell = dbcSpellEntry.LookupEntryForced(GetProto()->eff[i].EffectTriggerSpell);
 	if(TriggeredSpell == NULL)
 		return;
 

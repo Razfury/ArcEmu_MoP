@@ -1716,7 +1716,7 @@ void World::CleanupCheaters()
 			end = strchr(start,',');
 			if(!end)break;
 			*end= 0;
-			sp = dbcSpell.LookupEntry(atol(start));
+			sp = dbcSpellEntry.LookupEntry(atol(start));
 			start = end +1;
 
 			if(sp->talent_tree)

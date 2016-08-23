@@ -324,7 +324,7 @@ void EyeOfTheStorm::HookOnAreaTrigger(Player* plr, uint32 id)
 		if(EOTSm_buffs[x] && EOTSm_buffs[x]->IsInWorld())
 		{
 			spellid = EOTSm_buffs[x]->GetInfo()->sound3;
-			SpellEntry* sp = dbcSpell.LookupEntryForced(spellid);
+			SpellEntry* sp = dbcSpellEntry.LookupEntryForced(spellid);
 			if(sp)
 			{
 				Spell* pSpell = sSpellFactoryMgr.NewSpell(plr, sp, true, NULL);

@@ -73,8 +73,6 @@ const char* SpellEquippedItemsEntryfmt = "uiii";
 const char* SpellInterruptsEntryfmt = "uixixi";
 const char* SpellLevelsEntryfmt = "uiii";
 
-const char* SpellPowerEntryfmt = "uiiiixxx";
-
 const char* SpellReagentsEntryfmt = "uiiiiiiiiiiiiiiii";
 const char* SpellScalingEntryfmt = "uiiiiffffffffffi";
 const char* SpellTargetRestrictionsEntryfmt = "uixiii";
@@ -104,8 +102,6 @@ const char* EmoteEntryFormat = "uxuuuuxuxuxxxxxxxxx";
 
 const char* EnchantEntrYFormat = "uxuuuuuuuuuuuusuuuuuuuu";
 const char* GemPropertyEntryFormat = "uuuuux";
-
-const char* spellentryFormat = "uuuuuuuuuuuxuuuufuuuussssuuuuufuuuuuuuuuuuuuuuuu";
 
 const char* talententryFormat = "uuuuuuuuuxuxxxxuxxx";
 
@@ -140,3 +136,6 @@ const char* NameGenfmt = "dsii";
 // Updated DBC formats
 const char* SkillLineFmt = "uusxxxxxx";
 const char* SkillLineAbilityFmt = "uuuuuuuuuuuxx";
+const char* SpellEntryFmt = "usssxuxxuuuuuuuuuuuuuuuuu";
+const char* SpellMiscEntryFmt = "uxxuuuuuuuuuuuuuuuuufuuuuu";
+const char* SpellPowerEntryfmt = "xxxuuuuuxfxxx";

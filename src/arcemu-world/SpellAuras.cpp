@@ -810,7 +810,7 @@ void Aura::Remove()
 
 	m_deleted = true;
 
-	if(!IsPassive() || m_spellProto->AttributesEx & ATTRIBUTES_ON_NEXT_SWING_2)
+    if (!IsPassive() || m_spellProto->misc.AttributesEx & ATTRIBUTES_ON_NEXT_SWING_2)
 		m_target->ModVisualAuraStackCount(this, -1);
 
 	ApplyModifiers(false);
@@ -823,7 +823,7 @@ void Aura::Remove()
 		if(m_spellProto->eff[x].Effect == SPELL_EFFECT_TRIGGER_SPELL && !m_spellProto->always_apply)
 		{
 			// I'm not sure about this! FIX ME!!
-			if(dbcSpell.LookupEntryForced(GetSpellProto()->eff[x].EffectTriggerSpell)->DurationIndex < m_spellProto->DurationIndex)
+            if (dbcSpellEntry.LookupEntryForced(GetSpellProto()->eff[x].EffectTriggerSpell)->misc.DurationIndex < m_spellProto->misc.DurationIndex)
 				m_target->RemoveAura(GetSpellProto()->eff[x].EffectTriggerSpell);
 		}
 		else if(IsAreaAura() && m_casterGuid == m_target->GetGUID())
@@ -898,7 +898,7 @@ void Aura::Remove()
 	}
 
 	// If this aura can affect one target at a time, remove this target from the caster map
-	if(caster != NULL && GetSpellProto()->AttributesExE & FLAGS6_SINGLE_TARGET_AURA && m_target->GetAuraStackCount(GetSpellId()) == 1)
+    if (caster != NULL && GetSpellProto()->misc.AttributesExE & FLAGS6_SINGLE_TARGET_AURA && m_target->GetAuraStackCount(GetSpellId()) == 1)
 		caster->RemoveCurrentUnitForSingleTargetAura(GetSpellProto());
 
 	/* Remove aurastates */
@@ -1692,7 +1692,7 @@ void Aura::SpellAuraPeriodicDamage(bool apply)
 				{
 					if(!pSpellId) //we need a parent spell and should always have one since it procs on it
 						break;
-					SpellEntry* parentsp = dbcSpell.LookupEntryForced(pSpellId);
+					SpellEntry* parentsp = dbcSpellEntry.LookupEntryForced(pSpellId);
 					if(!parentsp)
 						return;
 					if(c != NULL && c->IsPlayer())
@@ -2239,9 +2239,9 @@ void Aura::EventPeriodicHeal(uint32 amount)
 	{
 		int32 dur = GetDuration();
 		//example : Citrine Pendant of Golden Healing is in AA aura that does not have duration. In this case he would have full healbonus benefit
-		if((dur == 0 || dur == -1) && GetSpellProto()->DurationIndex)
+        if ((dur == 0 || dur == -1) && GetSpellProto()->misc.DurationIndex)
 		{
-			SpellDuration* sd = dbcSpellDuration.LookupEntry(GetSpellProto()->DurationIndex);
+            SpellDuration* sd = dbcSpellDuration.LookupEntry(GetSpellProto()->misc.DurationIndex);
 			dur = ::GetDuration(sd);
 		}
 		if(dur && dur != -1)
@@ -3037,7 +3037,7 @@ void Aura::SpellAuraPeriodicTriggerSpellWithValue(bool apply)
 {
 	if(apply)
 	{
-		SpellEntry* spe = dbcSpell.LookupEntryForced(m_spellProto->eff[mod->i].EffectTriggerSpell);
+		SpellEntry* spe = dbcSpellEntry.LookupEntryForced(m_spellProto->eff[mod->i].EffectTriggerSpell);
 		if(spe == NULL)
 			return;
 
@@ -3076,7 +3076,7 @@ void Aura::SpellAuraPeriodicTriggerSpell(bool apply)
 		if(target == 0 || !target->IsPlayer())
 			return; //what about creatures ?
 
-		SpellEntry *proto = dbcSpell.LookupEntry( m_spellProto->EffectTriggerSpell[mod->i] );
+		SpellEntry *proto = dbcSpellEntry.LookupEntry( m_spellProto->EffectTriggerSpell[mod->i] );
 
 		if( apply )
 			TO< Player* >( target )->AddOnStrikeSpell( proto, m_spellProto->EffectAmplitude[mod->i] );
@@ -3089,7 +3089,7 @@ void Aura::SpellAuraPeriodicTriggerSpell(bool apply)
 
 	if(apply)
 	{
-		SpellEntry* trigger = dbcSpell.LookupEntryForced(GetSpellProto()->eff[mod->i].EffectTriggerSpell);
+		SpellEntry* trigger = dbcSpellEntry.LookupEntryForced(GetSpellProto()->eff[mod->i].EffectTriggerSpell);
 
 		if(trigger == NULL)
 			return;
@@ -3651,7 +3651,7 @@ void Aura::SpellAuraModShapeshift(bool apply)
 						modelId = 2289;
 
 					//some say there is a second effect
-					SpellEntry* spellInfo = dbcSpell.LookupEntry(21178);
+					SpellEntry* spellInfo = dbcSpellEntry.LookupEntry(21178);
 
 					Spell* sp = sSpellFactoryMgr.NewSpell(m_target, spellInfo, true, NULL);
 					SpellCastTargets tgt;
@@ -3793,7 +3793,7 @@ void Aura::SpellAuraModShapeshift(bool apply)
 
 					if(furorSpell != 0)
 					{
-						SpellEntry* spellInfo = dbcSpell.LookupEntry(furorSpell);
+						SpellEntry* spellInfo = dbcSpellEntry.LookupEntry(furorSpell);
 
 						Spell* sp = sSpellFactoryMgr.NewSpell(m_target, spellInfo, true, NULL);
 						SpellCastTargets tgt;
@@ -3824,7 +3824,7 @@ void Aura::SpellAuraModShapeshift(bool apply)
 		if(spellId == 0)
 			return;
 
-		SpellEntry* spellInfo = dbcSpell.LookupEntry(spellId);
+		SpellEntry* spellInfo = dbcSpellEntry.LookupEntry(spellId);
 
 		Spell* sp = sSpellFactoryMgr.NewSpell(m_target, spellInfo, true, NULL);
 		SpellCastTargets tgt;
@@ -3833,7 +3833,7 @@ void Aura::SpellAuraModShapeshift(bool apply)
 
 		if(spellId2 != 0)
 		{
-			spellInfo = dbcSpell.LookupEntry(spellId2);
+			spellInfo = dbcSpellEntry.LookupEntry(spellId2);
 			sp = sSpellFactoryMgr.NewSpell(m_target, spellInfo, true, NULL);
 			sp->prepare(&tgt);
 		}
@@ -3937,7 +3937,7 @@ void Aura::SpellAuraModSchoolImmunity(bool apply)
 		for(uint32 i = MAX_NEGATIVE_AURAS_EXTEDED_START; i < MAX_NEGATIVE_AURAS_EXTEDED_END; ++i)
 		{
 			pAura = m_target->m_auras[i];
-			if(pAura != this && pAura != NULL && !pAura->IsPassive() && !pAura->IsPositive() && !(pAura->GetSpellProto()->Attributes & ATTRIBUTES_IGNORE_INVULNERABILITY))
+            if (pAura != this && pAura != NULL && !pAura->IsPassive() && !pAura->IsPositive() && !(pAura->GetSpellProto()->misc.Attributes & ATTRIBUTES_IGNORE_INVULNERABILITY))
 			{
 				pAura->Remove();
 			}
@@ -5113,7 +5113,7 @@ void Aura::SpellAuraReflectSpellsSchool(bool apply)
 		rss->require_aura_hash = 0;
 		rss->infront = false;
 
-		if(m_spellProto->Attributes == 0x400D0 && m_spellProto->AttributesEx == 0)
+        if (m_spellProto->misc.Attributes == 0x400D0 && m_spellProto->misc.AttributesEx == 0)
 			rss->school = (int)(log10((float)mod->m_miscValue) / log10((float)2));
 		else
 			rss->school = m_spellProto->School;
@@ -6218,7 +6218,7 @@ void Aura::SpellAuraAddClassTargetTrigger(bool apply)
 		SpellEntry* sp;
 
 		// Find spell of effect to be triggered
-		sp = dbcSpell.LookupEntryForced(GetSpellProto()->eff[mod->i].EffectTriggerSpell);
+		sp = dbcSpellEntry.LookupEntryForced(GetSpellProto()->eff[mod->i].EffectTriggerSpell);
 		if(sp == NULL)
 		{
 			LOG_DEBUG("Warning! class trigger spell is null for spell %u", GetSpellProto()->Id);
@@ -8204,7 +8204,7 @@ void Aura::SpellAuraSpiritOfRedemption(bool apply)
 	{
 		m_target->SetScale(0.5);
 		m_target->SetHealth(1);
-		SpellEntry* sorInfo = dbcSpell.LookupEntry(27792);
+		SpellEntry* sorInfo = dbcSpellEntry.LookupEntry(27792);
 		Spell* sor = sSpellFactoryMgr.NewSpell(m_target, sorInfo, true, NULL);
 		SpellCastTargets targets;
 		targets.m_unitTarget = m_target->GetGUID();

@@ -134,12 +134,12 @@ bool RaiseDead(uint32 i, Spell* s)
 
 
 		// Minion version, 1 min duration
-		sp = dbcSpell.LookupEntry(46585);
+		sp = dbcSpellEntry.LookupEntry(46585);
 	}
 	else
 	{
 		// Pet version, infinite duration
-		sp = dbcSpell.LookupEntry(52150);
+		sp = dbcSpellEntry.LookupEntry(52150);
 	}
 
 	s->p_caster->CastSpellAoF(x, y, z, sp, true);

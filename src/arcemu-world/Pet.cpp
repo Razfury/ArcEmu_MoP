@@ -522,7 +522,7 @@ void Pet::InitializeSpells()
 		SpellEntry* info = itr->first;
 
 		// Check that the spell isn't passive
-		if(info->Attributes & ATTRIBUTES_PASSIVE)
+        if (info->misc.Attributes & ATTRIBUTES_PASSIVE)
 		{
 			// Cast on self..
 			Spell* sp = sSpellFactoryMgr.NewSpell(this, info, true, NULL);
@@ -553,10 +553,10 @@ AI_Spell* Pet::CreateAISpell(SpellEntry* info)
 	sp->agent = AGENT_SPELL;
 	sp->entryId = GetEntry();
 	sp->floatMisc1 = 0;
-	sp->maxrange = GetMaxRange(dbcSpellRange.LookupEntry(info->rangeIndex));
+    sp->maxrange = GetMaxRange(dbcSpellRange.LookupEntry(info->misc.rangeIndex));
 	if(sp->maxrange < sqrt(info->base_range_or_radius_sqr))
 		sp->maxrange = sqrt(info->base_range_or_radius_sqr);
-	sp->minrange = GetMinRange(dbcSpellRange.LookupEntry(info->rangeIndex));
+    sp->minrange = GetMinRange(dbcSpellRange.LookupEntry(info->misc.rangeIndex));
 	sp->Misc2 = 0;
 	sp->procChance = 0;
 	sp->spell = info;
@@ -631,9 +631,9 @@ void Pet::LoadFromDB(Player* owner, PlayerPet* pi)
 				break;
 
 			ActionBar[i] = spellid;
-			//SetSpellState(dbcSpell.LookupEntry(spellid), spstate);
+			//SetSpellState(dbcSpellEntry.LookupEntry(spellid), spstate);
 			if(!(ActionBar[i] & 0x4000000) && spellid)
-				mSpells[ dbcSpell.LookupEntry(spellid) ] = static_cast<unsigned short>(spstate);
+				mSpells[ dbcSpellEntry.LookupEntry(spellid) ] = static_cast<unsigned short>(spstate);
 
 			i++;
 
@@ -789,7 +789,7 @@ void Pet::InitializeMe(bool first)
 			do
 			{
 				Field* f = query->Fetch();
-				SpellEntry* spell = dbcSpell.LookupEntryForced(f[2].GetUInt32());
+				SpellEntry* spell = dbcSpellEntry.LookupEntryForced(f[2].GetUInt32());
 				uint16 flags = f[3].GetUInt16();
 				if(spell != NULL && mSpells.find(spell) == mSpells.end())
 					mSpells.insert(make_pair(spell, flags));
@@ -1049,7 +1049,7 @@ void Pet::UpdateSpellList(bool showLearnSpells)
 
 			if(spellid != 0)
 			{
-				SpellEntry* sp = dbcSpell.LookupEntry(spellid);
+				SpellEntry* sp = dbcSpellEntry.LookupEntry(spellid);
 				if(sp != NULL)
 					AddSpell(sp, true, showLearnSpells);
 			}
@@ -1061,7 +1061,7 @@ void Pet::UpdateSpellList(bool showLearnSpells)
 		uint32 spellid = proto->AISpells[ i ];
 		if(spellid != 0)
 		{
-			SpellEntry* sp = dbcSpell.LookupEntry(spellid);
+			SpellEntry* sp = dbcSpellEntry.LookupEntry(spellid);
 			if(sp != NULL)
 				AddSpell(sp, true, showLearnSpells);
 		}
@@ -1078,7 +1078,7 @@ void Pet::UpdateSpellList(bool showLearnSpells)
 			it2 = it1->second.begin();
 			for(; it2 != it1->second.end(); ++it2)
 			{
-				AddSpell(dbcSpell.LookupEntry(*it2), true, showLearnSpells);
+				AddSpell(dbcSpellEntry.LookupEntry(*it2), true, showLearnSpells);
 			}
 		}
 		return;
@@ -1105,7 +1105,7 @@ void Pet::UpdateSpellList(bool showLearnSpells)
 			// Update existing spell, or add new "automatic-acquired" spell
 			if((sls->skillId == s || sls->skillId == s2) && sls->learnOnGetSkill == 2)
 			{
-				sp = dbcSpell.LookupEntryForced(sls->spellId);
+				sp = dbcSpellEntry.LookupEntryForced(sls->spellId);
 				if(sp /*&& getLevel() >= sp->baseLevel*/)  // what here?
 				{
 					// Pet is able to learn this spell; now check if it already has it, or a higher rank of it
@@ -1134,7 +1134,7 @@ void Pet::AddSpell(SpellEntry* sp, bool learning, bool showLearnSpell)
 		return;
 
 	// Cast on self if we're a passive spell
-	if(sp->Attributes & ATTRIBUTES_PASSIVE)
+	if(sp->misc.Attributes & ATTRIBUTES_PASSIVE)
 	{
 		if(IsInWorld())
 		{
@@ -1233,7 +1233,7 @@ void Pet::AddSpell(SpellEntry* sp, bool learning, bool showLearnSpell)
 		}
 	}
 
-	if(showLearnSpell && m_Owner && m_Owner->GetSession() && !(sp->Attributes & ATTRIBUTES_NO_CAST))
+    if (showLearnSpell && m_Owner && m_Owner->GetSession() && !(sp->misc.Attributes & ATTRIBUTES_NO_CAST))
 		m_Owner->GetSession()->OutPacket(SMSG_PET_LEARNED_SPELL, 2, &sp->Id);
 
 	if(IsInWorld())
@@ -1702,7 +1702,7 @@ AI_Spell* Pet::HandleAutoCastEvent()
 		{
 			// spells still spammed, I think the cooldowntime is being set incorrectly somewhere else
 			if(chance && (*itr)->spell && getMSTime() >= (*itr)->cooldowntime &&  //cebernic:crashfix
-			        GetPower((*itr)->spell->powerType) >= (*itr)->spell->PowerEntry.manaCost)
+			        GetPower((*itr)->spell->PowerEntry.powerType) >= (*itr)->spell->PowerEntry.manaCost)
 			{
 				return *itr;
 			}
@@ -2117,7 +2117,7 @@ void Pet::Die(Unit* pAttacker, uint32 damage, uint32 spellid)
 	{
 		SpellEntry* killerspell;
 		if(spellid)
-			killerspell = dbcSpell.LookupEntry(spellid);
+			killerspell = dbcSpellEntry.LookupEntry(spellid);
 		else killerspell = NULL;
 
 		HandleProc(PROC_ON_DIE, this, killerspell);

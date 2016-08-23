@@ -62,7 +62,7 @@ bool Shiv(uint32 i, Spell* pSpell)
 		{
 			if(Entry->type[c] && Entry->spell[c])
 			{
-				SpellEntry* sp = dbcSpell.LookupEntry(Entry->spell[c]);
+				SpellEntry* sp = dbcSpellEntry.LookupEntry(Entry->spell[c]);
 				if(!sp) return true;
 
 				if(sp->c_is_flags & SPELL_FLAG_IS_POISON)
@@ -133,7 +133,7 @@ bool CloakOfShadows(uint32 i, Spell* s)
 		pAura = unitTarget->m_auras[j];
 		if(pAura != NULL && !pAura->IsPassive()
 		        && !pAura->IsPositive()
-		        && !(pAura->GetSpellProto()->Attributes & ATTRIBUTES_IGNORE_INVULNERABILITY)
+                && !(pAura->GetSpellProto()->misc.Attributes & ATTRIBUTES_IGNORE_INVULNERABILITY)
 		        && pAura->GetSpellProto()->School != 0
 		  )
 			pAura->Remove();

@@ -729,7 +729,7 @@ void AIInterface::_UpdateCombat(uint32 p_time)
 							float his_facing = getNextTarget()->GetOrientation();
 							if (fabs(our_facing - his_facing) < CREATURE_DAZE_TRIGGER_ANGLE && !getNextTarget()->HasAura(CREATURE_SPELL_TO_DAZE))
 							{
-								SpellEntry* info = dbcSpell.LookupEntry(CREATURE_SPELL_TO_DAZE);
+								SpellEntry* info = dbcSpellEntry.LookupEntry(CREATURE_SPELL_TO_DAZE);
 								Spell* sp = sSpellFactoryMgr.NewSpell(m_Unit, info, false, NULL);
 								SpellCastTargets targets;
 								targets.m_unitTarget = getNextTarget()->GetGUID();
@@ -794,7 +794,7 @@ void AIInterface::_UpdateCombat(uint32 p_time)
 					if (infront)
 					{
 						m_Unit->setAttackTimer(0, false);
-						SpellEntry* info = dbcSpell.LookupEntryForced(SPELL_RANGED_GENERAL);
+						SpellEntry* info = dbcSpellEntry.LookupEntryForced(SPELL_RANGED_GENERAL);
 						if (info)
 						{
 							Spell* sp = sSpellFactoryMgr.NewSpell(m_Unit, info, false, NULL);
@@ -827,7 +827,7 @@ void AIInterface::_UpdateCombat(uint32 p_time)
 			if (!m_nextSpell || !getNextTarget())
 				return;  // this shouldn't happen
 
-			SpellCastTime* sd = dbcSpellCastTime.LookupEntry(m_nextSpell->spell->CastingTimeIndex);
+            SpellCastTime* sd = dbcSpellCastTime.LookupEntry(m_nextSpell->spell->misc.CastingTimeIndex);
 
 			float distance = m_Unit->CalcDistance(getNextTarget());
 			bool los = true;
@@ -1046,7 +1046,7 @@ void AIInterface::AttackReaction(Unit* pUnit, uint32 damage_dealt, uint32 spellI
 		HandleEvent(EVENT_ENTERCOMBAT, pUnit, 1);
 	}
 
-	HandleEvent(EVENT_DAMAGETAKEN, pUnit, _CalcThreat(damage_dealt, spellId ? dbcSpell.LookupEntryForced(spellId) : NULL, pUnit));
+	HandleEvent(EVENT_DAMAGETAKEN, pUnit, _CalcThreat(damage_dealt, spellId ? dbcSpellEntry.LookupEntryForced(spellId) : NULL, pUnit));
 }
 
 void AIInterface::HealReaction(Unit* caster, Unit* victim, SpellEntry* sp, uint32 amount)
@@ -2856,7 +2856,7 @@ void AIInterface::CastSpell(Unit* caster, SpellEntry* spellInfo, SpellCastTarget
 
 SpellEntry* AIInterface::getSpellEntry(uint32 spellId)
 {
-	SpellEntry* spellInfo = dbcSpell.LookupEntry(spellId);
+	SpellEntry* spellInfo = dbcSpellEntry.LookupEntry(spellId);
 
 	if (!spellInfo)
 	{
@@ -2975,7 +2975,7 @@ AI_Spell* AIInterface::getSpell()
 					if (sp->procChance >= 100 || Rand(sp->procChance))
 					{
 						//focus/mana requirement
-						switch (sp->spell->powerType)
+                        switch (sp->spell->PowerEntry.powerType)
 						{
 						case POWER_TYPE_MANA:
 							if (m_Unit->GetPower(POWER_TYPE_MANA) < sp->spell->PowerEntry.manaCost)

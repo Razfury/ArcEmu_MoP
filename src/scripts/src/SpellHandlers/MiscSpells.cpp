@@ -140,7 +140,7 @@ bool GiftOfLife(uint32 i, Spell* s)
 
 	SpellCastTargets tgt;
 	tgt.m_unitTarget = playerTarget->GetGUID();
-	SpellEntry* inf = dbcSpell.LookupEntry(23782);
+	SpellEntry* inf = dbcSpellEntry.LookupEntry(23782);
 	Spell* spe = sSpellFactoryMgr.NewSpell(s->u_caster, inf, true, NULL);
 	spe->prepare(&tgt);
 
@@ -191,13 +191,13 @@ bool NorthRendInscriptionResearch(uint32 i, Spell* s)
             sls = dbcSkillLineAbilityEntry.LookupRow(idx);
 			if(sls->skillId == SKILL_INSCRIPTION && sls->forward_spellid == 0)
 			{
-				SpellEntry* se1 = dbcSpell.LookupEntryForced(sls->spellId);
+				SpellEntry* se1 = dbcSpellEntry.LookupEntryForced(sls->spellId);
 				if(se1 && se1->eff[0].Effect == SPELL_EFFECT_CREATE_ITEM)
 				{
 					ItemPrototype* itm = ItemPrototypeStorage.LookupEntry(se1->eff[0].EffectItemType);
 					if(itm && (itm->Spells[0].Id != 0))
 					{
-						SpellEntry* se2 = dbcSpell.LookupEntryForced(itm->Spells[0].Id);
+						SpellEntry* se2 = dbcSpellEntry.LookupEntryForced(itm->Spells[0].Id);
 						if(se2 && se2->eff[0].Effect == SPELL_EFFECT_USE_GLYPH)
 						{
 							GlyphPropertiesEntry* gpe = dbcGlyphPropertiesStore.LookupEntryForced(se2->eff[0].EffectMiscValue);
@@ -365,7 +365,7 @@ bool Dummy_Solarian_WrathOfTheAstromancer(uint32 pEffectIndex, Spell* pSpell)
 	Unit* Target = Caster->GetAIInterface()->getNextTarget();
 	if(!Target) return true;
 
-	SpellEntry* SpellInfo = dbcSpell.LookupEntry(42787);
+	SpellEntry* SpellInfo = dbcSpellEntry.LookupEntry(42787);
 	if(!SpellInfo) return true;
 
 	//Explode bomb after 6sec

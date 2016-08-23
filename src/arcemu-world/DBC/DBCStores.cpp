@@ -64,14 +64,15 @@ SERVER_DECL DBCStorage<NameGenEntry>                sNameGenStore;
 SERVER_DECL DBCStorage<SpellRuneCostEntry>			dbcSpellRuneCostEntry;
 SERVER_DECL DBCStorage<SpellRadius>					dbcSpellRadius;
 SERVER_DECL DBCStorage<SpellCastTime>				dbcSpellCastTime;
-SERVER_DECL DBCStorage<SpellEntry>					dbcSpell;
+SERVER_DECL DBCStorage<SpellEntry>					dbcSpellEntry;
+SERVER_DECL DBCStorage<SpellMiscEntry>              dbcSpellEntryMiscEntry;
 SERVER_DECL DBCStorage<SpellDuration>				dbcSpellDuration;
 SERVER_DECL DBCStorage<SpellRange>					dbcSpellRange;
 SERVER_DECL DBCStorage<SpellEffectEntry>			dbcSpellEffect;
 SERVER_DECL DBCStorage<SpellDifficultyEntry>		dbcSpellDifficulty;
-SERVER_DECL DBCStorage<SpellFocusObjectEntry>		dbcSpellFocusObject;
-//SERVER_DECL DBCStorage<SpellItemEnchantmentConditionEntry>	dbcSpellItemEnchantmentCondition;
-//SERVER_DECL SpellCategoryStore					dbcSpellCategory;
+SERVER_DECL DBCStorage<SpellFocusObjectEntry>		dbcSpellEntryFocusObject;
+//SERVER_DECL DBCStorage<SpellItemEnchantmentConditionEntry>	dbcSpellEntryItemEnchantmentCondition;
+//SERVER_DECL SpellCategoryStore					dbcSpellEntryCategory;
 SERVER_DECL DBCStorage<SpellShapeshiftFormEntry>	dbcSpellShapeshiftForm;
 SERVER_DECL DBCStorage<SpellAuraOptionsEntry>		dbcSpellAuraOptions;
 SERVER_DECL DBCStorage<SpellAuraRestrictionsEntry>	dbcSpellAuraRestrictions;
@@ -273,7 +274,8 @@ bool LoadDBCs()
 
     LOAD_DBC("DBC/SkillLine.dbc", SkillLineFmt, true, dbcSkillLine, true);
 
-    LOAD_DBC("DBC/Spell.dbc", spellentryFormat, true, dbcSpell, true);
+    LOAD_DBC("DBC/SpellMisc.dbc", SpellMiscEntryFmt, true, dbcSpellEntryMiscEntry, false);
+    LOAD_DBC("DBC/Spell.dbc", SpellEntryFmt, true, dbcSpellEntry, true);
 
     LOAD_DBC("DBC/Talent.dbc", talententryFormat, true, dbcTalent, false);
 

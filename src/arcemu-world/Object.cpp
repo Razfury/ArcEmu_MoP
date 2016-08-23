@@ -1794,7 +1794,7 @@ void Object::SpellNonMeleeDamageLog(Unit* pVictim, uint32 spellID, uint32 damage
 	if (pVictim == NULL || !pVictim->isAlive())
 		return;
 
-	SpellEntry* spellInfo = dbcSpell.LookupEntryForced(spellID);
+	SpellEntry* spellInfo = dbcSpellEntry.LookupEntryForced(spellID);
 	if (spellInfo == NULL)
 		return;
 
@@ -1852,7 +1852,7 @@ void Object::SpellNonMeleeDamageLog(Unit* pVictim, uint32 spellID, uint32 damage
 	//==========================================================================================
 	//==============================Post +SpellDamage Bonus Modifications=======================
 	//==========================================================================================
-	if (res > 0.0f && !(spellInfo->AttributesExB & ATTRIBUTESEXB_CANT_CRIT))
+    if (res > 0.0f && !(spellInfo->misc.AttributesExB & ATTRIBUTESEXB_CANT_CRIT))
 	{
 		critical = this->IsCriticalDamageForSpell(pVictim, spellInfo);
 
@@ -1931,7 +1931,7 @@ void Object::SpellNonMeleeDamageLog(Unit* pVictim, uint32 spellID, uint32 damage
 		if (spellpower > hp)
 			spellpower = hp;
 
-		SpellEntry* entry = dbcSpell.LookupEntryForced(44413);
+		SpellEntry* entry = dbcSpellEntry.LookupEntryForced(44413);
 		if (!entry)
 			return;
 

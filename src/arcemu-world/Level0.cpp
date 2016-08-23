@@ -511,7 +511,7 @@ bool ChatHandler::HandleAuraUpdateAdd(const char* args, WorldSession* m_session)
 	}
 	else
 	{
-		SpellEntry* Sp = dbcSpell.LookupEntryForced(SpellID);
+		SpellEntry* Sp = dbcSpellEntry.LookupEntryForced(SpellID);
 		if(!Sp)
 		{
 			SystemMessage(m_session, "SpellID %u is invalid.", SpellID);

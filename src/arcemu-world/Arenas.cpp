@@ -123,7 +123,7 @@ void Arena::OnAddPlayer(Player* plr)
 	{
 		if(plr->m_auras[x])
 		{
-			if(plr->m_auras[x] && !plr->m_auras[x]->GetSpellProto()->DurationIndex && plr->m_auras[x]->GetSpellProto()->AttributesExC & CAN_PERSIST_AND_CASTED_WHILE_DEAD)
+            if (plr->m_auras[x] && !plr->m_auras[x]->GetSpellProto()->misc.DurationIndex && plr->m_auras[x]->GetSpellProto()->misc.AttributesExC & CAN_PERSIST_AND_CASTED_WHILE_DEAD)
 				continue;
 			else
 			{
@@ -155,7 +155,7 @@ void Arena::OnAddPlayer(Player* plr)
 		plr->m_bgIsQueued = false;
 
 	/* Add the green/gold team flag */
-	Aura* aura = sSpellFactoryMgr.NewAura(dbcSpell.LookupEntry((plr->GetTeamInitial()) ? 35775 - plr->m_bgTeam : 32725 - plr->m_bgTeam), -1, plr, plr, true);
+	Aura* aura = sSpellFactoryMgr.NewAura(dbcSpellEntry.LookupEntry((plr->GetTeamInitial()) ? 35775 - plr->m_bgTeam : 32725 - plr->m_bgTeam), -1, plr, plr, true);
 	plr->AddAura(aura);
 
 	/* Set FFA PvP Flag */
@@ -451,7 +451,7 @@ void Arena::HookOnAreaTrigger(Player* plr, uint32 id)
 		if(m_buffs[buffslot] != NULL && m_buffs[buffslot]->IsInWorld())
 		{
 			/* apply the buff */
-			SpellEntry* sp = dbcSpell.LookupEntryForced(m_buffs[buffslot]->GetInfo()->sound3);
+			SpellEntry* sp = dbcSpellEntry.LookupEntryForced(m_buffs[buffslot]->GetInfo()->sound3);
 			ARCEMU_ASSERT(sp != NULL);
 
 			Spell* s = sSpellFactoryMgr.NewSpell(plr, sp, true, 0);

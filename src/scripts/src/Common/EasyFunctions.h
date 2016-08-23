@@ -291,7 +291,7 @@ class SCRIPT_DECL EasyFunctions
 
 		void EventCastSpell(Unit* caster, Unit* target, uint32 spellid, uint32 time)
 		{
-			sEventMgr.AddEvent(TO_UNIT(caster), &Unit::EventCastSpell, TO_UNIT(target), dbcSpell.LookupEntry(spellid), EVENT_UNK, time, 0, EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT);
+			sEventMgr.AddEvent(TO_UNIT(caster), &Unit::EventCastSpell, TO_UNIT(target), dbcSpellEntry.LookupEntry(spellid), EVENT_UNK, time, 0, EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT);
 		}
 
 		void EventPlaySound(Creature* creat, uint32 id, uint32 time)

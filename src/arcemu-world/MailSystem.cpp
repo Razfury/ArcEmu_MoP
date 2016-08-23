@@ -172,7 +172,7 @@ bool MailMessage::AddMessageDataToPacket(WorldPacket & data)
 
         for (j = 0; j < 7; ++j) // 7 or 8?
         {
-            mailData << uint32(pItem->GetEnchantmentCharges());
+            mailData << uint32(pItem->GetEnchantmentCharges(j));
             mailData << uint32(pItem->GetEnchantmentDuration(j));
             mailData << uint32(pItem->GetEnchantmentId(j));
         }
@@ -203,7 +203,7 @@ bool MailMessage::AddMessageDataToPacket(WorldPacket & data)
     mailData << uint64(cod);
     mailData.WriteString(subject);
     mailData << uint32(stationery);
-    mailData << float(expire_time - uint32(UNIXTIME)) / 86400.0f);
+    mailData << float(expire_time - uint32(UNIXTIME) / 86400.0f);
     mailData << uint64(money);
     mailData << uint32(checked_flag);
 
@@ -915,7 +915,7 @@ void WorldSession::HandleItemTextQuery(WorldPacket & recv_data)
 
 void Mailbox::FillTimePacket(WorldPacket & data)
 {
-	uint32 c = 0;
+	uint32 count = 0;
 	MessageMap::iterator iter = Messages.begin();
 	data << uint32(0) << uint32(0);
 
@@ -926,27 +926,23 @@ void Mailbox::FillTimePacket(WorldPacket & data)
 
 		if(iter->second.deleted_flag == 0  && (uint32)UNIXTIME >= iter->second.delivery_time)
 		{
-			// unread message, w00t.
-			++c;
-			data << uint64(iter->second.sender_guid);
-			data << uint32(0);
-			data << uint32(0);// money or something?
-			data << uint32(iter->second.stationery);
-			//data << float(UNIXTIME-iter->second.delivery_time);
-			data << float(-9.0f);	// maybe the above?
+			// Unread message, w00t.
+            ++count;
+            data << uint64(iter->second.message_type == MAIL_NORMAL ? iter->second.sender_guid : 0); // Player
+            data << uint64(iter->second.message_type != MAIL_NORMAL ? iter->second.sender_guid : 0); // Not a player
+            data << uint32(iter->second.message_type);
+            data << uint32(iter->second.stationery);
+            data << float(UNIXTIME - iter->second.delivery_time); // Is this right? (maybe iter->second.delivery_time - UNIXTIME)
 		}
 	}
 
-	if(c == 0)
-	{
-
-		*(uint32*)(&data.contents()[0]) = 0xc7a8c000;
-	}
-	else
-	{
-
-		*(uint32*)(&data.contents()[4]) = c;
-	}
+    if (count)
+        data.put<uint32>(4, count);
+    else
+    {
+        data << float(-TIME_DAY);
+        data << uint32(0);
+    }
 }
 
 //! To-Do fix this

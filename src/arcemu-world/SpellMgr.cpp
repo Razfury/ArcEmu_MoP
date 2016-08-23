@@ -30,17 +30,17 @@ void SpellFactoryMgr::AddSpellByEntry(SpellEntry* info, spell_factory_function s
 
 void SpellFactoryMgr::AddSpellById(uint32 spellId, spell_factory_function spell_func)
 {
-	AddSpellByEntry(dbcSpell.LookupEntryForced(spellId), spell_func);
+	AddSpellByEntry(dbcSpellEntry.LookupEntryForced(spellId), spell_func);
 }
 
 void SpellFactoryMgr::AddSpellByNameHash(uint32 name_hash, spell_factory_function spell_func)
 {
-	uint32 cnt = dbcSpell.GetNumRows();
+	uint32 cnt = dbcSpellEntry.GetNumRows();
 	SpellEntry* sp;
 
 	for(uint32 x = 0; x < cnt; x++)
 	{
-		sp = dbcSpell.LookupRow(x);
+		sp = dbcSpellEntry.LookupRow(x);
 
 		if(sp->NameHash != name_hash)
 			continue;
@@ -57,17 +57,17 @@ void SpellFactoryMgr::AddAuraByEntry(SpellEntry* info, aura_factory_function aur
 
 void SpellFactoryMgr::AddAuraById(uint32 spellId, aura_factory_function aura_func)
 {
-	AddAuraByEntry(dbcSpell.LookupEntryForced(spellId), aura_func);
+	AddAuraByEntry(dbcSpellEntry.LookupEntryForced(spellId), aura_func);
 }
 
 void SpellFactoryMgr::AddAuraByNameHash(uint32 name_hash, aura_factory_function aura_func)
 {
-	uint32 cnt = dbcSpell.GetNumRows();
+	uint32 cnt = dbcSpellEntry.GetNumRows();
 	SpellEntry* sp;
 
 	for(uint32 x = 0; x < cnt; x++)
 	{
-		sp = dbcSpell.LookupRow(x);
+		sp = dbcSpellEntry.LookupRow(x);
 
 		if(sp->NameHash != name_hash)
 			continue;
@@ -86,7 +86,7 @@ SpellEntry* SpellFactoryMgr::GetSpellEntryByDifficulty(uint32 id, uint8 difficul
     if ( spellDiff->SpellId[difficulty] <= 0 )
         return NULL;
 
-    return dbcSpell.LookupEntryForced(spellDiff->SpellId[difficulty]);
+    return dbcSpellEntry.LookupEntryForced(spellDiff->SpellId[difficulty]);
 }
 
 Spell* SpellFactoryMgr::NewSpell(Object* Caster, SpellEntry* info, bool triggered, Aura* aur)

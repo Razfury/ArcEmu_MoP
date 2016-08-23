@@ -695,7 +695,7 @@ bool ChatHandler::HandleCalcThreatCommand(const char* args, WorldSession* m_sess
 	if(!spellId)
 		return false;
 
-	uint32 threat = target->GetAIInterface()->_CalcThreat(atol(dmg), dbcSpell.LookupEntry(atoi(spellId)), m_session->GetPlayer());
+	uint32 threat = target->GetAIInterface()->_CalcThreat(atol(dmg), dbcSpellEntry.LookupEntry(atoi(spellId)), m_session->GetPlayer());
 
 	std::stringstream sstext;
 	sstext << "generated threat is: " << threat << '\0';

@@ -1080,7 +1080,7 @@ uint32 Unit::HandleProc(uint32 flag, Unit* victim, SpellEntry* CastingSpell, boo
 			origId = spell_proc->mOrigSpell->Id;
 		else
 			origId = 0;
-		SpellEntry* ospinfo = dbcSpell.LookupEntry(origId);  //no need to check if exists or not since we were not able to register this trigger if it would not exist :P
+		SpellEntry* ospinfo = dbcSpellEntry.LookupEntry(origId);  //no need to check if exists or not since we were not able to register this trigger if it would not exist :P
 
 		//this requires some specific spell check,not yet implemented
 		//this sucks and should be rewrote
@@ -1090,7 +1090,7 @@ uint32 Unit::HandleProc(uint32 flag, Unit* victim, SpellEntry* CastingSpell, boo
 				continue;
 
 			//this is wrong, dummy is too common to be based on this, we should use spellgroup or something
-			if(spe->spellIconID != CastingSpell->spellIconID)
+            if (spe->misc.spellIconID != CastingSpell->misc.spellIconID)
 			{
 				if(!ospinfo->School)
 					continue;
@@ -1101,7 +1101,7 @@ uint32 Unit::HandleProc(uint32 flag, Unit* victim, SpellEntry* CastingSpell, boo
 				        CastingSpell->eff[2].EffectImplicitTargetA == 1)  //Prevents school based procs affecting caster when self buffing
 					continue;
 			}
-			else if(spe->spellIconID == 1)
+            else if (spe->misc.spellIconID == 1)
 				continue;
 		}
 
@@ -1428,8 +1428,8 @@ uint32 Unit::HandleProc(uint32 flag, Unit* victim, SpellEntry* CastingSpell, boo
 							continue;
 						if(CastingSpell->School != SCHOOL_FIRE)
 							continue;
-						SpellEntry* spellInfo = dbcSpell.LookupEntry(spellId);   //we already modified this spell on server loading so it must exist
-						SpellDuration* sd = dbcSpellDuration.LookupEntryForced(spellInfo->DurationIndex);
+						SpellEntry* spellInfo = dbcSpellEntry.LookupEntry(spellId);   //we already modified this spell on server loading so it must exist
+                        SpellDuration* sd = dbcSpellDuration.LookupEntryForced(spellInfo->misc.DurationIndex);
 						uint32 tickcount = GetDuration(sd) / spellInfo->eff[0].EffectAmplitude;
 						dmg_overwrite[0] = ospinfo->eff[0].EffectBasePoints * dmg / (100  * tickcount);
 					}
@@ -1510,7 +1510,7 @@ uint32 Unit::HandleProc(uint32 flag, Unit* victim, SpellEntry* CastingSpell, boo
 						Unit* new_caster = victim;
 						if(new_caster && new_caster->isAlive())
 						{
-							SpellEntry* spellInfo = dbcSpell.LookupEntry(spellId);   //we already modified this spell on server loading so it must exist
+							SpellEntry* spellInfo = dbcSpellEntry.LookupEntry(spellId);   //we already modified this spell on server loading so it must exist
 							Spell* spell = sSpellFactoryMgr.NewSpell(new_caster, spellInfo , true, NULL);
 							SpellCastTargets targets;
 							targets.m_destX = GetPositionX();
@@ -1627,7 +1627,7 @@ uint32 Unit::HandleProc(uint32 flag, Unit* victim, SpellEntry* CastingSpell, boo
 						}
 						if(!amount)
 							continue;
-						SpellEntry* spellInfo = dbcSpell.LookupEntry(spellId);
+						SpellEntry* spellInfo = dbcSpellEntry.LookupEntry(spellId);
 						Spell* spell = sSpellFactoryMgr.NewSpell(this, spellInfo , true, NULL);
 						spell->SetUnitTarget(this);
 						spell->Heal(amount * (ospinfo->eff[0].EffectBasePoints + 1) / 100);
@@ -1751,8 +1751,8 @@ uint32 Unit::HandleProc(uint32 flag, Unit* victim, SpellEntry* CastingSpell, boo
 					{
 						if(!IsPlayer() || !dmg)
 							continue;
-						SpellEntry* parentproc = dbcSpell.LookupEntryForced(origId);
-						SpellEntry* spellInfo = dbcSpell.LookupEntryForced(spellId);
+						SpellEntry* parentproc = dbcSpellEntry.LookupEntryForced(origId);
+						SpellEntry* spellInfo = dbcSpellEntry.LookupEntryForced(spellId);
 						if(!parentproc || !spellInfo)
 							continue;
 						int32 val = parentproc->eff[0].EffectBasePoints + 1;
@@ -1890,10 +1890,10 @@ uint32 Unit::HandleProc(uint32 flag, Unit* victim, SpellEntry* CastingSpell, boo
 							continue;
 						//!! The weird thing is that we need the spell that triggered this enchant spell in order to output logs ..we are using oldspell info too
 						//we have to recalc the value of this spell
-						SpellEntry* spellInfo = dbcSpell.LookupEntry(origId);
+						SpellEntry* spellInfo = dbcSpellEntry.LookupEntry(origId);
 						uint32 AP_owerride = spellInfo->eff[0].EffectBasePoints + 1;
 						uint32 dmg2 = TO< Player* >(this)->GetMainMeleeDamage(AP_owerride);
-						SpellEntry* sp_for_the_logs = dbcSpell.LookupEntry(spellId);
+						SpellEntry* sp_for_the_logs = dbcSpellEntry.LookupEntry(spellId);
 						Strike(victim, MELEE, sp_for_the_logs, dmg2, 0, 0, true, false);
 						Strike(victim, MELEE, sp_for_the_logs, dmg2, 0, 0, true, false);
 						spellId = 33010; // WF animation
@@ -2074,8 +2074,8 @@ uint32 Unit::HandleProc(uint32 flag, Unit* victim, SpellEntry* CastingSpell, boo
 						if(CastingSpell->NameHash != SPELL_HASH_FLASH_OF_LIGHT &&
 						        CastingSpell->NameHash != SPELL_HASH_HOLY_LIGHT)
 							continue;
-						SpellEntry* spellInfo = dbcSpell.LookupEntry(54203);
-						SpellDuration* sd = dbcSpellDuration.LookupEntryForced(spellInfo->DurationIndex);
+						SpellEntry* spellInfo = dbcSpellEntry.LookupEntry(54203);
+                        SpellDuration* sd = dbcSpellDuration.LookupEntryForced(spellInfo->misc.DurationIndex);
 						uint32 tickcount = GetDuration(sd) / spellInfo->eff[0].EffectAmplitude ;
 						dmg_overwrite[0] = ospinfo->eff[0].EffectBasePoints * dmg / (100  * tickcount);
 					}
@@ -2505,7 +2505,7 @@ uint32 Unit::HandleProc(uint32 flag, Unit* victim, SpellEntry* CastingSpell, boo
 
 				if(CastingSpell)
 				{
-					SpellCastTime* sd = dbcSpellCastTime.LookupEntryForced(CastingSpell->CastingTimeIndex);
+					SpellCastTime* sd = dbcSpellCastTime.LookupEntryForced(CastingSpell->misc.CastingTimeIndex);
 					if(!sd)
 						continue; // this shouldn't happen though :P
 
@@ -2649,7 +2649,7 @@ void Unit::HandleProcDmgShield(uint32 flag, Unit* attacker)
 			}
 			else
 			{
-				SpellEntry*	ability = dbcSpell.LookupEntry((*i2).m_spellId);
+				SpellEntry*	ability = dbcSpellEntry.LookupEntry((*i2).m_spellId);
 				this->Strike(attacker, RANGED, ability, 0, 0, (*i2).m_damage, true, true);  //can dmg shields miss at all ?
 			}
 		}
@@ -2849,7 +2849,7 @@ void Unit::CalculateResistanceReduction(Unit* pVictim, dealdamage* dmg, SpellEnt
 			AverageResistance = 0.75f;
 
 		// NOT WOWWIKILIKE but i think it's actually to add some fullresist chance from resistances
-		if(!ability || !(ability->Attributes & ATTRIBUTES_IGNORE_INVULNERABILITY))
+        if (!ability || !(ability->misc.Attributes & ATTRIBUTES_IGNORE_INVULNERABILITY))
 		{
 			float Resistchance = (float)pVictim->GetResistance((*dmg).school_type) / (float)pVictim->getLevel();
 			Resistchance *= Resistchance;
@@ -3049,7 +3049,7 @@ uint32 Unit::GetSpellDidHitResult(Unit* pVictim, uint32 weapon_damage_type, Spel
 #endif
 	}
 
-	if(ability && ability->Attributes & ATTRIBUTES_CANT_BE_DPB)
+    if (ability && ability->misc.Attributes & ATTRIBUTES_CANT_BE_DPB)
 	{
 		dodge = 0.0f;
 		parry = 0.0f;
@@ -3088,7 +3088,7 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 	if(!pVictim || !pVictim->isAlive() || !isAlive()  || IsStunned() || IsPacified() || IsFeared())
 		return;
 
-	if(!(ability && ability->AttributesEx & ATTRIBUTESEX_IGNORE_IN_FRONT) && !isInFront(pVictim))
+    if (!(ability && ability->misc.AttributesEx & ATTRIBUTESEX_IGNORE_IN_FRONT) && !isInFront(pVictim))
 	{
 		if(IsPlayer())
 		{
@@ -3449,14 +3449,14 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 		block = 0.0f;
 	}
 
-	if(ability != NULL && ability->Attributes & ATTRIBUTES_CANT_BE_DPB)
+    if (ability != NULL && ability->misc.Attributes & ATTRIBUTES_CANT_BE_DPB)
 	{
 		dodge = 0.0f;
 		parry = 0.0f;
 		block = 0.0f;
 	}
 
-	if(ability && ability->AttributesExB & ATTRIBUTESEXB_CANT_CRIT)
+    if (ability && ability->misc.AttributesExB & ATTRIBUTESEXB_CANT_CRIT)
 		crit = 0.0f;
 
 //--------------------------------by victim state-------------------------------------------
@@ -4407,7 +4407,7 @@ void Unit::AddAura(Aura* aur)
 	if(aur == NULL)
 		return;
 
-	if(!(isAlive() || (aur->GetSpellProto()->AttributesExC & CAN_PERSIST_AND_CASTED_WHILE_DEAD)))
+    if (!(isAlive() || (aur->GetSpellProto()->misc.AttributesExC & CAN_PERSIST_AND_CASTED_WHILE_DEAD)))
 	{
 		delete aur;
 		return;
@@ -4433,7 +4433,7 @@ void Unit::AddAura(Aura* aur)
 	}
 
 	// If this aura can only affect one target at a time
-	if(aur->GetSpellProto()->AttributesExE & FLAGS6_SINGLE_TARGET_AURA)
+    if (aur->GetSpellProto()->misc.AttributesExE & FLAGS6_SINGLE_TARGET_AURA)
 	{
 		// remove aura from the previous applied target
 		Unit* caster = aur->GetUnitCaster();
@@ -4605,7 +4605,7 @@ void Unit::AddAura(Aura* aur)
 											{
 												if(Entry->type[c] && Entry->spell[c])
 												{
-													SpellEntry* sp = dbcSpell.LookupEntryForced(Entry->spell[c]);
+													SpellEntry* sp = dbcSpellEntry.LookupEntryForced(Entry->spell[c]);
 													if(sp && sp->c_is_flags & SPELL_FLAG_IS_POISON)
 													{
 														switch(sp->NameHash)
@@ -4638,7 +4638,7 @@ void Unit::AddAura(Aura* aur)
 												{
 													if(Entry->type[c] && Entry->spell[c])
 													{
-														SpellEntry* sp = dbcSpell.LookupEntryForced(Entry->spell[c]);
+														SpellEntry* sp = dbcSpellEntry.LookupEntryForced(Entry->spell[c]);
 														if(sp && sp->c_is_flags & SPELL_FLAG_IS_POISON)
 														{
 															switch(sp->NameHash)
@@ -4735,7 +4735,7 @@ void Unit::AddAura(Aura* aur)
 
 	uint8 visualslot = 0xFF;
 	//search for a visual slot
-	if(!aur->IsPassive() || (aur->m_spellProto->AttributesEx & 1024))
+    if (!aur->IsPassive() || (aur->m_spellProto->misc.AttributesEx & 1024))
 		visualslot = FindVisualSlot(aur->GetSpellId(), aur->IsPositive());
 	aur->m_visualSlot = visualslot;
 
@@ -4798,7 +4798,7 @@ void Unit::AddAura(Aura* aur)
 	}
 
 	// If this aura can only affect one target at a time, store this target GUID for future reference
-	if(aur->GetSpellProto()->AttributesExE & FLAGS6_SINGLE_TARGET_AURA)
+    if (aur->GetSpellProto()->misc.AttributesExE & FLAGS6_SINGLE_TARGET_AURA)
 	{
 		Unit* caster = aur->GetUnitCaster();
 		if(caster != NULL)
@@ -5069,7 +5069,7 @@ void Unit::RemoveNegativeAuras()
 	{
 		if(m_auras[x])
 		{
-			if(m_auras[x]->GetSpellProto()->AttributesExC & CAN_PERSIST_AND_CASTED_WHILE_DEAD)
+            if (m_auras[x]->GetSpellProto()->misc.AttributesExC & CAN_PERSIST_AND_CASTED_WHILE_DEAD)
 				continue;
 			else
 				m_auras[x]->Remove();
@@ -5089,7 +5089,7 @@ void Unit::RemoveAllNonPersistentAuras()
 	for(uint32 x = MAX_TOTAL_AURAS_START; x < MAX_TOTAL_AURAS_END; x++)
 		if(m_auras[x])
 		{
-			if(m_auras[x]->GetSpellProto()->AttributesExC & CAN_PERSIST_AND_CASTED_WHILE_DEAD)
+            if (m_auras[x]->GetSpellProto()->misc.AttributesExC & CAN_PERSIST_AND_CASTED_WHILE_DEAD)
 				continue;
 			else
 				m_auras[x]->Remove();
@@ -5324,7 +5324,7 @@ int32 Unit::GetSpellDmgBonus(Unit* pVictim, SpellEntry* spellInfo, int32 base_dm
 			else
 			{
 				plus_damage = plus_damage * spellInfo->casttime_coef;
-				float td = static_cast< float >( GetDuration( dbcSpellDuration.LookupEntry( spellInfo->DurationIndex ) ) );
+                float td = static_cast< float >(GetDuration(dbcSpellDuration.LookupEntry(spellInfo->misc.DurationIndex)));
 				if( spellInfo->NameHash == SPELL_HASH_MOONFIRE
 					|| spellInfo->NameHash == SPELL_HASH_IMMOLATE
 					|| spellInfo->NameHash == SPELL_HASH_ICE_LANCE
@@ -5676,9 +5676,9 @@ bool Unit::HasAuraVisual(uint32 visualid)
 {
 	//passive auras do not have visual (at least when code was written)
 	for(uint32 x = MAX_REMOVABLE_AURAS_START; x < MAX_REMOVABLE_AURAS_END; x++)
-		if(m_auras[x] && m_auras[x]->GetSpellProto()->SpellVisual[0] == visualid ||
-		m_auras[x] && m_auras[x]->GetSpellProto()->SpellVisual[1] == visualid ||
-		m_auras[x] && m_auras[x]->GetSpellProto()->SpellVisual[2] == visualid
+        if (m_auras[x] && m_auras[x]->GetSpellProto()->misc.SpellVisual[0] == visualid ||
+            m_auras[x] && m_auras[x]->GetSpellProto()->misc.SpellVisual[1] == visualid ||
+            m_auras[x] && m_auras[x]->GetSpellProto()->misc.SpellVisual[2] == visualid
 		)
 			return true;
 	return false;
@@ -5709,7 +5709,7 @@ void Unit::DropAurasOnDeath()
 	for(uint32 x = MAX_REMOVABLE_AURAS_START; x < MAX_REMOVABLE_AURAS_END; x++)
 		if(m_auras[x])
 		{
-			if(m_auras[x] && m_auras[x]->GetSpellProto()->AttributesExC & CAN_PERSIST_AND_CASTED_WHILE_DEAD)
+            if (m_auras[x] && m_auras[x]->GetSpellProto()->misc.AttributesExC & CAN_PERSIST_AND_CASTED_WHILE_DEAD)
 				continue;
 			else
 				m_auras[x]->Remove();
@@ -5795,7 +5795,7 @@ uint8 Unit::CastSpell(Unit* Target, SpellEntry* Sp, bool triggered)
 
 uint8 Unit::CastSpell(Unit* Target, uint32 SpellID, bool triggered)
 {
-	SpellEntry* ent = dbcSpell.LookupEntryForced(SpellID);
+	SpellEntry* ent = dbcSpellEntry.LookupEntryForced(SpellID);
 	if(ent == NULL) return SPELL_FAILED_UNKNOWN;
 
 	return CastSpell(Target, ent, triggered);
@@ -5813,7 +5813,7 @@ uint8 Unit::CastSpell(uint64 targetGuid, SpellEntry* Sp, bool triggered)
 
 uint8 Unit::CastSpell(uint64 targetGuid, uint32 SpellID, bool triggered)
 {
-	SpellEntry* ent = dbcSpell.LookupEntryForced(SpellID);
+	SpellEntry* ent = dbcSpellEntry.LookupEntryForced(SpellID);
 	if(ent == NULL) return SPELL_FAILED_UNKNOWN;
 
 	return CastSpell(targetGuid, ent, triggered);
@@ -5821,7 +5821,7 @@ uint8 Unit::CastSpell(uint64 targetGuid, uint32 SpellID, bool triggered)
 
 uint8 Unit::CastSpell(Unit* Target, uint32 SpellID, uint32 forced_basepoints, bool triggered)
 {
-	return CastSpell(Target, dbcSpell.LookupEntryForced(SpellID), forced_basepoints, triggered);
+	return CastSpell(Target, dbcSpellEntry.LookupEntryForced(SpellID), forced_basepoints, triggered);
 }
 
 uint8 Unit::CastSpell(Unit* Target, SpellEntry* Sp, uint32 forced_basepoints, bool triggered)
@@ -5847,7 +5847,7 @@ uint8 Unit::CastSpell(Unit* Target, SpellEntry* Sp, uint32 forced_basepoints, bo
 
 uint8 Unit::CastSpell(Unit* Target, uint32 SpellID, uint32 forced_basepoints, int32 charges, bool triggered)
 {
-	return CastSpell(Target, dbcSpell.LookupEntryForced(SpellID), forced_basepoints, charges, triggered);
+	return CastSpell(Target, dbcSpellEntry.LookupEntryForced(SpellID), forced_basepoints, charges, triggered);
 }
 
 uint8 Unit::CastSpell(Unit* Target, SpellEntry* Sp, uint32 forced_basepoints, int32 charges, bool triggered)
@@ -6208,7 +6208,7 @@ void Unit::RemoveAurasByInterruptFlagButSkip(uint32 flag, uint32 skip)
 								continue;
 
 							//this spell gets removed only when casting smite
-							SpellEntry* spi = dbcSpell.LookupEntryForced(skip);
+							SpellEntry* spi = dbcSpellEntry.LookupEntryForced(skip);
 							if(spi && spi->NameHash != SPELL_HASH_SMITE)
 								continue;
 						}
@@ -6219,7 +6219,7 @@ void Unit::RemoveAurasByInterruptFlagButSkip(uint32 flag, uint32 skip)
 								continue;
 							if(m_currentSpell && m_currentSpell->GetProto()->NameHash == SPELL_HASH_INCINERATE)
 								continue;
-							SpellEntry* spi = dbcSpell.LookupEntryForced(skip);
+							SpellEntry* spi = dbcSpellEntry.LookupEntryForced(skip);
 							if(spi && spi->NameHash != SPELL_HASH_SHADOW_BOLT && spi->NameHash != SPELL_HASH_INCINERATE)
 								continue;
 						}
@@ -6229,7 +6229,7 @@ void Unit::RemoveAurasByInterruptFlagButSkip(uint32 flag, uint32 skip)
 						{
 							if(m_currentSpell && m_currentSpell->m_spellInfo->NameHash == SPELL_HASH_FLASH_OF_LIGHT)
 								continue;
-							SpellEntry* spi = dbcSpell.LookupEntryForced(skip);
+							SpellEntry* spi = dbcSpellEntry.LookupEntryForced(skip);
 							if(spi && spi->NameHash != SPELL_HASH_FLASH_OF_LIGHT)
 								continue;
 						}
@@ -6238,14 +6238,14 @@ void Unit::RemoveAurasByInterruptFlagButSkip(uint32 flag, uint32 skip)
 						{
 							if(m_currentSpell && m_currentSpell->GetProto()->NameHash == SPELL_HASH_SHADOW_BOLT)
 								continue;
-							SpellEntry* spi = dbcSpell.LookupEntryForced(skip);
+							SpellEntry* spi = dbcSpellEntry.LookupEntryForced(skip);
 							if(spi && spi->NameHash != SPELL_HASH_SHADOW_BOLT)
 								continue;
 						}
 						break;
 					case 16166: // [Shaman] Elemental Mastery
 						{
-							SpellEntry* spi = dbcSpell.LookupEntryForced(skip);
+							SpellEntry* spi = dbcSpellEntry.LookupEntryForced(skip);
 							if(spi && !(spi->School == SCHOOL_FIRE || spi->School == SCHOOL_FROST || spi->School == SCHOOL_NATURE))
 								continue;
 						}
@@ -6613,7 +6613,7 @@ void Unit::RemoveAurasOfSchool(uint32 School, bool Positive, bool Immune)
 		if(m_auras[x]
 		        && m_auras[x]->GetSpellProto()->School == School
 		        && (!m_auras[x]->IsPositive() || Positive)
-		        && (!Immune && m_auras[x]->GetSpellProto()->Attributes & ATTRIBUTES_IGNORE_INVULNERABILITY)
+                && (!Immune && m_auras[x]->GetSpellProto()->misc.Attributes & ATTRIBUTES_IGNORE_INVULNERABILITY)
 		  )
 			m_auras[x]->Remove();
 }
@@ -7805,7 +7805,7 @@ void Unit::EventStunOrImmobilize(Unit* proc_target, bool is_victim)
 		if(t_trigger_on_stun_chance < 100 && !Rand(t_trigger_on_stun_chance))
 			return;
 
-		SpellEntry* spellInfo = dbcSpell.LookupEntryForced(t_trigger_on_stun);
+		SpellEntry* spellInfo = dbcSpellEntry.LookupEntryForced(t_trigger_on_stun);
 
 		if(!spellInfo)
 			return;
@@ -7846,7 +7846,7 @@ void Unit::EventChill(Unit* proc_target, bool is_victim)
 		if(t_trigger_on_chill_chance < 100 && !Rand(t_trigger_on_chill_chance))
 			return;
 
-		SpellEntry* spellInfo = dbcSpell.LookupEntryForced(t_trigger_on_chill);
+		SpellEntry* spellInfo = dbcSpellEntry.LookupEntryForced(t_trigger_on_chill);
 
 		if(!spellInfo)
 			return;
@@ -8233,7 +8233,7 @@ SpellProc* Unit::AddProcTriggerSpell(SpellEntry* spell, SpellEntry* orig_spell, 
 
 SpellProc* Unit::AddProcTriggerSpell(uint32 spell_id, uint32 orig_spell_id, uint64 caster, uint32 procChance, uint32 procFlags, uint32 procCharges, uint32* groupRelation, uint32* procClassMask, Object* obj)
 {
-	return AddProcTriggerSpell(dbcSpell.LookupEntryForced(spell_id), dbcSpell.LookupEntryForced(orig_spell_id), caster, procChance, procFlags, procCharges, groupRelation, procClassMask, obj);
+	return AddProcTriggerSpell(dbcSpellEntry.LookupEntryForced(spell_id), dbcSpellEntry.LookupEntryForced(orig_spell_id), caster, procChance, procFlags, procCharges, groupRelation, procClassMask, obj);
 }
 
 SpellProc* Unit::AddProcTriggerSpell(SpellEntry* sp, uint64 caster, uint32* groupRelation, uint32* procClassMask, Object* obj)
@@ -8612,7 +8612,7 @@ void Unit::BuildPetSpellList(WorldPacket & data)
 }
 
 void Unit::CastOnMeleeSpell(){
-	SpellEntry *spellInfo = dbcSpell.LookupEntry( GetOnMeleeSpell() );
+	SpellEntry *spellInfo = dbcSpellEntry.LookupEntry( GetOnMeleeSpell() );
 	Spell *spell = sSpellFactoryMgr.NewSpell( this, spellInfo, true, NULL );
 	spell->extra_cast_number = GetOnMeleeSpellEcn();	
 	SpellCastTargets targets;

@@ -153,7 +153,7 @@ void WorldSession::HandlePetAction(WorldPacket & recv_data)
 			case PET_ACTION_SPELL:
 				{
 					// misc == spellid
-					SpellEntry* entry = dbcSpell.LookupEntryForced(misc);
+					SpellEntry* entry = dbcSpellEntry.LookupEntryForced(misc);
 					if(entry == NULL)
 						return;
 
@@ -402,7 +402,7 @@ void WorldSession::HandlePetSetActionOpcode(WorldPacket & recv_data)
 		return;
 
 	Pet* pet = _player->GetSummon();
-	SpellEntry* spe = dbcSpell.LookupEntryForced(spell);
+	SpellEntry* spe = dbcSpellEntry.LookupEntryForced(spell);
 	if(spe == NULL)
 		return;
 
@@ -514,7 +514,7 @@ void WorldSession::HandlePetSpellAutocast(WorldPacket & recvPacket)
 	uint8  state;
 	recvPacket >> guid >> spellid >> unk >> state;
 
-	SpellEntry* spe = dbcSpell.LookupEntryForced(spellid);
+	SpellEntry* spe = dbcSpellEntry.LookupEntryForced(spellid);
 	if(spe == NULL)
 		return;
 
@@ -605,7 +605,7 @@ void WorldSession::HandlePetLearnTalent(WorldPacket & recvPacket)
 		pPet->RemoveSpell(te->RankID[ talentcol - 1 ]);
 
 	// add spell, discount talent point
-	SpellEntry* sp = dbcSpell.LookupEntryForced(te->RankID[ talentcol ]);
+	SpellEntry* sp = dbcSpellEntry.LookupEntryForced(te->RankID[ talentcol ]);
 	if(sp != NULL)
 	{
 		pPet->AddSpell(sp, true);

@@ -371,7 +371,7 @@ bool ChatHandler::HandleLearnCommand(const char* args, WorldSession* m_session)
 		spell = GetSpellIDFromLink(args);
 	}
 
-	SpellEntry* sp = dbcSpell.LookupEntryForced(spell);
+	SpellEntry* sp = dbcSpellEntry.LookupEntryForced(spell);
 	if(!sp)
 	{
 		SystemMessage(m_session, "Invalid spell %u", spell);
@@ -1900,7 +1900,7 @@ bool ChatHandler::HandleAddPetSpellCommand(const char* args, WorldSession* m_ses
 	}
 
 	uint32 SpellId = atol(args);
-	SpellEntry* spell = dbcSpell.LookupEntryForced(SpellId);
+	SpellEntry* spell = dbcSpellEntry.LookupEntryForced(SpellId);
 	if(!SpellId || !spell)
 	{
 		RedSystemMessage(m_session, "Invalid spell id requested.");
@@ -1929,7 +1929,7 @@ bool ChatHandler::HandleRemovePetSpellCommand(const char* args, WorldSession* m_
 	}
 
 	uint32 SpellId = atol(args);
-	SpellEntry* spell = dbcSpell.LookupEntryForced(SpellId);
+	SpellEntry* spell = dbcSpellEntry.LookupEntryForced(SpellId);
 	if(!SpellId || !spell)
 	{
 		RedSystemMessage(m_session, "Invalid spell id requested.");
@@ -2280,7 +2280,7 @@ bool ChatHandler::HandleCastAllCommand(const char* args, WorldSession* m_session
 	}
 	Player* plr;
 	uint32 spellid = atol(args);
-	SpellEntry* info = dbcSpell.LookupEntryForced(spellid);
+	SpellEntry* info = dbcSpellEntry.LookupEntryForced(spellid);
 	if(!info)
 	{
 		RedSystemMessage(m_session, "Invalid spell specified.");
@@ -3277,9 +3277,9 @@ bool ChatHandler::HandleLookupSpellCommand(const char* args, WorldSession* m_ses
 	uint32 count = 0;
 	string recout;
 	char itoabuf[12];
-	for(uint32 index = 0; index < dbcSpell.GetNumRows(); ++index)
+	for(uint32 index = 0; index < dbcSpellEntry.GetNumRows(); ++index)
 	{
-		SpellEntry* spell = dbcSpell.LookupRow(index);
+		SpellEntry* spell = dbcSpellEntry.LookupRow(index);
 		string y = string(spell->Name);
 		arcemu_TOLOWER(y);
 		if(FindXinYString(x, y))
@@ -3553,7 +3553,7 @@ bool ChatHandler::HandleAIAgentDebugBegin(const char* args, WorldSession* m_sess
 
 	do
 	{
-		SpellEntry* se = dbcSpell.LookupEntryForced(result->Fetch()[0].GetUInt32());
+		SpellEntry* se = dbcSpellEntry.LookupEntryForced(result->Fetch()[0].GetUInt32());
 		if(se)
 			aiagent_spells.push_back(se);
 	}
@@ -4187,7 +4187,7 @@ bool ChatHandler::HandleAddTrainerSpellCommand(const char* args, WorldSession* m
 		return true;
 	}
 
-	SpellEntry* pSpell = dbcSpell.LookupEntryForced(spellid);
+	SpellEntry* pSpell = dbcSpellEntry.LookupEntryForced(spellid);
 	if(pSpell == NULL)
 	{
 		RedSystemMessage(m_session, "Invalid spell.");
@@ -4359,7 +4359,7 @@ bool ChatHandler::HandleNPCCastCommand(const char* args, WorldSession* m_session
 	if(spellid == 0)
 		return false;
 
-	SpellEntry* sp = dbcSpell.LookupEntry(spellid);
+	SpellEntry* sp = dbcSpellEntry.LookupEntry(spellid);
 	if(sp == NULL)
 		return false;
 

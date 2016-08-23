@@ -1716,28 +1716,31 @@ class SERVER_DECL Spell : public EventableObject
 
 		ARCEMU_INLINE bool hasAttribute(uint32 attribute)
 		{
-			return ((GetProto()->Attributes & attribute) > 0);
+			return ((GetProto()->misc.Attributes & attribute) > 0);
 		}
 		ARCEMU_INLINE bool hasAttributeEx(uint32 attribute)
 		{
-			return ((GetProto()->AttributesEx & attribute) > 0);
+			return ((GetProto()->misc.AttributesEx & attribute) > 0);
 		}
 		ARCEMU_INLINE bool hasAttributeExB(uint32 attribute)
 		{
-			return ((GetProto()->AttributesExB & attribute) > 0);
+			return ((GetProto()->misc.AttributesExB & attribute) > 0);
 		}
 		ARCEMU_INLINE bool hasAttributeExC(uint32 attribute)
 		{
-			return ((GetProto()->AttributesExC & attribute) > 0);
+            return ((GetProto()->misc.AttributesExC & attribute) > 0);
 		}
 		ARCEMU_INLINE bool hasAttributeExD(uint32 attribute)
 		{
-			return ((GetProto()->AttributesExD & attribute) > 0);
+            return ((GetProto()->misc.AttributesExD & attribute) > 0);
 		}
 		ARCEMU_INLINE bool hasAttributeExE(uint32 attribute)
 		{
-			return ((GetProto()->AttributesExE & attribute) > 0);
+            return ((GetProto()->misc.AttributesExE & attribute) > 0);
 		}
+
+        //! To-Do add other attributes
+
 		// Removes reagents, ammo, and items/charges
 		void RemoveItems();
 		// Calculates the i'th effect value
@@ -1999,7 +2002,7 @@ class SERVER_DECL Spell : public EventableObject
 		{
 			if(m_spellInfo_override != NULL)
 				return;
-			m_spellInfo_override = dbcSpell.CreateCopy(m_spellInfo);
+            m_spellInfo_override = dbcSpellEntry.CreateCopy(m_spellInfo);
 		}
 		uint32 GetDuration()
 		{
@@ -2007,9 +2010,9 @@ class SERVER_DECL Spell : public EventableObject
 			bDurSet = true;
 			int32 c_dur = 0;
 
-			if(GetProto()->DurationIndex)
+			if(GetProto()->misc.DurationIndex)
 			{
-				SpellDuration* sd = dbcSpellDuration.LookupEntryForced(GetProto()->DurationIndex);
+				SpellDuration* sd = dbcSpellDuration.LookupEntryForced(GetProto()->misc.DurationIndex);
 				if(sd)
 				{
 					//check for negative and 0 durations.

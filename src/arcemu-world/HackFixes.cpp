@@ -26,19 +26,19 @@ void CreateDummySpell(uint32 id)
 	SpellEntry* sp = new SpellEntry;
 	memset(sp, 0, sizeof(SpellEntry));
 	sp->Id = id;
-	sp->Attributes = 384;
-	sp->AttributesEx = 268435456;
-	sp->AttributesExB = 4;
-	sp->CastingTimeIndex = 1;
+    sp->misc.Attributes = 384;
+    sp->misc.AttributesEx = 268435456;
+    sp->misc.AttributesExB = 4;
+    sp->misc.CastingTimeIndex = 1;
 	sp->procChance = 75;
-	sp->rangeIndex = 13;
+    sp->misc.rangeIndex = 13;
 	sp->SpellEquippedItems.EquippedItemClass = uint32(-1);
 	sp->eff[0].Effect = SPELL_EFFECT_DUMMY;
 	sp->eff[0].EffectImplicitTargetA = 25;
 	sp->NameHash = crc32((const unsigned char*)name, (unsigned int)strlen(name));
 	sp->eff[0].EffectChainMultiplier = 1.0f;
 	//sp->StanceBarOrder = -1; // not used
-	dbcSpell.SetRow(id, sp);
+	dbcSpellEntry.SetRow(id, sp);
 	sWorld.dummyspells.push_back(sp);
 }
 
@@ -46,17 +46,17 @@ void ApplyNormalFixes()
 {
 	//Updating spell.dbc
 
-	Log.Success("World", "Processing %u spells...", dbcSpell.GetNumRows());
+	Log.Success("World", "Processing %u spells...", dbcSpellEntry.GetNumRows());
 
 	//checking if the DBCs have been extracted from an english client, based on namehash of spell 4, the first with a different name in non-english DBCs
-	SpellEntry* sp = dbcSpell.LookupEntry(4);
+	SpellEntry* sp = dbcSpellEntry.LookupEntry(4);
 	if(crc32((const unsigned char*)sp->Name, (unsigned int)strlen(sp->Name)) != SPELL_HASH_WORD_OF_RECALL_OTHER)
 	{
 		Log.LargeErrorMessage("You are using DBCs extracted from an unsupported client.", "ArcEmu supports only enUS and enGB!!!", NULL);
 		abort();
 	}
 
-	uint32 cnt = dbcSpell.GetNumRows();
+	uint32 cnt = dbcSpellEntry.GetNumRows();
 	uint32 effect;
 	uint32 result;
 
@@ -75,7 +75,7 @@ void ApplyNormalFixes()
 	for(uint32 x = 0; x < cnt; x++)
 	{
 		// Read every SpellEntry row
-		sp = dbcSpell.LookupRow(x);
+		sp = dbcSpellEntry.LookupRow(x);
 
 		uint32 rank = 0;
 		uint32 namehash = 0;
@@ -91,7 +91,7 @@ void ApplyNormalFixes()
 
 		float radius = std::max(::GetRadius(dbcSpellRadius.LookupEntry(sp->eff[0].EffectRadiusIndex)), ::GetRadius(dbcSpellRadius.LookupEntry(sp->eff[1].EffectRadiusIndex)));
 		radius = std::max(::GetRadius(dbcSpellRadius.LookupEntry(sp->eff[2].EffectRadiusIndex)), radius);
-		radius = std::max(GetMaxRange(dbcSpellRange.LookupEntry(sp->rangeIndex)), radius);
+        radius = std::max(GetMaxRange(dbcSpellRange.LookupEntry(sp->misc.rangeIndex)), radius);
 		sp->base_range_or_radius_sqr = radius * radius;
 
 		sp->ai_target_type = GetAiTargetType(sp);
@@ -107,7 +107,7 @@ void ApplyNormalFixes()
 		*/
 
 		// Save School as SchoolMask, and set School as an index
-		sp->SchoolMask = sp->School;
+        sp->misc.SchoolMask = sp->School;
 		for(i = 0; i < SCHOOL_COUNT; i++)
 		{
 			if(sp->School & (1 << i))
@@ -194,15 +194,15 @@ void ApplyNormalFixes()
 
 		for(uint32 b = 0; b < 3; ++b)
 		{
-			if(sp->eff[b].EffectTriggerSpell != 0 && dbcSpell.LookupEntryForced(sp->eff[b].EffectTriggerSpell) == NULL)
+			if(sp->eff[b].EffectTriggerSpell != 0 && dbcSpellEntry.LookupEntryForced(sp->eff[b].EffectTriggerSpell) == NULL)
 			{
 				/* proc spell referencing non-existent spell. create a dummy spell for use w/ it. */
 				CreateDummySpell(sp->eff[b].EffectTriggerSpell);
 			}
 
-			if(sp->Attributes & ATTRIBUTES_ONLY_OUTDOORS && sp->eff[b].EffectApplyAuraName == SPELL_AURA_MOUNTED)
+            if (sp->misc.Attributes & ATTRIBUTES_ONLY_OUTDOORS && sp->eff[b].EffectApplyAuraName == SPELL_AURA_MOUNTED)
 			{
-				sp->Attributes &= ~ATTRIBUTES_ONLY_OUTDOORS;
+                sp->misc.Attributes &= ~ATTRIBUTES_ONLY_OUTDOORS;
 			}
 		}
 
@@ -381,9 +381,9 @@ void ApplyNormalFixes()
 		//another grouping rule
 
 		//Quivers, Ammo Pouches and Thori'dal the Star's Fury
-		if((namehash == SPELL_HASH_HASTE && sp->Attributes & 0x10000) || sp->Id == 44972)
+        if ((namehash == SPELL_HASH_HASTE && sp->misc.Attributes & 0x10000) || sp->Id == 44972)
 		{
-			sp->Attributes &= ~ATTRIBUTES_PASSIVE;//Otherwise we couldn't remove them
+            sp->misc.Attributes &= ~ATTRIBUTES_PASSIVE;//Otherwise we couldn't remove them
 			sp->BGR_one_buff_on_target |= SPELL_TYPE_QUIVER_HASTE;
 		}
 
@@ -438,8 +438,8 @@ void ApplyNormalFixes()
 
 		// various flight spells
 		// these make vehicles and other charmed stuff fliable
-		if( sp->activeIconID == 2158 )
-			sp->Attributes |= ATTRIBUTES_PASSIVE;
+        if (sp->misc.activeIconID == 2158)
+            sp->misc.Attributes |= ATTRIBUTES_PASSIVE;
 
 		uint32 pr = sp->procFlags;
 		for(uint32 y = 0; y < 3; y++)
@@ -568,7 +568,7 @@ void ApplyNormalFixes()
 						pr |= PROC_ON_ANY_DAMAGE_VICTIM;
 					if(strstr(sp->Description, "when ranged or melee damage is dealt"))
 						pr |= PROC_ON_MELEE_ATTACK | PROC_ON_RANGED_ATTACK;
-					if(strstr(sp->Description, "damaging melee attacks"))
+                    if (strstr(sp->Description, "damaging melee attacks"))
 						pr |= PROC_ON_MELEE_ATTACK;
 					if(strstr(sp->Description, "on melee or ranged attack"))
 						pr |= PROC_ON_MELEE_ATTACK | PROC_ON_RANGED_ATTACK;
@@ -904,8 +904,8 @@ void ApplyNormalFixes()
 			sp->procFlags = 0;
 
 		if(
-		    ((sp->Attributes & ATTRIBUTES_TRIGGER_COOLDOWN) && (sp->AttributesEx & ATTRIBUTESEX_NOT_BREAK_STEALTH)) //rogue cold blood
-		    || ((sp->Attributes & ATTRIBUTES_TRIGGER_COOLDOWN) && (!sp->AttributesEx || sp->AttributesEx & ATTRIBUTESEX_REMAIN_OOC))
+            ((sp->misc.Attributes & ATTRIBUTES_TRIGGER_COOLDOWN) && (sp->misc.AttributesEx & ATTRIBUTESEX_NOT_BREAK_STEALTH)) //rogue cold blood
+            || ((sp->misc.Attributes & ATTRIBUTES_TRIGGER_COOLDOWN) && (!sp->misc.AttributesEx || sp->misc.AttributesEx & ATTRIBUTESEX_REMAIN_OOC))
 		)
 		{
 			sp->c_is_flags |= SPELL_FLAG_IS_REQUIRECOOLDOWNUPDATE;
@@ -925,10 +925,10 @@ void ApplyNormalFixes()
 	for(uint32 x = 0; x < cnt; x++)
 	{
 		// get spellentry
-		sp = dbcSpell.LookupRow(x);
+		sp = dbcSpellEntry.LookupRow(x);
 
 		//Setting Cast Time Coefficient
-		SpellCastTime* sd = dbcSpellCastTime.LookupEntry(sp->CastingTimeIndex);
+        SpellCastTime* sd = dbcSpellCastTime.LookupEntry(sp->misc.CastingTimeIndex);
 		float castaff = float(GetCastTime(sd));
 		if(castaff < 1500)
 			castaff = 1500;
@@ -957,7 +957,7 @@ void ApplyNormalFixes()
 		{
 			if(sp->eff[i].EffectApplyAuraName == SPELL_AURA_PERIODIC_TRIGGER_SPELL && sp->eff[i].EffectTriggerSpell)
 			{
-				spz = dbcSpell.LookupEntryForced(sp->eff[i].EffectTriggerSpell);
+				spz = dbcSpellEntry.LookupEntryForced(sp->eff[i].EffectTriggerSpell);
 				if(spz &&
 				        (spz->eff[i].Effect == SPELL_EFFECT_SCHOOL_DAMAGE ||
 				         spz->eff[i].Effect == SPELL_EFFECT_HEAL)
@@ -1077,7 +1077,7 @@ void ApplyNormalFixes()
 		//Channeled spells
 		if(sp->ChannelInterruptFlags != 0)
 		{
-			float Duration = float(GetDuration(dbcSpellDuration.LookupEntry(sp->DurationIndex)));
+            float Duration = float(GetDuration(dbcSpellDuration.LookupEntry(sp->misc.DurationIndex)));
 			if(Duration < 1500) Duration = 1500;
 			else if(Duration > 7000) Duration = 7000;
 			sp->fixed_hotdotcoef = (Duration / 3500.0f);
@@ -1101,7 +1101,7 @@ void ApplyNormalFixes()
 		//Over-time spells
 		else if(!(sp->spell_coef_flags & SPELL_FLAG_IS_DD_OR_DH_SPELL) && (sp->spell_coef_flags & SPELL_FLAG_IS_DOT_OR_HOT_SPELL))
 		{
-			float Duration = float(GetDuration(dbcSpellDuration.LookupEntry(sp->DurationIndex)));
+            float Duration = float(GetDuration(dbcSpellDuration.LookupEntry(sp->misc.DurationIndex)));
 			sp->fixed_hotdotcoef = (Duration / 15000.0f);
 
 			if(sp->spell_coef_flags & SPELL_FLAG_ADITIONAL_EFFECT)
@@ -1114,7 +1114,7 @@ void ApplyNormalFixes()
 		//Combined standard and over-time spells
 		else if(sp->spell_coef_flags & SPELL_FLAG_IS_DD_DH_DOT_SPELL)
 		{
-			float Duration = float(GetDuration(dbcSpellDuration.LookupEntry(sp->DurationIndex)));
+            float Duration = float(GetDuration(dbcSpellDuration.LookupEntry(sp->misc.DurationIndex)));
 			float Portion_to_Over_Time = (Duration / 15000.0f) / ((Duration / 15000.0f) + sp->casttime_coef);
 			float Portion_to_Standard = 1.0f - Portion_to_Over_Time;
 
@@ -1217,7 +1217,7 @@ void ApplyNormalFixes()
 					break;
 
 				case 47930:
-					sp->rangeIndex = 4;
+                    sp->misc.rangeIndex = 4;
 					break;
 			}
 		}
@@ -1229,7 +1229,7 @@ void ApplyNormalFixes()
 		// Insert shaman spell fixes here
 
 		// Flametongue Totem passive target fix
-		if(sp->NameHash == SPELL_HASH_FLAMETONGUE_TOTEM && sp->Attributes & ATTRIBUTES_PASSIVE)
+        if (sp->NameHash == SPELL_HASH_FLAMETONGUE_TOTEM && sp->misc.Attributes & ATTRIBUTES_PASSIVE)
 		{
 			sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SELF;
 			sp->eff[0].EffectImplicitTargetB = 0;
@@ -1296,7 +1296,7 @@ void ApplyNormalFixes()
 		{
 			Field* f;
 			f = resultx->Fetch();
-			sp = dbcSpell.LookupEntryForced(f[0].GetUInt32());
+			sp = dbcSpellEntry.LookupEntryForced(f[0].GetUInt32());
 			if(sp != NULL)
 			{
 				sp->Dspell_coef_override = f[2].GetFloat();
@@ -1313,7 +1313,7 @@ void ApplyNormalFixes()
 	for(uint32 x = 0; x < cnt; x++)
 	{
 		// get spellentry
-		sp = dbcSpell.LookupRow(x);
+		sp = dbcSpellEntry.LookupRow(x);
 		SpellEntry* spz;
 
 		//Case SPELL_AURA_PERIODIC_TRIGGER_SPELL
@@ -1331,7 +1331,7 @@ void ApplyNormalFixes()
 						//we must set bonus per tick on triggered spells now (i.e. Arcane Missiles)
 						if(sp->ChannelInterruptFlags != 0)
 						{
-							float Duration = float(GetDuration(dbcSpellDuration.LookupEntry(sp->DurationIndex)));
+                            float Duration = float(GetDuration(dbcSpellDuration.LookupEntry(sp->misc.DurationIndex)));
 							float amp = float(sp->eff[i].EffectAmplitude);
 							sp->fixed_dddhcoef = sp->fixed_hotdotcoef * amp / Duration;
 						}
@@ -1345,7 +1345,7 @@ void ApplyNormalFixes()
 						//we must set bonus per tick on triggered spells now (i.e. Arcane Missiles)
 						if(sp->ChannelInterruptFlags != 0)
 						{
-							float Duration = float(GetDuration(dbcSpellDuration.LookupEntry(sp->DurationIndex)));
+                            float Duration = float(GetDuration(dbcSpellDuration.LookupEntry(sp->misc.DurationIndex)));
 							float amp = float(sp->eff[i].EffectAmplitude);
 							sp->fixed_hotdotcoef *= amp / Duration;
 						}
@@ -1602,19 +1602,19 @@ void ApplyNormalFixes()
 	// Warrior - Overpower Rank 1
 	sp = CheckAndReturnSpellEntry(7384);
 	if(sp != NULL)
-		sp->Attributes |= ATTRIBUTES_CANT_BE_DPB;
+        sp->misc.Attributes |= ATTRIBUTES_CANT_BE_DPB;
 	// Warrior - Overpower Rank 2
 	sp = CheckAndReturnSpellEntry(7887);
 	if(sp != NULL)
-		sp->Attributes |= ATTRIBUTES_CANT_BE_DPB;
+        sp->misc.Attributes |= ATTRIBUTES_CANT_BE_DPB;
 	// Warrior - Overpower Rank 3
 	sp = CheckAndReturnSpellEntry(11584);
 	if(sp != NULL)
-		sp->Attributes |= ATTRIBUTES_CANT_BE_DPB;
+        sp->misc.Attributes |= ATTRIBUTES_CANT_BE_DPB;
 	// Warrior - Overpower Rank 4
 	sp = CheckAndReturnSpellEntry(11585);
 	if(sp != NULL)
-		sp->Attributes |= ATTRIBUTES_CANT_BE_DPB;
+        sp->misc.Attributes |= ATTRIBUTES_CANT_BE_DPB;
 
 	// Warrior - Tactical Mastery Rank 1
 	sp = CheckAndReturnSpellEntry(12295);
@@ -1918,7 +1918,7 @@ void ApplyNormalFixes()
 	sp = CheckAndReturnSpellEntry(3411);
 	if(sp != NULL)
 	{
-		sp->Attributes |= ATTRIBUTES_STOP_ATTACK;
+        sp->misc.Attributes |= ATTRIBUTES_STOP_ATTACK;
 	}
 
 	// Gag Order Rank 1
@@ -2060,7 +2060,7 @@ void ApplyNormalFixes()
 	sp = CheckAndReturnSpellEntry(53595);
 	if(sp != NULL)
 	{
-		sp->speed = 0;	//without, no damage is done
+        sp->misc.speed = 0;	//without, no damage is done
 	}
 
 	sp = CheckAndReturnSpellEntry(38008);
@@ -2940,7 +2940,7 @@ void ApplyNormalFixes()
 	//rogue - Vanish : Second Trigger Spell
 	sp = CheckAndReturnSpellEntry(18461);
 	if(sp != NULL)
-		sp->AttributesEx |= ATTRIBUTESEX_NOT_BREAK_STEALTH;
+        sp->misc.AttributesEx |= ATTRIBUTESEX_NOT_BREAK_STEALTH;
 
 	// rogue - Blind (Make it able to miss!)
 	sp = CheckAndReturnSpellEntry(2094);
@@ -2959,13 +2959,13 @@ void ApplyNormalFixes()
 	// Still related to shadowstep - prevent the trigger spells from breaking stealth.
 	sp = CheckAndReturnSpellEntry(44373);
 	if(sp)
-		sp->AttributesEx |= ATTRIBUTESEX_NOT_BREAK_STEALTH;
+        sp->misc.AttributesEx |= ATTRIBUTESEX_NOT_BREAK_STEALTH;
 	sp = CheckAndReturnSpellEntry(36563);
 	if(sp)
-		sp->AttributesEx |= ATTRIBUTESEX_NOT_BREAK_STEALTH;
+        sp->misc.AttributesEx |= ATTRIBUTESEX_NOT_BREAK_STEALTH;
 	sp = CheckAndReturnSpellEntry(36554);
 	if(sp != NULL)
-		sp->AttributesEx |= ATTRIBUTESEX_NOT_BREAK_STEALTH;
+        sp->misc.AttributesEx |= ATTRIBUTESEX_NOT_BREAK_STEALTH;
 
 	//rogue - Seal Fate
 	sp = CheckAndReturnSpellEntry(14186);
@@ -3060,7 +3060,7 @@ void ApplyNormalFixes()
 	//Rogue - Killing Spree Stealth fix
 	sp = CheckAndReturnSpellEntry(51690);
 	if(sp != NULL)
-		sp->AttributesEx |= ATTRIBUTESEX_NOT_BREAK_STEALTH;
+        sp->misc.AttributesEx |= ATTRIBUTESEX_NOT_BREAK_STEALTH;
 
 	/* Rogue - Improved Expose Armor (rank 1)
 	sp = CheckAndReturnSpellEntry( 14168 );
@@ -3168,15 +3168,15 @@ void ApplyNormalFixes()
 	// Body and soul - fix duration of cleanse poison
 	sp = CheckAndReturnSpellEntry(64134);
 	if(sp != NULL)
-		sp->DurationIndex = 29;
+        sp->misc.DurationIndex = 29;
 
 	// Spirit of Redemption - required spells can be casted while dead
 	sp = CheckAndReturnSpellEntry(27795);   // This is casted by shape shift
 	if(sp != NULL)
-		sp->AttributesExC |= CAN_PERSIST_AND_CASTED_WHILE_DEAD;
+        sp->misc.AttributesExC |= CAN_PERSIST_AND_CASTED_WHILE_DEAD;
 	sp = CheckAndReturnSpellEntry(27792);   // This is casted by Apply Aura: Spirit of Redemption
 	if(sp != NULL)
-		sp->AttributesExC |= CAN_PERSIST_AND_CASTED_WHILE_DEAD;
+        sp->misc.AttributesExC |= CAN_PERSIST_AND_CASTED_WHILE_DEAD;
 
 	/**********************************************************
 	 *	Holy Nova
@@ -3321,13 +3321,13 @@ void ApplyNormalFixes()
 	//Priest - Inspiration proc spell
 	sp = CheckAndReturnSpellEntry(14893);
 	if(sp != NULL)
-		sp->rangeIndex = 4;
+        sp->misc.rangeIndex = 4;
 	sp = CheckAndReturnSpellEntry(15357);
 	if(sp != NULL)
-		sp->rangeIndex = 4;
+        sp->misc.rangeIndex = 4;
 	sp = CheckAndReturnSpellEntry(15359);
 	if(sp != NULL)
-		sp->rangeIndex = 4;
+        sp->misc.rangeIndex = 4;
 
 	//priest - surge of light
 	sp = CheckAndReturnSpellEntry(33150);
@@ -3367,28 +3367,28 @@ void ApplyNormalFixes()
 	sp = CheckAndReturnSpellEntry(47540);
 	if(sp != NULL)
 	{
-		sp->DurationIndex = 566; // Change to instant cast as script will cast the real channeled spell.
+        sp->misc.DurationIndex = 566; // Change to instant cast as script will cast the real channeled spell.
 		sp->ChannelInterruptFlags = 0; // Remove channeling behavior.
 	}
 
 	sp = CheckAndReturnSpellEntry(53005);
 	if(sp != NULL)
 	{
-		sp->DurationIndex = 566;
+        sp->misc.DurationIndex = 566;
 		sp->ChannelInterruptFlags = 0;
 	}
 
 	sp = CheckAndReturnSpellEntry(53006);
 	if(sp != NULL)
 	{
-		sp->DurationIndex = 566;
+        sp->misc.DurationIndex = 566;
 		sp->ChannelInterruptFlags = 0;
 	}
 
 	sp = CheckAndReturnSpellEntry(53007);
 	if(sp != NULL)
 	{
-		sp->DurationIndex = 566;
+        sp->misc.DurationIndex = 566;
 		sp->ChannelInterruptFlags = 0;
 	}
 
@@ -3885,13 +3885,13 @@ void ApplyNormalFixes()
 	 **********************************************************/
 	sp = CheckAndReturnSpellEntry(16177);
 	if(sp != NULL)
-		sp->rangeIndex = 4;
+        sp->misc.rangeIndex = 4;
 	sp = CheckAndReturnSpellEntry(16236);
 	if(sp != NULL)
-		sp->rangeIndex = 4;
+        sp->misc.rangeIndex = 4;
 	sp = CheckAndReturnSpellEntry(16237);
 	if(sp != NULL)
-		sp->rangeIndex = 4;
+        sp->misc.rangeIndex = 4;
 
 	sp = CheckAndReturnSpellEntry(20608);   //Reincarnation
 	if(sp != NULL)
@@ -3923,7 +3923,7 @@ void ApplyNormalFixes()
 	// Rogue - Master of Subtlety
 	sp = CheckAndReturnSpellEntry(31665);
 	if(sp != NULL)
-		sp->AttributesEx |= ATTRIBUTESEX_NOT_BREAK_STEALTH;
+        sp->misc.AttributesEx |= ATTRIBUTESEX_NOT_BREAK_STEALTH;
 
 	//////////////////////////////////////////
 	// MAGE									//
@@ -5165,28 +5165,28 @@ void ApplyNormalFixes()
 	sp = CheckAndReturnSpellEntry(50796);
 	if(sp != NULL)
 	{
-		sp->Attributes |= ATTRIBUTES_IGNORE_INVULNERABILITY;
+        sp->misc.Attributes |= ATTRIBUTES_IGNORE_INVULNERABILITY;
 		sp->School = SCHOOL_FIRE;
 	}
 
 	sp = CheckAndReturnSpellEntry(59170);
 	if(sp != NULL)
 	{
-		sp->Attributes |= ATTRIBUTES_IGNORE_INVULNERABILITY;
+        sp->misc.Attributes |= ATTRIBUTES_IGNORE_INVULNERABILITY;
 		sp->School = SCHOOL_FIRE;
 	}
 
 	sp = CheckAndReturnSpellEntry(59171);
 	if(sp != NULL)
 	{
-		sp->Attributes |= ATTRIBUTES_IGNORE_INVULNERABILITY;
+        sp->misc.Attributes |= ATTRIBUTES_IGNORE_INVULNERABILITY;
 		sp->School = SCHOOL_FIRE;
 	}
 
 	sp = CheckAndReturnSpellEntry(59172);
 	if(sp != NULL)
 	{
-		sp->Attributes |= ATTRIBUTES_IGNORE_INVULNERABILITY;
+        sp->misc.Attributes |= ATTRIBUTES_IGNORE_INVULNERABILITY;
 		sp->School = SCHOOL_FIRE;
 	}
 	// End Warlock chaos bolt
@@ -5503,13 +5503,13 @@ void ApplyNormalFixes()
 	// Druid - Natural Shapeshifter
 	sp = CheckAndReturnSpellEntry(16833);
 	if(sp != NULL)
-		sp->DurationIndex = 0;
+        sp->misc.DurationIndex = 0;
 	sp = CheckAndReturnSpellEntry(16834);
 	if(sp != NULL)
-		sp->DurationIndex = 0;
+        sp->misc.DurationIndex = 0;
 	sp = CheckAndReturnSpellEntry(16835);
 	if(sp != NULL)
-		sp->DurationIndex = 0;
+        sp->misc.DurationIndex = 0;
 
 	//////////////////////////////////////////
 	// ITEMS								//
@@ -5521,7 +5521,7 @@ void ApplyNormalFixes()
 	sp = CheckAndReturnSpellEntry(4078);
 	if(sp != NULL)
 	{
-		sp->DurationIndex = 6;
+        sp->misc.DurationIndex = 6;
 	}
 
 	//Graccu's Mince Meat Fruitcake
@@ -5777,22 +5777,22 @@ void ApplyNormalFixes()
 	sp = CheckAndReturnSpellEntry(34132);
 	if(sp != NULL)
 	{
-		sp->rangeIndex = sp_healing_wave->rangeIndex;
+        sp->misc.rangeIndex = sp_healing_wave->misc.rangeIndex;
 	}
 	sp = CheckAndReturnSpellEntry(42371);
 	if(sp != NULL)
 	{
-		sp->rangeIndex = sp_healing_wave->rangeIndex;
+        sp->misc.rangeIndex = sp_healing_wave->misc.rangeIndex;
 	}
 	sp = CheckAndReturnSpellEntry(43729);
 	if(sp != NULL)
 	{
-		sp->rangeIndex = sp_healing_wave->rangeIndex;
+        sp->misc.rangeIndex = sp_healing_wave->misc.rangeIndex;
 	}
 	sp = CheckAndReturnSpellEntry(46099);
 	if(sp != NULL)
 	{
-		sp->rangeIndex = sp_healing_wave->rangeIndex;
+        sp->misc.rangeIndex = sp_healing_wave->misc.rangeIndex;
 	}
 
 	//Moonkin Starfire Bonus
@@ -6313,7 +6313,7 @@ void ApplyNormalFixes()
 	//Figurine - Shadowsong Panther
 	sp = CheckAndReturnSpellEntry(46784);		//	http://www.wowhead.com/?item=35702
 	if(sp != NULL)
-		sp->AttributesEx |= ATTRIBUTESEX_NOT_BREAK_STEALTH;
+        sp->misc.AttributesEx |= ATTRIBUTESEX_NOT_BREAK_STEALTH;
 
 	// Infernal Protection
 	sp = CheckAndReturnSpellEntry(36488);			//	http://www.wowhead.com/?spell=36488
@@ -6510,10 +6510,10 @@ void ApplyNormalFixes()
 	// Drain Power (Malacrass) // bugged - the charges fade even when refreshed with new ones. This makes them everlasting.
 	sp = CheckAndReturnSpellEntry(44131);
 	if(sp != NULL)
-		sp->DurationIndex = 21;
+        sp->misc.DurationIndex = 21;
 	sp = CheckAndReturnSpellEntry(44132);
 	if(sp != NULL)
-		sp->DurationIndex = 21;
+        sp->misc.DurationIndex = 21;
 
 	// Zul'jin spell, proc from Creeping Paralysis
 	sp = CheckAndReturnSpellEntry(43437);
@@ -6760,14 +6760,14 @@ void ApplyNormalFixes()
 	sp = CheckAndReturnSpellEntry(56815);
 	if(sp != NULL)
 	{
-		sp->Attributes |= ATTRIBUTES_CANT_BE_DPB;
+        sp->misc.Attributes |= ATTRIBUTES_CANT_BE_DPB;
 	}
 
 	CreateDummySpell(56817);
 	sp = CheckAndReturnSpellEntry(56817);
 	if(sp != NULL)
 	{
-		sp->DurationIndex = 28;
+        sp->misc.DurationIndex = 28;
 		sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
 		sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
 	}
@@ -6776,32 +6776,32 @@ void ApplyNormalFixes()
 	sp = CheckAndReturnSpellEntry(49143);
 	if(sp != NULL)
 	{
-		sp->Attributes = ATTRIBUTES_CANT_BE_DPB;
+        sp->misc.Attributes = ATTRIBUTES_CANT_BE_DPB;
 	}
 	sp = CheckAndReturnSpellEntry(51416);
 	if(sp != NULL)
 	{
-		sp->Attributes = ATTRIBUTES_CANT_BE_DPB;
+        sp->misc.Attributes = ATTRIBUTES_CANT_BE_DPB;
 	}
 	sp = CheckAndReturnSpellEntry(51417);
 	if(sp != NULL)
 	{
-		sp->Attributes = ATTRIBUTES_CANT_BE_DPB;
+        sp->misc.Attributes = ATTRIBUTES_CANT_BE_DPB;
 	}
 	sp = CheckAndReturnSpellEntry(51418);
 	if(sp != NULL)
 	{
-		sp->Attributes = ATTRIBUTES_CANT_BE_DPB;
+        sp->misc.Attributes = ATTRIBUTES_CANT_BE_DPB;
 	}
 	sp = CheckAndReturnSpellEntry(51419);
 	if(sp != NULL)
 	{
-		sp->Attributes = ATTRIBUTES_CANT_BE_DPB;
+        sp->misc.Attributes = ATTRIBUTES_CANT_BE_DPB;
 	}
 	sp = CheckAndReturnSpellEntry(55268);
 	if(sp != NULL)
 	{
-		sp->Attributes = ATTRIBUTES_CANT_BE_DPB;
+        sp->misc.Attributes = ATTRIBUTES_CANT_BE_DPB;
 	}
 
 	/**********************************************************
@@ -6987,19 +6987,19 @@ void ApplyNormalFixes()
 	//Tempfix for Stone Statues
 	sp = CheckAndReturnSpellEntry(32253);
 	if(sp != NULL)
-		sp->DurationIndex = 64;
+        sp->misc.DurationIndex = 64;
 	sp = CheckAndReturnSpellEntry(32787);
 	if(sp != NULL)
-		sp->DurationIndex = 64;
+        sp->misc.DurationIndex = 64;
 	sp = CheckAndReturnSpellEntry(32788);
 	if(sp != NULL)
-		sp->DurationIndex = 64;
+        sp->misc.DurationIndex = 64;
 	sp = CheckAndReturnSpellEntry(32790);
 	if(sp != NULL)
-		sp->DurationIndex = 64;
+        sp->misc.DurationIndex = 64;
 	sp = CheckAndReturnSpellEntry(32791);
 	if(sp != NULL)
-		sp->DurationIndex = 64;
+        sp->misc.DurationIndex = 64;
 
 	//////////////////////////////////////////////////////
 	// GAME-OBJECT SPELL FIXES                          //
@@ -7038,7 +7038,7 @@ void ApplyNormalFixes()
 	{
 		const uint32 ritOfSummId = 62330;
 		CreateDummySpell(ritOfSummId);
-		SpellEntry * ritOfSumm = dbcSpell.LookupEntryForced(ritOfSummId);
+		SpellEntry * ritOfSumm = dbcSpellEntry.LookupEntryForced(ritOfSummId);
 		if(ritOfSumm != NULL)
 		{
 			memcpy(ritOfSumm, sp, sizeof(SpellEntry));

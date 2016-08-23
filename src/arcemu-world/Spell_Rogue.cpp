@@ -28,7 +28,7 @@ class CheatDeathAura : public AbsorbAura
 		CheatDeathAura(SpellEntry* proto, int32 duration, Object* caster, Unit* target, bool temporary = false, Item* i_caster = NULL)
 			: AbsorbAura(proto, duration, caster, target, temporary, i_caster)
 		{
-			dSpell = dbcSpell.LookupEntry(31231);
+			dSpell = dbcSpellEntry.LookupEntry(31231);
 		}
 
 		uint32 AbsorbDamage(uint32 School, uint32* dmg)

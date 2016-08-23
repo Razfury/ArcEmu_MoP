@@ -25,7 +25,7 @@ initialiseSingleton(SpellProcMgr);
 uint32 SpellProc::CalcProcChance(Unit* victim, SpellEntry* CastingSpell)
 {
 	// Check if proc chance is based on combo points
-	if(mTarget->IsPlayer() && mOrigSpell && mOrigSpell->AttributesEx & ATTRIBUTESEX_REQ_COMBO_POINTS1 && mOrigSpell->AttributesExD & FLAGS5_PROCCHANCE_COMBOBASED)
+    if (mTarget->IsPlayer() && mOrigSpell && mOrigSpell->misc.AttributesEx & ATTRIBUTESEX_REQ_COMBO_POINTS1 && mOrigSpell->misc.AttributesExD & FLAGS5_PROCCHANCE_COMBOBASED)
 		return float2int32(TO_PLAYER(mTarget)->m_comboPoints * mOrigSpell->eff[0].EffectPointsPerComboPoint);
 	else
 		return mProcChance;
@@ -33,7 +33,7 @@ uint32 SpellProc::CalcProcChance(Unit* victim, SpellEntry* CastingSpell)
 
 bool SpellProc::CanProcOnTriggered(Unit* victim, SpellEntry* CastingSpell)
 {
-	if(mOrigSpell != NULL && mOrigSpell->AttributesExC & FLAGS4_CAN_PROC_ON_TRIGGERED)
+    if (mOrigSpell != NULL && mOrigSpell->misc.AttributesExC & FLAGS4_CAN_PROC_ON_TRIGGERED)
 		return true;
 	return false;
 }
@@ -60,7 +60,7 @@ void SpellProc::CastSpell(Unit* victim, SpellEntry* CastingSpell, int* dmg_overw
 
 SpellProc* SpellProcMgr::NewSpellProc(Unit* target, uint32 spell_id, uint32 orig_spell_id, uint64 caster, uint32 procChance, uint32 procFlags, uint32 procCharges, uint32* groupRelation, uint32* procClassMask, Object* obj)
 {
-	return NewSpellProc(target, dbcSpell.LookupEntryForced(spell_id), dbcSpell.LookupEntryForced(orig_spell_id), caster, procChance, procFlags, procCharges, groupRelation, procClassMask, obj);
+	return NewSpellProc(target, dbcSpellEntry.LookupEntryForced(spell_id), dbcSpellEntry.LookupEntryForced(orig_spell_id), caster, procChance, procFlags, procCharges, groupRelation, procClassMask, obj);
 }
 
 SpellProc* SpellProcMgr::NewSpellProc(Unit* target, SpellEntry* spell, SpellEntry* orig_spell, uint64 caster, uint32 procChance, uint32 procFlags, uint32 procCharges, uint32* groupRelation, uint32* procClassMask, Object* obj)

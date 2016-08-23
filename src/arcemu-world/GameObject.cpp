@@ -130,7 +130,7 @@ bool GameObject::CreateFromProto(uint32 entry, uint32 mapid, float x, float y, f
 
 void GameObject::EventCastSpell(uint32 guid, uint32 sp, bool triggered)
 {
-	Spell* spp = sSpellFactoryMgr.NewSpell(this, dbcSpell.LookupEntry(sp), false, NULL);
+	Spell* spp = sSpellFactoryMgr.NewSpell(this, dbcSpellEntry.LookupEntry(sp), false, NULL);
 	SpellCastTargets tars(guid);
 	spp->prepare(&tars);
 }
@@ -432,7 +432,7 @@ void GameObject::InitAI()
 	if(!spellid || spellid == 22247)
 		return;
 
-	SpellEntry* sp = dbcSpell.LookupEntryForced(spellid);
+	SpellEntry* sp = dbcSpellEntry.LookupEntryForced(spellid);
 	if(!sp)
 	{
 		spell = NULL;
@@ -458,7 +458,7 @@ void GameObject::InitAI()
 	}
 
 	if(r < 0.1)//no range
-		r = GetMaxRange(dbcSpellRange.LookupEntry(sp->rangeIndex));
+        r = GetMaxRange(dbcSpellRange.LookupEntry(sp->misc.rangeIndex));
 
 	range = r * r; //square to make code faster
 	checkrate = 20;//once in 2 seconds

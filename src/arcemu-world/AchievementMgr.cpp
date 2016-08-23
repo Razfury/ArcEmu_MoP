@@ -1313,7 +1313,7 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type)
 					uint32 nm = 0;
 					while(sl != GetPlayer()->mSpells.end())
 					{
-						SpellEntry* sp = dbcSpell.LookupEntryForced(*sl);
+						SpellEntry* sp = dbcSpellEntry.LookupEntryForced(*sl);
 						if(achievementCriteria->number_of_mounts.unknown == 777 && sp && sp->MechanicsType == MECHANIC_MOUNTED)
 						{
 							// mount spell

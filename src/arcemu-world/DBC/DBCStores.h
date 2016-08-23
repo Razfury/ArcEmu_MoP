@@ -1380,13 +1380,19 @@ struct SpellLevelsEntry
 // SpellPower.dbc
 struct SpellPowerEntry
 {
-    uint32    Id;                                           // 0        m_ID
-    uint32    manaCost;                                     // 45       m_manaCost
-    uint32    manaCostPerlevel;                             // 46       m_manaCostPerLevel
-    uint32    ManaCostPercentage;                           // 144      m_manaCostPct
-    uint32    manaPerSecond;                                // 47       m_manaPerSecond
-    uint32    manaPerSecondPerLevel;
-    float     manaCostPercentagefloat;                      //           4.3.0
+    //uint32  Id;                                           // 0        m_ID
+    //uint32  spellId;                                      // 1  - Pandaria
+    //uint32  unk0;                                         // 2  - Pandaria always after spellId
+    uint32    powerType;                                    // 3       m_powerType
+    uint32    manaCost;                                     // 4       m_manaCost
+    uint32    manaCostPerlevel;                             // 5       m_manaCostPerLevel
+    uint32    manaPerSecond;                                // 6       m_manaPerSecond
+    uint32    manaPerSecondPerLevel;                        // 7       m_manaPerSecondPerLevel
+    //uint32  PowerDisplayId;                               // 8       m_powerDisplayID - id from PowerDisplay.dbc, new in 3.1
+    float     ManaCostPercentage;                           // 9       4.3.0
+    // float  unk1                                          // 10 - Pandaria
+    // float  unk2                                          // 11 - Pandaria
+    // float  unk3                                          // 12 - Pandaria
 };
 
 // SpellReagents.dbc
@@ -1462,6 +1468,35 @@ struct SpellFocusObjectEntry
     uint32    ID;                                           // 0
 };
 
+struct SpellMiscEntry
+{
+    uint32    Id;                                           // 0        m_ID
+    //uint32  SpellId                                       // 1
+    //uint32  Unk                                           // 2
+    uint32    Attributes;                                   // 3        m_attribute
+    uint32    AttributesEx;                                 // 4        m_attributesEx
+    uint32    AttributesExB;                                // 5        m_attributesExB
+    uint32    AttributesExC;                                // 6        m_attributesExC
+    uint32    AttributesExD;                                // 7        m_attributesExD
+    uint32    AttributesExE;                                // 8        m_attributesExE
+    uint32    AttributesExF;                                // 9        m_attributesExF
+    uint32    AttributesExG;                                // 10       m_attributesExG
+    uint32    AttributesExH;                                // 11       m_attributesExH
+    uint32    AttributesExI;                                // 12       m_attributesExI
+    uint32    AttributesExJ;                                // 13       m_attributesExJ
+    uint32    AttributesExK;                                // 14       m_attributesExK
+    uint32    AttributesExL;                                // 15       m_attributesExL
+    uint32    AttributesExM;                                // 16       m_attributesExM
+    uint32    CastingTimeIndex;                             // 17       m_castingTimeIndex
+    uint32    DurationIndex;                                // 18       m_durationIndex
+    uint32    rangeIndex;                                   // 19       m_rangeIndex
+    float     speed;                                        // 20       m_speed
+    uint32    SpellVisual[2];                               // 21-22    m_spellVisualID
+    uint32    spellIconID;                                  // 23       m_spellIconID
+    uint32    activeIconID;                                 // 24       m_activeIconID
+    uint32    SchoolMask;                                   // 25       m_schoolMask
+};
+
 class SpellEffectOverrideScript;
 class SpellCanCastScript;
 class SpellCanTargetedScript;
@@ -1471,10 +1506,40 @@ class Object;
 #define MAX_SPELL_EFFECT_COUNT		3	//don't be an idiot and put a value that is not initialized by DBC, you will have random spells poping up
 #define MAX_SPELL_EFFECTS 3 // same shit, but twice
 
-// Struct for the entry in Spell.dbc
+// Spell.dbc
 struct SpellEntry
 {
+    uint32 Id;                                              // 0        m_ID
+    char* Name;                                             // 1        m_name_lang
+    char* Rank;                                             // 2        m_nameSubtext_lang
+    char* Description;                                      // 3        m_description_lang not used; we use it for the greatest spell system ever
+    //char* ToolTip;                                        // 4        m_auraDescription_lang not used
+    uint32 RuneCostID;                                      // 5        m_runeCostID
+    //uint32    spellMissileID;                             // 6        m_spellMissileID not used
+    //uint32  spellDescriptionVariableID;                   // 7        m_spellDescriptionVariableID, 3.2.0
+    uint32 SpellDifficultyID;                               // 8        m_spellDifficultyID - id from SpellDifficulty.dbc
+    uint32 SpellScalingId;                                  // 9        SpellScaling.dbc
+    uint32 SpellAuraOptionsId;                              // 10       SpellAuraOptions.dbc
+    uint32 SpellAuraRestrictionsId;                         // 11       SpellAuraRestrictions.dbc
+    uint32 SpellCastingRequirementsId;                      // 12       SpellCastingRequirements.dbc
+    uint32 SpellCategoriesId;                               // 13       SpellCategories.dbc
+    uint32 SpellClassOptionsId;                             // 14       SpellClassOptions.dbc
+    uint32 SpellCooldownsId;                                // 15       SpellCooldowns.dbc
+    uint32 SpellEquippedItemsId;                            // 16       SpellEquippedItems.dbc
+    uint32 SpellInterruptsId;                               // 17       SpellInterrupts.dbc
+    uint32 SpellLevelsId;                                   // 18       SpellLevels.dbc
+    uint32 SpellReagentsId;                                 // 19       SpellReagents.dbc
+    uint32 SpellShapeshiftId;                               // 20       SpellShapeshift.dbc
+    uint32 SpellTargetRestrictionsId;                       // 21       SpellTargetRestrictions.dbc
+    uint32 SpellTotemsId;                                   // 22       SpellTotems.dbc
+    uint32 ResearchProject;                                 // 23       ResearchProject.dbc
+    uint32 SpellMiscId;                                     // 24       SpellMisc.dbc
+
+
+    /*
+
     uint32    Id;                                           // 0        m_ID
+
     uint32    Attributes;                                   // 1        m_attribute
     uint32    AttributesEx;                                 // 2        m_attributesEx
     uint32    AttributesExB;                                // 3        m_attributesExB
@@ -1519,7 +1584,7 @@ struct SpellEntry
     uint32    SpellShapeshiftId;                               // 43       SpellShapeshift.dbc
     uint32    SpellTargetRestrictionsId;                       // 44       SpellTargetRestrictions.dbc
     uint32    SpellTotemsId;                                   // 45       SpellTotems.dbc
-    uint32    ResearchProject;                                 // 46  
+    uint32    ResearchProject;                                 // 46  */
 
     /// CUSTOM: these fields are used for the modifications made in the world.cpp
     //	uint32									eff_count;		//will attach N effects here
@@ -1696,6 +1761,8 @@ struct SpellEntry
     SpellTargetRestrictionsEntry str;
     SpellReagentsEntry sre;
     SpellShapeshiftEntry ssh;
+    
+    SpellMiscEntry misc;
 
     //	uint32 GetManaCost();
     //	uint32 GetManaCostPCT();
@@ -2800,7 +2867,8 @@ extern SERVER_DECL DBCStorage<ItemSetEntry>					dbcItemSet;
 extern SERVER_DECL DBCStorage<Lock>							dbcLock;
 extern SERVER_DECL DBCStorage<NameGenEntry>                 sNameGenStore;
 
-extern SERVER_DECL DBCStorage<SpellEntry>					dbcSpell;
+extern SERVER_DECL DBCStorage<SpellEntry>					dbcSpellEntry;
+extern SERVER_DECL DBCStorage<SpellMiscEntry>               dbcSpellMiscEntry;
 extern SERVER_DECL DBCStorage<SpellDuration>				dbcSpellDuration;
 extern SERVER_DECL DBCStorage<SpellRange>					dbcSpellRange;
 extern SERVER_DECL DBCStorage<SpellRadius>					dbcSpellRadius;

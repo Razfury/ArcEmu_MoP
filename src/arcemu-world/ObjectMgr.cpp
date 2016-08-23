@@ -406,7 +406,7 @@ SpellEntry* ObjectMgr::GetNextSpellRank(SpellEntry* sp, uint32 level)
     SkillLineAbilityEntry* skill = GetSpellSkill(sp->Id);
 	if(skill != NULL && skill->forward_spellid > 0)
 	{
-		SpellEntry* sp1 = dbcSpell.LookupEntry(skill->forward_spellid);
+		SpellEntry* sp1 = dbcSpellEntry.LookupEntry(skill->forward_spellid);
 		if(sp1->SpellLevel.baseLevel <= level)   // check level
 			return GetNextSpellRank(sp1, level);   // recursive for higher ranks
 	}
@@ -1440,7 +1440,7 @@ void ObjectMgr::LoadAIThreatToSpellId()
 	do
 	{
 		Field* fields = result->Fetch();
-		sp = dbcSpell.LookupEntryForced(fields[0].GetUInt32());
+		sp = dbcSpellEntry.LookupEntryForced(fields[0].GetUInt32());
 		if(sp != NULL)
 		{
 			sp->ThreatForSpell = fields[1].GetUInt32();
@@ -1469,7 +1469,7 @@ void ObjectMgr::LoadSpellProcs()
 
 			if(spe_spellId)
 			{
-				sp = dbcSpell.LookupEntryForced(spe_spellId);
+				sp = dbcSpellEntry.LookupEntryForced(spe_spellId);
 				if(sp != NULL)
 				{
 					int x;
@@ -1534,7 +1534,7 @@ void ObjectMgr::LoadSpellEffectsOverride()
 
 			if(seo_SpellId)
 			{
-				sp = dbcSpell.LookupEntryForced(seo_SpellId);
+				sp = dbcSpellEntry.LookupEntryForced(seo_SpellId);
 				if(sp != NULL)
 				{
 					if(seo_Disable)
@@ -1911,14 +1911,14 @@ void ObjectMgr::LoadTrainers()
 
 				if(CastSpellID != 0)
 				{
-					ts.pCastSpell = dbcSpell.LookupEntryForced(CastSpellID);
+					ts.pCastSpell = dbcSpellEntry.LookupEntryForced(CastSpellID);
 					if(ts.pCastSpell)
 					{
 						for(int k = 0; k < 3; ++k)
 						{
 							if(ts.pCastSpell->eff[k].Effect == SPELL_EFFECT_LEARN_SPELL)
 							{
-								ts.pCastRealSpell = dbcSpell.LookupEntryForced(ts.pCastSpell->eff[k].EffectTriggerSpell);
+								ts.pCastRealSpell = dbcSpellEntry.LookupEntryForced(ts.pCastSpell->eff[k].EffectTriggerSpell);
 								if(ts.pCastRealSpell == NULL)
 								{
 									Log.Error("Trainers", "Trainer %u contains cast spell %u that is non-teaching", entry, CastSpellID);
@@ -1935,7 +1935,7 @@ void ObjectMgr::LoadTrainers()
 
 				if(LearnSpellID != 0)
 				{
-					ts.pLearnSpell = dbcSpell.LookupEntryForced(LearnSpellID);
+					ts.pLearnSpell = dbcSpellEntry.LookupEntryForced(LearnSpellID);
 				}
 
 				//if(ts.pCastSpell == NULL && ts.pLearnSpell == NULL)
@@ -2249,7 +2249,7 @@ void ObjectMgr::LoadDefaultPetSpells()
 			Field* f = result->Fetch();
 			uint32 Entry = f[0].GetUInt32();
 			uint32 spell = f[1].GetUInt32();
-			SpellEntry* sp = dbcSpell.LookupEntryForced(spell);
+			SpellEntry* sp = dbcSpellEntry.LookupEntryForced(spell);
 
 			if(spell && Entry && sp)
 			{
@@ -2315,7 +2315,7 @@ uint32 ObjectMgr::GetPetSpellCooldown(uint32 SpellId)
 	if(itr != mPetSpellCooldowns.end())
 		return itr->second;
 
-	SpellEntry* sp = dbcSpell.LookupEntry(SpellId);
+	SpellEntry* sp = dbcSpellEntry.LookupEntry(SpellId);
 	if( sp->RecoveryTime > sp->CategoryRecoveryTime )
 		return sp->RecoveryTime;
 	else
@@ -2352,7 +2352,7 @@ void ObjectMgr::LoadSpellOverride()
 			{
 				Field* fieldsIn = resultIn->Fetch();
 				spellid = fieldsIn[0].GetUInt32();
-				sp = dbcSpell.LookupEntryForced(spellid);
+				sp = dbcSpellEntry.LookupEntryForced(spellid);
 				if(!spellid || !sp)
 					continue;
 				list->push_back(sp);

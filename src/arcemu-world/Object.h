@@ -360,13 +360,13 @@ struct MovementInfo3
     void SetMovementFlags(uint32 flag) { flags = flag; }
     void AddMovementFlag(uint32 flag) { flags |= flag; }
     void RemoveMovementFlag(uint32 flag) { flags &= ~flag; }
-    bool HasMovementFlag(uint32 flag) const { return flags & flag != 0; }
+    bool HasMovementFlag(uint32 flag) const { return flags & flag; }
 
     uint16 GetExtraMovementFlags() const { return flags2; }
     void SetExtraMovementFlags(uint16 flag) { flags2 = flag; }
     void AddExtraMovementFlag(uint16 flag) { flags2 |= flag; }
     void RemoveExtraMovementFlag(uint16 flag) { flags2 &= ~flag; }
-    bool HasExtraMovementFlag(uint16 flag) const { return flags2 & flag != 0; }
+    bool HasExtraMovementFlag(uint16 flag) const { return flags2 & flag; }
 
     void SetFallTime(uint32 time) { jump.fallTime = time; }
 

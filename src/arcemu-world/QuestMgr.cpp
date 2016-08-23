@@ -1213,7 +1213,7 @@ void QuestMgr::OnQuestFinished(Player* plr, Quest* qst, Object* qst_giver, uint3
 		// cast Effect Spell
 		if(qst->effect_on_player)
 		{
-			SpellEntry*   inf = dbcSpell.LookupEntryForced(qst->effect_on_player);
+			SpellEntry*   inf = dbcSpellEntry.LookupEntryForced(qst->effect_on_player);
 			if(inf)
 			{
 				Spell* spe = sSpellFactoryMgr.NewSpell(plr, inf, true, NULL);
@@ -1361,7 +1361,7 @@ void QuestMgr::OnQuestFinished(Player* plr, Quest* qst, Object* qst_giver, uint3
 		// cast Effect Spell
 		if(qst->effect_on_player)
 		{
-			SpellEntry*   inf = dbcSpell.LookupEntryForced(qst->effect_on_player);
+			SpellEntry*   inf = dbcSpellEntry.LookupEntryForced(qst->effect_on_player);
 			if(inf)
 			{
 				Spell* spe = sSpellFactoryMgr.NewSpell(plr, inf, true, NULL);

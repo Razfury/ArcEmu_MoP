@@ -83,7 +83,7 @@ class FlametongueWeaponSpellProc : public SpellProc
 			EnchantmentInstance* enchant = item->GetEnchantment(TEMP_ENCHANTMENT_SLOT);
 			if(enchant != NULL)
 			{
-				SpellEntry* sp = dbcSpell.LookupEntryForced(enchant->Enchantment->spell[0]);
+				SpellEntry* sp = dbcSpellEntry.LookupEntryForced(enchant->Enchantment->spell[0]);
 				if(sp != NULL && sp->NameHash == SPELL_HASH_FLAMETONGUE_WEAPON__PASSIVE_)
 				{
 					wp_speed = item->GetProto()->Delay;

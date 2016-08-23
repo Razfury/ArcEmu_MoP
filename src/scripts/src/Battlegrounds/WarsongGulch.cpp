@@ -138,7 +138,7 @@ void WarsongGulch::HookOnAreaTrigger(Player* plr, uint32 id)
 		if(m_buffs[buffslot] != 0 && m_buffs[buffslot]->IsInWorld())
 		{
 			/* apply the buff */
-			SpellEntry* sp = dbcSpell.LookupEntry(m_buffs[buffslot]->GetInfo()->sound3);
+			SpellEntry* sp = dbcSpellEntry.LookupEntry(m_buffs[buffslot]->GetInfo()->sound3);
 			Spell* s = sSpellFactoryMgr.NewSpell(plr, sp, true, 0);
 			SpellCastTargets targets(plr->GetGUID());
 			s->prepare(&targets);
@@ -329,7 +329,7 @@ void WarsongGulch::HookFlagDrop(Player* plr, GameObject* obj)
 	 */
 	m_dropFlags[plr->GetTeam()]->SetNewGuid(m_mapMgr->GenerateGameobjectGuid());
 
-	SpellEntry* pSp = dbcSpell.LookupEntry(23333 + (plr->GetTeam() * 2));
+	SpellEntry* pSp = dbcSpellEntry.LookupEntry(23333 + (plr->GetTeam() * 2));
 	Spell* sp = sSpellFactoryMgr.NewSpell(plr, pSp, true, 0);
 	SpellCastTargets targets(plr->GetGUID());
 	sp->prepare(&targets);
@@ -380,7 +380,7 @@ void WarsongGulch::HookFlagStand(Player* plr, GameObject* obj)
 		return;
 	}
 
-	SpellEntry* pSp = dbcSpell.LookupEntry(23333 + (plr->GetTeam() * 2));
+	SpellEntry* pSp = dbcSpellEntry.LookupEntry(23333 + (plr->GetTeam() * 2));
 	Spell* sp = sSpellFactoryMgr.NewSpell(plr, pSp, true, 0);
 	SpellCastTargets targets(plr->GetGUID());
 	sp->prepare(&targets);

@@ -472,7 +472,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket & recvPacket)
 	}
 
 	SpellCastTargets targets(recvPacket, _player->GetGUID());
-	SpellEntry* spellInfo = dbcSpell.LookupEntryForced(spellId);
+	SpellEntry* spellInfo = dbcSpellEntry.LookupEntryForced(spellId);
 	if(spellInfo == NULL)
 	{
 		sLog.outError("WORLD: unknown spell id %i", spellId);
@@ -659,7 +659,7 @@ void WorldSession::HandleSpellClick(WorldPacket & recvPacket)
 	if(cast_spell_id == 0)
 		return;
 
-	SpellEntry* spellInfo = dbcSpell.LookupEntryForced(cast_spell_id);
+	SpellEntry* spellInfo = dbcSpellEntry.LookupEntryForced(cast_spell_id);
 	if(spellInfo == NULL)
 		return;
 	Spell* spell = sSpellFactoryMgr.NewSpell(_player, spellInfo, false, NULL);
@@ -1011,7 +1011,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket & recvPacket)
 
 	
 	// check for spell id
-	SpellEntry* spellInfo = dbcSpell.LookupEntryForced(spellId);
+	SpellEntry* spellInfo = dbcSpellEntry.LookupEntryForced(spellId);
 
 	if(!spellInfo)
 	{
@@ -1019,7 +1019,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket & recvPacket)
 		return;
 	}
 
-	if(!_player->isAlive() && _player->GetShapeShift() != FORM_SPIRITOFREDEMPTION && !(spellInfo->Attributes & ATTRIBUTES_DEAD_CASTABLE)) //They're dead, not in spirit of redemption and the spell can't be cast while dead.
+    if (!_player->isAlive() && _player->GetShapeShift() != FORM_SPIRITOFREDEMPTION && !(spellInfo->misc.Attributes & ATTRIBUTES_DEAD_CASTABLE)) //They're dead, not in spirit of redemption and the spell can't be cast while dead.
 		return;
 
 	LOG_DETAIL("WORLD: got cast spell packet, spellId - %i (%s), data length = %i",
@@ -1035,7 +1035,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket & recvPacket)
 		LOG_DETAIL("WORLD: Spell isn't cast because player \'%s\' is cheating", GetPlayer()->GetName());
 		return;
 	}
-	if(spellInfo->Attributes & ATTRIBUTES_PASSIVE)
+    if (spellInfo->misc.Attributes & ATTRIBUTES_PASSIVE)
 	{
 		sCheatLog.writefromsession(this, "Cast passive spell %lu.", spellId);
 		LOG_DETAIL("WORLD: Spell isn't cast because player \'%s\' is cheating", GetPlayer()->GetName());
@@ -1045,7 +1045,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket & recvPacket)
 	if(GetPlayer()->GetOnMeleeSpell() != spellId)
 	{
 		//autoshot 75
-		if((spellInfo->AttributesExB & ATTRIBUTESEXB_ACTIVATE_AUTO_SHOT) /*spellInfo->Attributes == 327698*/)	// auto shot..
+        if ((spellInfo->misc.AttributesExB & ATTRIBUTESEXB_ACTIVATE_AUTO_SHOT) /*spellInfo->Attributes == 327698*/)	// auto shot..
 		{
 			//sLog.outString( "HandleSpellCast: Auto Shot-type spell cast (id %u, name %s)" , spellInfo->Id , spellInfo->Name );
 			Item* weapon = GetPlayer()->GetItemInterface()->GetInventoryItem(EQUIPMENT_SLOT_RANGED);
@@ -1083,7 +1083,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket & recvPacket)
 					LOG_DEBUG("Cancelling auto-shot cast because targets.m_unitTarget is null!");
 					return;
 				}
-				SpellEntry* sp = dbcSpell.LookupEntry(spellid);
+				SpellEntry* sp = dbcSpellEntry.LookupEntry(spellid);
 
 				_player->m_AutoShotSpell = sp;
 				_player->m_AutoShotDuration = duration;
@@ -1152,9 +1152,9 @@ void WorldSession::HandleCancelAuraOpcode(WorldPacket & recvPacket)
 		_player->m_currentSpell->cancel();
 	else
 	{
-		SpellEntry* info = dbcSpell.LookupEntryForced(spellId);
+		SpellEntry* info = dbcSpellEntry.LookupEntryForced(spellId);
 
-		if(info != NULL && !(info->Attributes & static_cast<uint32>(ATTRIBUTES_CANT_CANCEL)))
+        if (info != NULL && !(info->misc.Attributes & static_cast<uint32>(ATTRIBUTES_CANT_CANCEL)))
 		{
 			_player->RemoveAllAuraById(spellId);
 			LOG_DEBUG("Removing all auras with ID: %u", spellId);
@@ -1203,7 +1203,7 @@ void WorldSession::HandlePetCastSpell(WorldPacket & recvPacket)
 	recvPacket >> spellid;
 	recvPacket >> castflags;
 
-	SpellEntry* sp = dbcSpell.LookupEntryForced(spellid);
+	SpellEntry* sp = dbcSpellEntry.LookupEntryForced(spellid);
 	if(sp == NULL)
 		return;
 	// Summoned Elemental's Freeze

@@ -105,7 +105,7 @@ class MirrorImageAI : public CreatureAIScript
 					AI_Spell sp1;
 
 					sp1.entryId = 59638;
-					sp1.spell = dbcSpell.LookupEntryForced(sp1.entryId);
+					sp1.spell = dbcSpellEntry.LookupEntryForced(sp1.entryId);
 					sp1.spellType = STYPE_DAMAGE;
 					sp1.agent = AGENT_SPELL;
 					sp1.spelltargetType = TTYPE_SINGLETARGET;
@@ -114,7 +114,7 @@ class MirrorImageAI : public CreatureAIScript
 					sp1.Misc2 = 0;
 					sp1.procCount = 0;
 					sp1.procChance = 100;
-					range = dbcSpellRange.LookupEntry(sp1.spell->rangeIndex);
+                    range = dbcSpellRange.LookupEntry(sp1.spell->misc.rangeIndex);
 					sp1.minrange = GetMinRange(range);
 					sp1.maxrange = GetMaxRange(range);
 
@@ -122,7 +122,7 @@ class MirrorImageAI : public CreatureAIScript
 
 					AI_Spell sp2;
 					sp2.entryId = 59637;
-					sp2.spell = dbcSpell.LookupEntryForced(sp2.entryId);
+					sp2.spell = dbcSpellEntry.LookupEntryForced(sp2.entryId);
 					sp2.spellType = STYPE_DAMAGE;
 					sp2.agent = AGENT_SPELL;
 					sp2.spelltargetType = TTYPE_SINGLETARGET;
@@ -131,7 +131,7 @@ class MirrorImageAI : public CreatureAIScript
 					sp2.Misc2 = 0;
 					sp2.procCount = 0;
 					sp2.procChance = 100;
-					range = dbcSpellRange.LookupEntry(sp2.spell->rangeIndex);
+                    range = dbcSpellRange.LookupEntry(sp2.spell->misc.rangeIndex);
 					sp2.minrange = GetMinRange(range);
 					sp2.maxrange = GetMaxRange(range);
 
@@ -251,7 +251,7 @@ class DancingRuneWeaponAI : public CreatureAIScript
 				if(dpsCycle > 11)
 					dpsCycle = 0;
 
-				SpellEntry* MyNextSpell = dbcSpell.LookupEntryForced(dpsSpell);
+				SpellEntry* MyNextSpell = dbcSpellEntry.LookupEntryForced(dpsSpell);
 				if(MyNextSpell != NULL)
 					_unit->CastSpell(curtarget, MyNextSpell, true);
 
@@ -264,7 +264,7 @@ class DancingRuneWeaponAI : public CreatureAIScript
 			{
 				if(procSpell[p] != 0)
 				{
-					SpellEntry* mProc = dbcSpell.LookupEntryForced(procSpell[p]);
+					SpellEntry* mProc = dbcSpellEntry.LookupEntryForced(procSpell[p]);
 					if(!mProc)
 						return;
 					int x = rand() % 100;
