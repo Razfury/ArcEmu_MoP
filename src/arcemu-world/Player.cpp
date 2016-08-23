@@ -8164,9 +8164,44 @@ void Player::RequestDuel(Player* pTarget)
 
 	pGameObj->PushToWorld(m_mapMgr);
 
-	WorldPacket data(SMSG_DUEL_REQUESTED, 16);
-	data << pGameObj->GetGUID();
-	data << GetGUID();
+    ObjectGuid casterGuid = GetGUID();
+    ObjectGuid arbiterGuid = pGameObj->GetGUID();
+
+	WorldPacket data(SMSG_DUEL_REQUESTED, 9 + 9);
+    data.WriteBit(arbiterGuid[5]);
+    data.WriteBit(casterGuid[4]);
+    data.WriteBit(casterGuid[2]);
+    data.WriteBit(casterGuid[7]);
+    data.WriteBit(arbiterGuid[0]);
+    data.WriteBit(casterGuid[5]);
+    data.WriteBit(arbiterGuid[4]);
+    data.WriteBit(arbiterGuid[6]);
+    data.WriteBit(casterGuid[1]);
+    data.WriteBit(casterGuid[3]);
+    data.WriteBit(casterGuid[6]);
+    data.WriteBit(arbiterGuid[7]);
+    data.WriteBit(arbiterGuid[3]);
+    data.WriteBit(arbiterGuid[2]);
+    data.WriteBit(arbiterGuid[1]);
+    data.WriteBit(casterGuid[0]);
+
+    data.WriteByteSeq(arbiterGuid[5]);
+    data.WriteByteSeq(arbiterGuid[3]);
+    data.WriteByteSeq(casterGuid[7]);
+    data.WriteByteSeq(casterGuid[4]);
+    data.WriteByteSeq(arbiterGuid[7]);
+    data.WriteByteSeq(casterGuid[3]);
+    data.WriteByteSeq(casterGuid[6]);
+    data.WriteByteSeq(casterGuid[0]);
+    data.WriteByteSeq(arbiterGuid[4]);
+    data.WriteByteSeq(casterGuid[2]);
+    data.WriteByteSeq(casterGuid[1]);
+    data.WriteByteSeq(arbiterGuid[0]);
+    data.WriteByteSeq(arbiterGuid[2]);
+    data.WriteByteSeq(arbiterGuid[6]);
+    data.WriteByteSeq(arbiterGuid[1]);
+    data.WriteByteSeq(casterGuid[5]);
+
 	pTarget->GetSession()->SendPacket(&data);
 }
 
@@ -8233,8 +8268,7 @@ void Player::DuelBoundaryTest()
 			m_duelCountdownTimer = 10000;
 
 			// let us know
-
-			m_session->OutPacket(SMSG_DUEL_OUTOFBOUNDS, 4, &m_duelCountdownTimer);
+			m_session->OutPacket(SMSG_DUEL_OUTOFBOUNDS);
 
 			m_duelStatus = DUEL_STATUS_OUTOFBOUNDS;
 		}
@@ -8310,24 +8344,33 @@ void Player::EndDuel(uint8 WinCondition)
 
 	DuelingWith->m_duelState = DUEL_STATE_FINISHED;
 
-	//Announce Winner
-	WorldPacket data(SMSG_DUEL_WINNER, 500);
-	data << uint8(WinCondition);
-	data << GetName() << DuelingWith->GetName();
+	// Announce winner
+    // Do something with WinCondition
+	WorldPacket data(SMSG_DUEL_WINNER, 1 + 20);
+    data.WriteBit(1); // Duel type != DUEL_WON (0 = just won; 1 = fled)
+    data.WriteBits(strlen(DuelingWith->GetName()) + 1, 6);
+    data.WriteBits(strlen(GetName()) + 1, 6);
+    data << uint32(1); // Realm id
+    data.WriteString(DuelingWith->GetName());
+    data << uint32(1); // Realm id
+    data.WriteString(GetName());
+
 	SendMessageToSet(&data, true);
 
 	data.Initialize(SMSG_DUEL_COMPLETE);
-	data << uint8(1);
+    data.WriteBit(1); // Duel type != DUEL_INTERRUPTED
+    data.FlushBits();
+
 	SendMessageToSet(&data, true);
 
-	//Send hook OnDuelFinished
+	// Send hook OnDuelFinished
 
 	if (WinCondition != 0)
 		sHookInterface.OnDuelFinished(DuelingWith, this);
 	else
 		sHookInterface.OnDuelFinished(this, DuelingWith);
 
-	//Clear Duel Related Stuff
+	// Clear Duel Related Stuff
 
 	GameObject* arbiter = m_mapMgr ? GetMapMgr()->GetGameObject(GET_LOWGUID_PART(GetDuelArbiter())) : 0;
 

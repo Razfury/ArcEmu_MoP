@@ -649,8 +649,8 @@ class SERVER_DECL WorldSession
 		void HandleChannelRosterQuery(WorldPacket & recvPacket);
 
 		// Duel
-		void HandleDuelAccepted(WorldPacket & recv_data);
-		void HandleDuelCancelled(WorldPacket & recv_data);
+		void HandleDuelProposed(WorldPacket & recv_data);
+		void HandleDuelResponse(WorldPacket & recv_data);
 
 		// Trade
 		void HandleInitiateTrade(WorldPacket & recv_data);

@@ -1001,10 +1001,8 @@ void WorldSession::InitPacketHandlerTable()
 	// Combat / Duel
 	WorldPacketHandlers[CMSG_ATTACKSWING].handler = &WorldSession::HandleAttackSwingOpcode;
 	WorldPacketHandlers[CMSG_ATTACKSTOP].handler = &WorldSession::HandleAttackStopOpcode;
-	WorldPacketHandlers[CMSG_DUEL_ACCEPTED].handler =
-	    &WorldSession::HandleDuelAccepted;
-	WorldPacketHandlers[CMSG_DUEL_CANCELLED].handler =
-	    &WorldSession::HandleDuelCancelled;
+    WorldPacketHandlers[CMSG_DUEL_PROPOSED].handler = &WorldSession::HandleDuelProposed;
+    WorldPacketHandlers[CMSG_DUEL_RESPONSE].handler = &WorldSession::HandleDuelResponse;
 
 	// Trade
 	WorldPacketHandlers[CMSG_INITIATE_TRADE].handler =

@@ -20,88 +20,137 @@
 
 #include "StdAfx.h"
 
-void WorldSession::HandleDuelAccepted(WorldPacket & recv_data)
+void WorldSession::HandleDuelProposed(WorldPacket & recv_data)
 {
-	CHECK_INWORLD_RETURN
+    CHECK_INWORLD_RETURN
 
-	if(_player->DuelingWith == NULL)
-		return;
+    ObjectGuid guid;
 
-	if(_player->m_duelState != DUEL_STATE_FINISHED)
-		return;
+    guid[1] = recv_data.ReadBit();
+    guid[5] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+    guid[6] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[2] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
 
-	if(_player->m_duelCountdownTimer > 0)
-		return;
-
-	_player->m_duelStatus = DUEL_STATUS_INBOUNDS;
-	_player->DuelingWith->m_duelStatus = DUEL_STATUS_INBOUNDS;
-
-	_player->m_duelState = DUEL_STATE_STARTED;
-	_player->DuelingWith->m_duelState = DUEL_STATE_STARTED;
-
-	WorldPacket data(SMSG_DUEL_COUNTDOWN, 4);
-	data << uint32(3000);
-
-	SendPacket(&data);
-	_player->DuelingWith->m_session->SendPacket(&data);
-
-	_player->m_duelCountdownTimer = 3000;
-
-	sEventMgr.AddEvent(_player, &Player::DuelCountdown, EVENT_PLAYER_DUEL_COUNTDOWN, 1000, 3, EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT);
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[3]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[0]);
 }
 
-void WorldSession::HandleDuelCancelled(WorldPacket & recv_data)
+void WorldSession::HandleDuelResponse(WorldPacket & recv_data)
 {
-	CHECK_INWORLD_RETURN
+    CHECK_INWORLD_RETURN
 
-	if(_player->DuelingWith ==  NULL)
-		return;
+    ObjectGuid guid;
+    bool accepted;
 
-	if(_player->m_duelState == DUEL_STATE_STARTED)
-	{
-		_player->DuelingWith->EndDuel(DUEL_WINNER_KNOCKOUT);
-		return;
-	}
+    guid[7] = recv_data.ReadBit();
+    guid[1] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
+    guid[2] = recv_data.ReadBit();
+    guid[6] = recv_data.ReadBit();
+    accepted = recv_data.ReadBit();
+    guid[5] = recv_data.ReadBit();
 
-	WorldPacket data(SMSG_DUEL_COMPLETE, 1);
-	data << uint8(1);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[3]);
 
-	SendPacket(&data);
-	_player->DuelingWith->m_session->SendPacket(&data);
+    if (accepted)
+    {
+        if (_player->DuelingWith == NULL)
+            return;
 
-	GameObject* arbiter = _player->GetMapMgr() ? _player->GetMapMgr()->GetGameObject(GET_LOWGUID_PART(_player->GetDuelArbiter())) : NULL;
-	if(arbiter != NULL)
-	{
-		arbiter->RemoveFromWorld(true);
-		delete arbiter;
-	}
+        if (_player->m_duelState != DUEL_STATE_FINISHED)
+            return;
 
-	_player->DuelingWith->SetDuelArbiter(0);
-	_player->DuelingWith->SetDuelTeam(0);
-	_player->DuelingWith->m_duelState = DUEL_STATE_FINISHED;
-	_player->DuelingWith->m_duelCountdownTimer = 0;
-	_player->DuelingWith->DuelingWith = NULL;
+        if (_player->m_duelCountdownTimer > 0)
+            return;
 
-	_player->SetDuelArbiter(0);
-	_player->SetDuelTeam(0);
-	_player->m_duelState = DUEL_STATE_FINISHED;
-	_player->m_duelCountdownTimer = 0;
-	_player->DuelingWith = NULL;
+        _player->m_duelStatus = DUEL_STATUS_INBOUNDS;
+        _player->DuelingWith->m_duelStatus = DUEL_STATUS_INBOUNDS;
 
-	for(uint32 x = MAX_NEGATIVE_AURAS_EXTEDED_START; x < MAX_NEGATIVE_AURAS_EXTEDED_END; x++)
-	{
-		if(_player->m_auras[x])
-		{
-			_player->m_auras[x]->Remove();
-		}
-	}
-	std::list<Pet*> summons = _player->GetSummons();
-	for(std::list<Pet*>::iterator itr = summons.begin(); itr != summons.end(); ++itr)
-	{
-		if((*itr)->isAlive())
-		{
-			(*itr)->SetPetAction(PET_ACTION_STAY);
-			(*itr)->SetPetAction(PET_ACTION_FOLLOW);
-		}
-	}
+        _player->m_duelState = DUEL_STATE_STARTED;
+        _player->DuelingWith->m_duelState = DUEL_STATE_STARTED;
+
+        WorldPacket data(SMSG_DUEL_COUNTDOWN, 4);
+        data << uint32(3000); // 3 seconds
+
+        SendPacket(&data);
+        _player->DuelingWith->m_session->SendPacket(&data);
+
+        _player->m_duelCountdownTimer = 3000;
+
+        sEventMgr.AddEvent(_player, &Player::DuelCountdown, EVENT_PLAYER_DUEL_COUNTDOWN, 1000, 3, EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT);
+    }
+    else
+    {
+
+        if (_player->DuelingWith == NULL)
+            return;
+
+        if (_player->m_duelState == DUEL_STATE_STARTED)
+        {
+            _player->DuelingWith->EndDuel(DUEL_WINNER_KNOCKOUT);
+            return;
+        }
+
+        WorldPacket data(SMSG_DUEL_COMPLETE, 1);
+        data.WriteBit(1); // Duel type != DUEL_INTERRUPTED
+        data.FlushBits();
+
+        SendPacket(&data);
+        _player->DuelingWith->m_session->SendPacket(&data);
+
+        GameObject* arbiter = _player->GetMapMgr() ? _player->GetMapMgr()->GetGameObject(GUID_LOPART_TEST(_player->GetDuelArbiter())) : NULL;
+        if (arbiter != NULL)
+        {
+            arbiter->RemoveFromWorld(true);
+            delete arbiter;
+        }
+
+        _player->DuelingWith->SetDuelArbiter(0);
+        _player->DuelingWith->SetDuelTeam(0);
+        _player->DuelingWith->m_duelState = DUEL_STATE_FINISHED;
+        _player->DuelingWith->m_duelCountdownTimer = 0;
+        _player->DuelingWith->DuelingWith = NULL;
+
+        _player->SetDuelArbiter(0);
+        _player->SetDuelTeam(0);
+        _player->m_duelState = DUEL_STATE_FINISHED;
+        _player->m_duelCountdownTimer = 0;
+        _player->DuelingWith = NULL;
+
+        for (uint32 x = MAX_NEGATIVE_AURAS_EXTEDED_START; x < MAX_NEGATIVE_AURAS_EXTEDED_END; x++)
+        {
+            if (_player->m_auras[x])
+            {
+                _player->m_auras[x]->Remove();
+            }
+        }
+        std::list<Pet*> summons = _player->GetSummons();
+        for (std::list<Pet*>::iterator itr = summons.begin(); itr != summons.end(); ++itr)
+        {
+            if ((*itr)->isAlive())
+            {
+                (*itr)->SetPetAction(PET_ACTION_STAY);
+                (*itr)->SetPetAction(PET_ACTION_FOLLOW);
+            }
+        }
+    }
 }
