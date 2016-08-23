@@ -41,6 +41,17 @@ enum MailFlags
     MAIL_FLAG_NO_EXPIRY						 = 32,
 };
 
+enum MailMessageType
+{
+    MAIL_NORMAL = 0,
+    MAIL_AUCTION = 2,
+    MAIL_CREATURE = 3, // client sends CMSG_CREATURE_QUERY on this mailmessagetype
+    MAIL_GAMEOBJECT = 4, // client send CMSG_GAMEOBJECT_QUERY on this mailmessagetype
+    MAIL_CALENDAR = 5,
+    MAIL_BLACKMARKET = 6
+};
+
+//! To-Do remove this, use the types above!
 enum MailTypes
 {
     NORMAL,
@@ -67,11 +78,12 @@ enum MailStationery
 {
     // item:
     MAIL_STATIONERY_TEST1		= 1,	// 8164
-    MAIL_STATIONERY_TEST2		= 41,	// 9311
+    MAIL_STATIONERY_DEFAULT     = 41,	// 9311
     MAIL_STATIONERY_GM			= 61,	// 18154
     MAIL_STATIONERY_AUCTION		= 62,	// 21140
     MAIL_STATIONERY_VAL			= 64,	// 22058, Valentines day
-    MAIL_STATIONERY_CHR			= 65	// 34171, Winter
+    MAIL_STATIONERY_CHR			= 65,	// 34171, Winter; Christmas
+    MAIL_STATIONERY_ORP         = 67,   // Orphan
 };
 
 enum MailCheckMask

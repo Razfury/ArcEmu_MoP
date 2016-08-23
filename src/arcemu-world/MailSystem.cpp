@@ -60,13 +60,16 @@ void Mailbox::DeleteMessage(uint32 MessageId, bool sql)
 
 WorldPacket* Mailbox::BuildMailboxListingPacket()
 {
-	WorldPacket* data = new WorldPacket(SMSG_MAIL_LIST_RESULT, 500);
 	MessageMap::iterator itr;
 	uint32 realcount = 0;
 	uint32 count = 0;
 	uint32 t = (uint32)UNIXTIME;
-	*data << uint32(0);	 // realcount - this can be used to tell the client we have more mail than that fits into this packet
-	*data << uint8(0);	 // size placeholder
+
+    WorldPacket* data = new WorldPacket(SMSG_MAIL_LIST_RESULT, 200);
+    *data << uint32(0); // Placeholder
+
+    size_t mailCountPos = data->bitwpos();
+    data->WriteBits(0, 18); // Placeholder
 
 	for(itr = Messages.begin(); itr != Messages.end(); ++itr)
 	{
@@ -89,10 +92,10 @@ WorldPacket* Mailbox::BuildMailboxListingPacket()
 		}
 	}
 
-	data->put<uint32>(0, realcount);
-	data->put<uint8>(4, static_cast< uint8 >(count));
+    data->put<uint32>(0, realcount);
+    data->PutBits(mailCountPos, count, 18);
 
-	// do cleanup on request mail
+	// Do cleanup on request mail
 	CleanupExpiredMessages();
 	return data;
 }
@@ -118,6 +121,7 @@ bool MailMessage::AddMessageDataToPacket(WorldPacket & data)
 	uint32 j;
 	vector<uint32>::iterator itr;
 	Item* pItem;
+    ByteBuffer mailData;
 
 	// add stuff
 	if(deleted_flag)
@@ -130,73 +134,89 @@ bool MailMessage::AddMessageDataToPacket(WorldPacket & data)
 		guidsize = 4;
 
 	size_t msize = 2 + 4 + 1 + guidsize + 7 * 4 + (subject.size() + 1) + (body.size() + 1) + 1 + (items.size() * (1 + 2 * 4 + 7 * (3 * 4) + 6 * 4 + 1));
+    
+    data.WriteBit(message_type != MAIL_NORMAL ? 1 : 0);
+    data.WriteBits(subject.size(), 8);
+    data.WriteBits(body.size() , 13);
+    data.WriteBit(0);
+    data.WriteBit(0);
 
-	data << uint16(msize);     // message size
-	data << uint32(message_id);
-	data << uint8(message_type);
+    size_t itemCountPos = data.bitwpos();
+    data.WriteBits(0, 17); // Placeholder
 
-	switch(message_type)
-	{
-		case NORMAL:
-			data << uint64(sender_guid);
-			break;
-		case COD:
-		case AUCTION:
-		case GAMEOBJECT:
-		case ITEM:
-			data << uint32(Arcemu::Util::GUID_LOPART(sender_guid));
-			break;
-		case CREATURE:
-			data << uint32( Arcemu::Util::GET_CREATURE_ENTRY_FROM_GUID(sender_guid));
-			break;
-	}
+    data.WriteBit(1); // Has guid
 
-	data << uint32(cod);			// cod
-	data << uint32(0);
-	data << uint32(stationery);
-	data << uint32(money);		// money
-	data << uint32(checked_flag);           // "checked" flag
-	data << float((expire_time - uint32(UNIXTIME)) / 86400.0f);
-	data << uint32(0);	// mail template
-	data << subject;
-	data << body;
+    ObjectGuid guid = message_type == MAIL_NORMAL ? MAKE_NEW_GUID(sender_guid, 0, HIGHGUID_TYPE_PLAYER) : 0;
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[4]);
 
-	data << uint8(items.size());		// item count
+    for (itr = items.begin(); itr != items.end(); ++itr)
+    {
+        pItem = objmgr.LoadItem(*itr);
+        if (pItem == NULL)
+            continue;
 
-	if(!items.empty())
-	{
-		for(itr = items.begin(); itr != items.end(); ++itr)
-		{
-			pItem = objmgr.LoadItem(*itr);
-			if(pItem == NULL)
-				continue;
+        data.WriteBit(0);
 
-			data << uint8(i++);
-			data << uint32(pItem->GetLowGUID());
-			data << uint32(pItem->GetEntry());
+        mailData << uint32(pItem->GetLowGUID());
+        mailData << uint32(4); // Unknown
+        mailData << uint32(pItem->GetChargesLeft());
+        mailData << uint32(pItem->GetDurability());
+        mailData << uint32(0); // Unknown
 
-			for(j = 0; j < 7; ++j)
-			{
-				data << uint32(pItem->GetEnchantmentId(j));
-				data << uint32(pItem->GetEnchantmentDuration(j));
-				data << uint32(0);
-			}
+        for (j = 0; j < 7; ++j) // 7 or 8?
+        {
+            mailData << uint32(pItem->GetEnchantmentCharges());
+            mailData << uint32(pItem->GetEnchantmentDuration(j));
+            mailData << uint32(pItem->GetEnchantmentId(j));
+        }
 
-			data << uint32(pItem->GetItemRandomPropertyId());
-			data << uint32(pItem->GetItemRandomSuffixFactor());
-			data << uint32(pItem->GetStackCount());
-			data << uint32(pItem->GetChargesLeft());
-			data << uint32(pItem->GetDurabilityMax());
-			data << uint32(pItem->GetDurability());
-			data << uint8(0);   // unknown
+        mailData << uint32(pItem->GetItemRandomSuffixFactor());
+        mailData << uint32(pItem->GetItemRandomPropertyId());
+        mailData << uint32(pItem->GetDurabilityMax());
+        mailData << uint32(pItem->GetStackCount());
+        mailData << uint32(i++);
+        mailData << uint32(pItem->GetEntry());
 
-			delete pItem;
-		}
+        delete pItem;
+    }
 
-	}
+    data.PutBits(itemCountPos, items.size(), 17);
+
+    mailData.WriteString(body);
+    mailData << uint32(message_id);
+    mailData.WriteByteSeq(guid[4]);
+    mailData.WriteByteSeq(guid[0]);
+    mailData.WriteByteSeq(guid[5]);
+    mailData.WriteByteSeq(guid[3]);
+    mailData.WriteByteSeq(guid[1]);
+    mailData.WriteByteSeq(guid[7]);
+    mailData.WriteByteSeq(guid[2]);
+    mailData.WriteByteSeq(guid[6]);
+    mailData << uint32(0); // Mail template id
+    mailData << uint64(cod);
+    mailData.WriteString(subject);
+    mailData << uint32(stationery);
+    mailData << float(expire_time - uint32(UNIXTIME)) / 86400.0f);
+    mailData << uint64(money);
+    mailData << uint32(checked_flag);
+
+    if (message_type != MAIL_NORMAL)
+        mailData << uint32(sender_guid);
+
+    mailData << uint8(message_type);
+    mailData << uint32(0); // Unknown
+
+    data.FlushBits();
+    data.append(mailData);
 
 	return true;
-
 }
 
 void MailSystem::SaveMessageToSQL(MailMessage* message)
@@ -242,41 +262,99 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
 
 	MailMessage msg;
 	uint64 gameobject;
-	uint32 unk2;
-	uint8 itemcount;
-	uint8 itemslot;
+	uint32 unk1, unk2;
+	uint8 itemCount;
 	uint8 i;
-	uint64 itemguid;
 	vector< Item* > items;
 	vector< Item* >::iterator itr;
-	string recepient;
 	Item* pItem;
+    ObjectGuid mailbox;
 	//uint32 err = MAIL_OK;
 
-	recv_data >> gameobject >> recepient;
-	recv_data >> msg.subject >> msg.body >> msg.stationery;
-	recv_data >> unk2 >> itemcount;
+    // Need to be defined because cod & money in msg are uint32
+    // Probably we can remove this when we update money handling to 64 bits
+    uint64 money, COD;
 
-	if(itemcount > MAIL_MAX_ITEM_SLOT || msg.body.find("%") != string::npos || msg.subject.find("%") != string::npos)
+    recv_data >> unk1 >> unk2; // Unknown
+    recv_data >> COD >> money;
+
+    msg.cod = COD;
+    msg.money = money;
+
+    uint32 bodyLength, subjectLength, receiverLength;
+    std::string receiverName;
+
+    mailbox[0] = recv_data.ReadBit();
+    mailbox[6] = recv_data.ReadBit();
+    mailbox[4] = recv_data.ReadBit();
+    mailbox[1] = recv_data.ReadBit();
+    bodyLength = recv_data.ReadBits(11);
+    mailbox[3] = recv_data.ReadBit();
+    receiverLength = recv_data.ReadBits(9);
+    mailbox[7] = recv_data.ReadBit();
+    mailbox[5] = recv_data.ReadBit();
+    itemCount = recv_data.ReadBits(5); // Attached items count
+
+    ObjectGuid itemGuids[MAIL_MAX_ITEM_SLOT]; // To-Do change this name to something simpler
+    for (uint8 i = 0; i < itemCount; ++i)
+    {
+        itemGuids[i][1] = recv_data.ReadBit();
+        itemGuids[i][7] = recv_data.ReadBit();
+        itemGuids[i][2] = recv_data.ReadBit();
+        itemGuids[i][5] = recv_data.ReadBit();
+        itemGuids[i][0] = recv_data.ReadBit();
+        itemGuids[i][6] = recv_data.ReadBit();
+        itemGuids[i][3] = recv_data.ReadBit();
+        itemGuids[i][4] = recv_data.ReadBit();
+    }
+
+    subjectLength = recv_data.ReadBits(9);
+    mailbox[2] = recv_data.ReadBit();
+
+    for (uint8 i = 0; i < itemCount; ++i)
+    {
+        recv_data.read<uint8>(); // Item slot in mail, not used
+        recv_data.ReadByteSeq(itemGuids[i][3]);
+        recv_data.ReadByteSeq(itemGuids[i][0]);
+        recv_data.ReadByteSeq(itemGuids[i][2]);
+        recv_data.ReadByteSeq(itemGuids[i][1]);
+        recv_data.ReadByteSeq(itemGuids[i][6]);
+        recv_data.ReadByteSeq(itemGuids[i][5]);
+        recv_data.ReadByteSeq(itemGuids[i][7]);
+        recv_data.ReadByteSeq(itemGuids[i][4]);
+    }
+
+    recv_data.ReadByteSeq(mailbox[1]);
+    msg.body = recv_data.ReadString(bodyLength);
+    recv_data.ReadByteSeq(mailbox[0]);
+    msg.subject = recv_data.ReadString(subjectLength);
+    recv_data.ReadByteSeq(mailbox[2]);
+    recv_data.ReadByteSeq(mailbox[6]);
+    recv_data.ReadByteSeq(mailbox[5]);
+    recv_data.ReadByteSeq(mailbox[7]);
+    recv_data.ReadByteSeq(mailbox[3]);
+    recv_data.ReadByteSeq(mailbox[4]);
+    receiverName = recv_data.ReadString(receiverLength);
+
+    msg.stationery = MAIL_STATIONERY_CHR; //! To-Do fix this
+
+	if(itemCount > MAIL_MAX_ITEM_SLOT || msg.body.find("%") != string::npos || msg.subject.find("%") != string::npos)
 	{
 		SendMailError(MAIL_ERR_INTERNAL_ERROR);
 		return;
 	}
 
 	// Search for the recipient
-	PlayerInfo* player = ObjectMgr::getSingleton().GetPlayerInfoByName(recepient.c_str());
+    PlayerInfo* player = ObjectMgr::getSingleton().GetPlayerInfoByName(receiverName.c_str());
 	if(player == NULL)
 	{
 		SendMailError(MAIL_ERR_RECIPIENT_NOT_FOUND);
 		return;
 	}
 
-	for(i = 0; i < itemcount; ++i)
+	for(i = 0; i < itemCount; ++i)
 	{
-		recv_data >> itemslot;
-		recv_data >> itemguid;
-
-		pItem = _player->GetItemInterface()->GetItemByGUID(itemguid);
+		pItem = _player->GetItemInterface()->GetItemByGUID(itemGuids[i]);
 		if(pItem == NULL || pItem->IsSoulbound() || pItem->IsConjured())
 		{
 			SendMailError(MAIL_ERR_INTERNAL_ERROR);
@@ -295,13 +373,6 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
 
 		items.push_back(pItem);
 	}
-
-	recv_data >> msg.money;
-	recv_data >> msg.cod;
-	// left over: (TODO- FIX ME BURLEX!)
-	// uint32
-	// uint32
-	// uint8
 
 	bool interfaction = false;
 	if(sMailSystem.MailOption(MAIL_FLAG_CAN_SEND_TO_OPPOSITE_FACTION) || (HasGMPermissions() && sMailSystem.MailOption(MAIL_FLAG_CAN_SEND_TO_OPPOSITE_FACTION_GM)))
@@ -348,14 +419,14 @@ void WorldSession::HandleSendMail(WorldPacket & recv_data)
 	if(!sMailSystem.MailOption(MAIL_FLAG_DISABLE_POSTAGE_COSTS) && !(GetPermissionCount() && sMailSystem.MailOption(MAIL_FLAG_NO_COST_FOR_GM)))
 	{
 		cost += 30;
-		if(cost < 30)  //Overflow prevention for those silly WPE hoez.
+		if(cost < 30)  // Overflow prevention for those silly WPE hoez.
 		{
 			SendMailError(MAIL_ERR_INTERNAL_ERROR);
 			return;
 		}
 	}
 
-	// check that we have enough in our backpack
+	// Check that we have enough in our backpack
 	if(!_player->HasGold(cost))
 	{
 		SendMailError(MAIL_ERR_NOT_ENOUGH_MONEY);
@@ -421,12 +492,34 @@ void WorldSession::HandleMarkAsRead(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	uint64 mailbox;
-	uint32 message_id;
-	recv_data >> mailbox >> message_id;
+    ObjectGuid mailbox;
+    uint32 mailId;
 
-	MailMessage* message = _player->m_mailBox.GetMessage(message_id);
-	if(message == 0) return;
+    recv_data >> mailId;
+
+    mailbox[0] = recv_data.ReadBit();
+    mailbox[2] = recv_data.ReadBit();
+    mailbox[3] = recv_data.ReadBit();
+    recv_data.ReadBit();
+    mailbox[4] = recv_data.ReadBit();
+    mailbox[6] = recv_data.ReadBit();
+    mailbox[7] = recv_data.ReadBit();
+    mailbox[1] = recv_data.ReadBit();
+    mailbox[5] = recv_data.ReadBit();
+    recv_data.FlushBits();
+
+    recv_data.ReadByteSeq(mailbox[1]);
+    recv_data.ReadByteSeq(mailbox[7]);
+    recv_data.ReadByteSeq(mailbox[2]);
+    recv_data.ReadByteSeq(mailbox[5]);
+    recv_data.ReadByteSeq(mailbox[6]);
+    recv_data.ReadByteSeq(mailbox[3]);
+    recv_data.ReadByteSeq(mailbox[4]);
+    recv_data.ReadByteSeq(mailbox[0]);
+
+	MailMessage* message = _player->m_mailBox.GetMessage(mailId);
+	if(message == 0)
+        return;
 
 	// mark the message as read
 	message->checked_flag |= MAIL_CHECK_MASK_READ;
@@ -443,15 +536,16 @@ void WorldSession::HandleMarkAsRead(WorldPacket & recv_data)
 void WorldSession::HandleMailDelete(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
+    
+    uint32 mailId;
 
-	uint64 mailbox;
-	uint32 message_id;
-	recv_data >> mailbox >> message_id;
+    recv_data >> mailId;
+    recv_data.read<uint32>(); // mailTemplateId
 
 	WorldPacket data(SMSG_SEND_MAIL_RESULT, 12);
-	data << message_id << uint32(MAIL_RES_DELETED);
+    data << mailId << uint32(MAIL_RES_DELETED);
 
-	MailMessage* message = _player->m_mailBox.GetMessage(message_id);
+    MailMessage* message = _player->m_mailBox.GetMessage(mailId);
 	if(message == 0)
 	{
 		data << uint32(MAIL_ERR_INTERNAL_ERROR);
@@ -460,7 +554,7 @@ void WorldSession::HandleMailDelete(WorldPacket & recv_data)
 		return;
 	}
 
-	_player->m_mailBox.DeleteMessage(message_id, true);
+    _player->m_mailBox.DeleteMessage(mailId, true);
 
 	data << uint32(MAIL_OK);
 	SendPacket(&data);
@@ -470,17 +564,35 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	uint64 mailbox;
-	uint32 message_id;
-	uint32 lowguid;
-	vector< uint32 >::iterator itr;
+    ObjectGuid mailbox;
+    uint32 mailId;
+    uint32 itemId;
 
-	recv_data >> mailbox >> message_id >> lowguid;
+    recv_data >> mailId;
+    recv_data >> itemId;
+
+    mailbox[6] = recv_data.ReadBit();
+    mailbox[5] = recv_data.ReadBit();
+    mailbox[2] = recv_data.ReadBit();
+    mailbox[3] = recv_data.ReadBit();
+    mailbox[0] = recv_data.ReadBit();
+    mailbox[1] = recv_data.ReadBit();
+    mailbox[4] = recv_data.ReadBit();
+    mailbox[7] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(mailbox[0]);
+    recv_data.ReadByteSeq(mailbox[1]);
+    recv_data.ReadByteSeq(mailbox[4]);
+    recv_data.ReadByteSeq(mailbox[2]);
+    recv_data.ReadByteSeq(mailbox[5]);
+    recv_data.ReadByteSeq(mailbox[6]);
+    recv_data.ReadByteSeq(mailbox[3]);
+    recv_data.ReadByteSeq(mailbox[7]);
 
 	WorldPacket data(SMSG_SEND_MAIL_RESULT, 12);
-	data << message_id << uint32(MAIL_RES_ITEM_TAKEN);
+    data << mailId << uint32(MAIL_RES_ITEM_TAKEN);
 
-	MailMessage* message = _player->m_mailBox.GetMessage(message_id);
+    MailMessage* message = _player->m_mailBox.GetMessage(mailId);
 	if(message == 0 || message->items.empty())
 	{
 		data << uint32(MAIL_ERR_INTERNAL_ERROR);
@@ -489,9 +601,10 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data)
 		return;
 	}
 
+    vector< uint32 >::iterator itr;
 	for(itr = message->items.begin(); itr != message->items.end(); ++itr)
 	{
-		if((*itr) == lowguid)
+		if((*itr) == itemId) //! Is this correct?
 			break;
 	}
 
@@ -503,7 +616,7 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data)
 		return;
 	}
 
-	// check for cod credit
+	// Check for cod credit
 	if(message->cod > 0)
 	{
 		if(!_player->HasGold(message->cod))
@@ -525,11 +638,11 @@ void WorldSession::HandleTakeItem(WorldPacket & recv_data)
 		return;
 	}
 
-	//Find free slot
+	// Find free slot
 	SlotResult result = _player->GetItemInterface()->FindFreeInventorySlot(item->GetProto());
 	if(result.Result == 0)
 	{
-		//End of slots
+		// End of slots
 		data << uint32(MAIL_ERR_BAG_FULL);
 		SendPacket(&data);
 
@@ -581,14 +694,36 @@ void WorldSession::HandleTakeMoney(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	uint64 mailbox;
-	uint32 message_id;
-	recv_data >> mailbox >> message_id;
+    ObjectGuid mailbox;
+    uint64 money;
+    uint32 mailId;
+
+    recv_data >> mailId;
+    recv_data >> money;
+
+    mailbox[7] = recv_data.ReadBit();
+    mailbox[6] = recv_data.ReadBit();
+    mailbox[3] = recv_data.ReadBit();
+    mailbox[2] = recv_data.ReadBit();
+    mailbox[4] = recv_data.ReadBit();
+    mailbox[5] = recv_data.ReadBit();
+    mailbox[0] = recv_data.ReadBit();
+    mailbox[1] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(mailbox[7]);
+    recv_data.ReadByteSeq(mailbox[1]);
+    recv_data.ReadByteSeq(mailbox[4]);
+    recv_data.ReadByteSeq(mailbox[0]);
+    recv_data.ReadByteSeq(mailbox[3]);
+    recv_data.ReadByteSeq(mailbox[2]);
+    recv_data.ReadByteSeq(mailbox[6]);
+    recv_data.ReadByteSeq(mailbox[5]);
+
 
 	WorldPacket data(SMSG_SEND_MAIL_RESULT, 12);
-	data << message_id << uint32(MAIL_RES_MONEY_TAKEN);
+    data << mailId << uint32(MAIL_RES_MONEY_TAKEN);
 
-	MailMessage* message = _player->m_mailBox.GetMessage(message_id);
+    MailMessage* message = _player->m_mailBox.GetMessage(mailId);
 	if(message == 0 || !message->money)
 	{
 		data << uint32(MAIL_ERR_INTERNAL_ERROR);
@@ -607,16 +742,16 @@ void WorldSession::HandleTakeMoney(WorldPacket & recv_data)
 		}
 	}
 
-	// add the money to the player
+	// Add the money to the player
 	_player->ModGold(message->money);
 
-	// message no longer has any money
+	// Message no longer has any money
 	message->money = 0;
 
-	// update in sql!
+	// Update in sql!
 	CharacterDatabase.WaitExecute("UPDATE mailbox SET money = 0 WHERE message_id = %u", message->message_id);
 
-	// send result
+	// Send result
 	data << uint32(MAIL_OK);
 	SendPacket(&data);
 }
@@ -625,14 +760,33 @@ void WorldSession::HandleReturnToSender(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	uint64 mailbox;
-	uint32 message_id;
-	recv_data >> mailbox >> message_id;
+    ObjectGuid mailbox;
+    uint32 mailId;
+
+    recv_data >> mailId;
+
+    mailbox[2] = recv_data.ReadBit();
+    mailbox[0] = recv_data.ReadBit();
+    mailbox[4] = recv_data.ReadBit();
+    mailbox[6] = recv_data.ReadBit();
+    mailbox[3] = recv_data.ReadBit();
+    mailbox[1] = recv_data.ReadBit();
+    mailbox[7] = recv_data.ReadBit();
+    mailbox[5] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(mailbox[5]);
+    recv_data.ReadByteSeq(mailbox[6]);
+    recv_data.ReadByteSeq(mailbox[2]);
+    recv_data.ReadByteSeq(mailbox[0]);
+    recv_data.ReadByteSeq(mailbox[3]);
+    recv_data.ReadByteSeq(mailbox[1]);
+    recv_data.ReadByteSeq(mailbox[4]);
+    recv_data.ReadByteSeq(mailbox[7]);
 
 	WorldPacket data(SMSG_SEND_MAIL_RESULT, 12);
-	data << message_id << uint32(MAIL_RES_RETURNED_TO_SENDER);
+	data << mailId << uint32(MAIL_RES_RETURNED_TO_SENDER);
 
-	MailMessage* msg = _player->m_mailBox.GetMessage(message_id);
+    MailMessage* msg = _player->m_mailBox.GetMessage(mailId);
 	if(msg == 0)
 	{
 		data << uint32(MAIL_ERR_INTERNAL_ERROR);
@@ -641,30 +795,30 @@ void WorldSession::HandleReturnToSender(WorldPacket & recv_data)
 		return;
 	}
 
-	// copy into a new struct
+	// Copy into a new struct
 	MailMessage message = *msg;
 
-	// remove the old message
-	_player->m_mailBox.DeleteMessage(message_id, true);
+	// Remove the old message
+    _player->m_mailBox.DeleteMessage(mailId, true);
 
-	// re-assign the owner/sender
+	// Re-assign the owner/sender
 	message.player_guid = message.sender_guid;
 	message.sender_guid = _player->GetGUID();
 
 	message.deleted_flag = false;
 	message.checked_flag = MAIL_CHECK_MASK_RETURNED;
 
-	// null out the cod charges. (the sender doesn't want to have to pay for his own item
-	// that he got nothing for.. :p)
+	// Null out the cod charges. (the sender doesn't want to have to pay for his own item
+	// That he got nothing for.. :p)
 	message.cod = 0;
 
-	// assign new delivery time
+	// Assign new delivery time
 	message.delivery_time = message.items.empty() ? (uint32)UNIXTIME : (uint32)UNIXTIME + 3600;
 
-	// add to the senders mailbox
+	// Add to the senders mailbox
 	sMailSystem.DeliverMessage(message.player_guid, &message);
 
-	// finish the packet
+	// Finish the packet
 	data << uint32(MAIL_OK);
 	SendPacket(&data);
 }
@@ -673,16 +827,36 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	uint64 mailbox;
-	uint32 message_id;
-	recv_data >> mailbox >> message_id;
+    ObjectGuid mailbox;
+    uint32 mailId;
+
+    recv_data >> mailId;
+
+    mailbox[4] = recv_data.ReadBit();
+    mailbox[1] = recv_data.ReadBit();
+    mailbox[6] = recv_data.ReadBit();
+    mailbox[2] = recv_data.ReadBit();
+    mailbox[5] = recv_data.ReadBit();
+    mailbox[3] = recv_data.ReadBit();
+    mailbox[0] = recv_data.ReadBit();
+    mailbox[7] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(mailbox[6]);
+    recv_data.ReadByteSeq(mailbox[5]);
+    recv_data.ReadByteSeq(mailbox[4]);
+    recv_data.ReadByteSeq(mailbox[3]);
+    recv_data.ReadByteSeq(mailbox[0]);
+    recv_data.ReadByteSeq(mailbox[7]);
+    recv_data.ReadByteSeq(mailbox[2]);
+    recv_data.ReadByteSeq(mailbox[1]);
+
 
 	WorldPacket data(SMSG_SEND_MAIL_RESULT, 12);
-	data << message_id << uint32(MAIL_RES_MADE_PERMANENT);
+    data << mailId << uint32(MAIL_RES_MADE_PERMANENT);
 
 
-	ItemPrototype* proto = ItemPrototypeStorage.LookupEntry(8383);
-	MailMessage* message = _player->m_mailBox.GetMessage(message_id);
+	ItemPrototype* proto = ItemPrototypeStorage.LookupEntry(8383); //! To-Do check what is this
+    MailMessage* message = _player->m_mailBox.GetMessage(mailId);
 	if(message == 0 || !proto)
 	{
 		data << uint32(MAIL_ERR_INTERNAL_ERROR);
@@ -704,7 +878,7 @@ void WorldSession::HandleMailCreateTextItem(WorldPacket & recv_data)
 	if(pItem == NULL)
 		return;
 
-	pItem->SetFlag( ITEM_FIELD_FLAGS, ITEM_FLAG_WRAP_GIFT ); // the flag is probably misnamed
+	pItem->SetFlag( ITEM_FIELD_FLAGS, ITEM_FLAG_WRAP_GIFT ); // The flag is probably misnamed
 	pItem->SetText( message->body );
 
 	if(_player->GetItemInterface()->AddItemToFreeSlot(pItem))
@@ -775,6 +949,7 @@ void Mailbox::FillTimePacket(WorldPacket & data)
 	}
 }
 
+//! To-Do fix this
 void WorldSession::HandleMailTime(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
@@ -795,7 +970,27 @@ void WorldSession::SendMailError(uint32 error)
 
 void WorldSession::HandleGetMail(WorldPacket & recv_data)
 {
-	CHECK_INWORLD_RETURN
+    CHECK_INWORLD_RETURN
+
+    ObjectGuid mailbox;
+
+    mailbox[6] = recv_data.ReadBit();
+    mailbox[3] = recv_data.ReadBit();
+    mailbox[7] = recv_data.ReadBit();
+    mailbox[5] = recv_data.ReadBit();
+    mailbox[4] = recv_data.ReadBit();
+    mailbox[1] = recv_data.ReadBit();
+    mailbox[2] = recv_data.ReadBit();
+    mailbox[0] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(mailbox[7]);
+    recv_data.ReadByteSeq(mailbox[1]);
+    recv_data.ReadByteSeq(mailbox[6]);
+    recv_data.ReadByteSeq(mailbox[5]);
+    recv_data.ReadByteSeq(mailbox[4]);
+    recv_data.ReadByteSeq(mailbox[2]);
+    recv_data.ReadByteSeq(mailbox[3]);
+    recv_data.ReadByteSeq(mailbox[0]);
 
 	WorldPacket* data = _player->m_mailBox.BuildMailboxListingPacket();
 	SendPacket(data);
