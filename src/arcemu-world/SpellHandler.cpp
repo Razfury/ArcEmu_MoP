@@ -374,7 +374,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket & recvPacket)
 	if (hasCastCount)
 		recvPacket >> castCount;
 
-	if (glyphIndex >= 6)
+	if (glyphIndex >= GLYPHS_COUNT)
 	{
 		//pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL);
 		return;
@@ -471,7 +471,11 @@ void WorldSession::HandleUseItemOpcode(WorldPacket & recvPacket)
 		return;
 	}
 
-	SpellCastTargets targets(recvPacket, _player->GetGUID());
+	//SpellCastTargets targets(recvPacket, _player->GetGUID());
+    //Unit* plrUnit = _player->GetMapMgr()->GetUnit(_player->GetGUID());
+   // SpellCastTargets targets(plrUnit )
+    //SpellCastTargets targets(recvPacket, _player->GetGUID());
+    SpellCastTargets targets(TO_UNIT(_player), targetMask, targetGuid, itemGuid, srcTransportGuid, destTransportGuid, srcPos, destPos, elevation, missileSpeed, targetString);
 	SpellEntry* spellInfo = dbcSpellEntry.LookupEntryForced(spellId);
 	if(spellInfo == NULL)
 	{
@@ -559,7 +563,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket & recvPacket)
 	{
 		if(itemProto->ForcedPetId == 0)
 		{
-			if(_player->GetGUID() != targets.m_unitTarget)
+			if(_player->GetGUID() != targets.m_targetGuid)
 			{
 				_player->SendCastResult(spellInfo->Id, SPELL_FAILED_BAD_TARGETS, castCount, 0);
 				return;

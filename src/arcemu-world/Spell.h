@@ -1247,6 +1247,38 @@ ARCEMU_INLINE bool TargetTypeCheck(Object* obj, uint32 ReqCreatureTypeMask)
 	return true;
 }
 
+class _SpellCastTargets
+{
+public:
+    _SpellCastTargets(Unit* caster, uint32 targetMask, uint64 targetGuid, uint64 itemTargetGuid, uint64 srcTransportGuid, uint64 destTransportGuid, Position srcPos, Position destPos, float elevation, float missileSpeed, std::string targetString)
+    {
+        m_caster = caster;
+        m_targetMask = targetMask;
+        m_targetGuid = targetGuid;
+        m_itemTargetGuid = itemTargetGuid;
+        m_srcTransportGuid = srcTransportGuid;
+        m_destTransportGuid = destTransportGuid;
+        m_srcPos = srcPos;
+        m_destPos = destPos;
+        m_elevation = elevation;
+        m_missileSpeed = missileSpeed;
+        m_targetString = targetString;
+    }
+
+    Unit* m_caster;
+
+    uint32 m_targetMask;
+    uint64 m_targetGuid;
+    uint64 m_itemTargetGuid;
+    uint64 m_srcTransportGuid;
+    uint64 m_destTransportGuid;
+    Position m_srcPos;
+    Position m_destPos;
+    float m_elevation;
+    float m_missileSpeed;
+    std::string m_targetString;
+};
+
 class SpellCastTargets
 {
 	public:
@@ -1268,6 +1300,21 @@ class SpellCastTargets
 		{
 			read(data, caster);
 		}
+
+        SpellCastTargets(Unit* caster, uint32 targetMask, uint64 targetGuid, uint64 itemTargetGuid, uint64 srcTransportGuid, uint64 destTransportGuid, Position srcPos, Position destPos, float elevation, float missileSpeed, std::string targetString)
+        {
+            m_caster = caster;
+            m_targetMask = targetMask;
+            m_targetGuid = targetGuid;
+            m_itemTargetGuid = itemTargetGuid;
+            m_srcTransportGuid = srcTransportGuid;
+            m_destTransportGuid = destTransportGuid;
+            m_srcPos = srcPos;
+            m_destPos = destPos;
+            m_elevation = elevation;
+            m_missileSpeed = missileSpeed;
+            m_targetString = targetString;
+        }
 
 		SpellCastTargets & operator=(const SpellCastTargets & target)
 		{
@@ -1293,7 +1340,20 @@ class SpellCastTargets
 		}
 
 		~SpellCastTargets()	{ m_strTarget.clear(); }
-		uint16 m_targetMask;
+
+        Unit* m_caster;
+
+		uint32 m_targetMask;
+        uint64 m_targetGuid;
+        uint64 m_itemTargetGuid;
+        uint64 m_srcTransportGuid;
+        uint64 m_destTransportGuid;
+        Position m_srcPos;
+        Position m_destPos;
+        float m_elevation;
+        float m_missileSpeed;
+        std::string m_targetString;
+
 		uint16 m_targetMaskExtended;			// this could be a 32 also
 		uint64 m_unitTarget;
 		uint64 m_itemTarget;
@@ -1782,7 +1842,7 @@ class SERVER_DECL Spell : public EventableObject
 
 		uint32 pSpellId;
 		SpellEntry* ProcedOnSpell; //some spells need to know the origins of the proc too
-		SpellCastTargets m_targets;
+		SpellCastTargets m_targets; //! To-Do cleanup
 
 		void CreateItem(uint32 itemId);
 
