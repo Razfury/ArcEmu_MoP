@@ -2173,16 +2173,25 @@ void Player::InitVisibleUpdateBits()
 {
 	Player::m_visibleUpdateMask.SetCount(PLAYER_END);
 	Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_GUID);
+    Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_GUID + 1);
 	Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_TYPE);
 	Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_ENTRY);
+    Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_DATA);
+    Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_DATA + 1);
 	Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_SCALE_X);
 
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHARM);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHARM + 1);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_SUMMON);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_SUMMON + 1);
 
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHARMEDBY);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHARMEDBY + 1);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_TARGET);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_TARGET + 1);
 
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHANNEL_OBJECT);
+    Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHANNEL_OBJECT + 1);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_HEALTH);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 0);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_POWER + 1);
@@ -2221,6 +2230,7 @@ void Player::InitVisibleUpdateBits()
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHANNEL_OBJECT);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_CHANNEL_OBJECT + 1);
 	Player::m_visibleUpdateMask.SetBit(UNIT_CHANNEL_SPELL);
+    Player::m_visibleUpdateMask.SetBit(UNIT_MOD_CAST_SPEED);
 	Player::m_visibleUpdateMask.SetBit(OBJECT_FIELD_DYNAMIC_FLAGS);
 	Player::m_visibleUpdateMask.SetBit(UNIT_NPC_FLAGS);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_HOVERHEIGHT);
@@ -2234,6 +2244,7 @@ void Player::InitVisibleUpdateBits()
 	Player::m_visibleUpdateMask.SetBit(PLAYER_DUEL_ARBITER);
 	Player::m_visibleUpdateMask.SetBit(PLAYER_DUEL_ARBITER + 1);
 	Player::m_visibleUpdateMask.SetBit(PLAYER_GUILDRANK);
+    Player::m_visibleUpdateMask.SetBit(PLAYER_GUILDLEVEL);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_BASE_MANA);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_BYTES_2);
 	Player::m_visibleUpdateMask.SetBit(UNIT_FIELD_AURASTATE);
@@ -5223,7 +5234,7 @@ float Player::GetDodgeChance()
         level = GT_MAX_LEVEL;
 
     // Dodge from agility
-    gtClassLevelFloat *CritPerAgi = dbcMeleeCrit.LookupEntry(level - 1 + (pClass - 1) * GT_MAX_LEVEL);
+    gtClassLevelFloat* CritPerAgi = dbcMeleeCrit.LookupEntry(level - 1 + (pClass - 1) * GT_MAX_LEVEL);
     uint32 agi = GetStat(STAT_AGILITY);
 
     float tmp = 100.0f * (agi * CritPerAgi->val);
@@ -5260,10 +5271,7 @@ float Player::GetBlockChance()
 // Get parry chances before defense skill is applied
 float Player::GetParryChance()
 {
-	float chance;
-
-	// Base parry chance
-	chance = BASE_PARRY_CHANCE;
+	float chance = BASE_PARRY_CHANCE;
 
 	// Parry rating
 	chance += CalcRating(PLAYER_RATING_MODIFIER_PARRY);
@@ -5271,7 +5279,7 @@ float Player::GetParryChance()
 	// Parry chance from spells
 	chance += GetParryFromSpell();
 
-	return max(chance, 0.0f);   // Make sure we don't have a negative chance
+    return max(chance, 0.0f); // Make sure we don't have a negative chance
 }
 
 void Player::UpdateChances()
@@ -8581,10 +8589,10 @@ float Player::CalcRating(uint32 index)
 	float rating = float(m_uint32Values[index]);
 
 	uint32 level = getLevel();
-	if (level > 100)
-		level = 100;
+	if (level > GT_MAX_LEVEL)
+		level = GT_MAX_LEVEL;
 
-	gtClassLevelFloat* pDBCEntry = dbcCombatRating.LookupEntryForced(relative_index * 100 + level - 1);
+	gtClassLevelFloat* pDBCEntry = dbcCombatRating.LookupEntryForced(relative_index * GT_MAX_LEVEL + level - 1);
 	if (pDBCEntry == NULL)
 		return rating;
 	else
@@ -13952,7 +13960,7 @@ void Player::AddQuestKill(uint32 questid, uint8 reqid, uint32 delay)
 bool Player::CanBuyAt(VendorRestrictionEntry* vendor)
 {
 	if (vendor == NULL)
-		return true;
+		return true; // Err shouldn't it be false? To-Do check this
 
 	if (vendor->flags == RESTRICTION_CHECK_ALL)
 	{

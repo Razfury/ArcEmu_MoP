@@ -106,6 +106,15 @@ void Gossip::Menu::RemoveQuest(Quest* quest)
 		questlist_.erase(itr);
 }
 
+bool Gossip::Menu::IsMenuItemCoded(uint32 menuItemId) const
+{
+    for (Gossip::ItemList::const_iterator itr = itemlist_.begin(); itr != itemlist_.end(); ++itr)
+        if ((*itr).id_ == menuItemId)
+            return (*itr).coded_;
+    
+    return false;
+}
+
 WorldPacket & Gossip::operator<<(WorldPacket & packet, const Gossip::Menu & menu)
 {
     return packet;

@@ -453,11 +453,47 @@ void WorldSession::SendBuyFailed(uint64 guid, uint32 itemid, uint8 error)
 	SendPacket(&data);
 }
 
-void WorldSession::SendSellItem(uint64 vendorguid, uint64 itemid, uint8 error)
+void WorldSession::SendSellItem(uint64 vendorGuid, uint64 itemGuid, uint8 error)
 {
-	WorldPacket data(17);
-	data.SetOpcode(SMSG_SELL_ITEM);
-	data << vendorguid << itemid << error;
+    ObjectGuid npcGuid = vendorGuid;
+    ObjectGuid _itemGuid = itemGuid;
+
+    WorldPacket data(SMSG_SELL_ITEM, 1 + 8 + 1 + 8 + 1);
+    data.WriteBit(_itemGuid[2]);
+    data.WriteBit(npcGuid[4]);
+    data.WriteBit(_itemGuid[5]);
+    data.WriteBit(_itemGuid[4]);
+    data.WriteBit(npcGuid[3]);
+    data.WriteBit(npcGuid[5]);
+    data.WriteBit(_itemGuid[3]);
+    data.WriteBit(npcGuid[6]);
+    data.WriteBit(npcGuid[0]);
+    data.WriteBit(npcGuid[2]);
+    data.WriteBit(_itemGuid[1]);
+    data.WriteBit(_itemGuid[7]);
+    data.WriteBit(npcGuid[1]);
+    data.WriteBit(_itemGuid[0]);
+    data.WriteBit(_itemGuid[6]);
+    data.WriteBit(npcGuid[7]);
+
+    data.WriteByteSeq(_itemGuid[4]);
+    data.WriteByteSeq(_itemGuid[1]);
+    data << uint8(error);
+    data.WriteByteSeq(_itemGuid[2]);
+    data.WriteByteSeq(npcGuid[4]);
+    data.WriteByteSeq(npcGuid[0]);
+    data.WriteByteSeq(npcGuid[5]);
+    data.WriteByteSeq(npcGuid[2]);
+    data.WriteByteSeq(_itemGuid[0]);
+    data.WriteByteSeq(npcGuid[3]);
+    data.WriteByteSeq(_itemGuid[5]);
+    data.WriteByteSeq(_itemGuid[6]);
+    data.WriteByteSeq(_itemGuid[7]);
+    data.WriteByteSeq(npcGuid[6]);
+    data.WriteByteSeq(npcGuid[1]);
+    data.WriteByteSeq(_itemGuid[3]);
+    data.WriteByteSeq(npcGuid[7]);
+
 	SendPacket(&data);
 }
 
@@ -911,8 +947,7 @@ void WorldSession::InitPacketHandlerTable()
 	WorldPacketHandlers[MSG_AUCTION_HELLO].handler =
 	    &WorldSession::HandleAuctionHelloOpcode;
 	WorldPacketHandlers[CMSG_GOSSIP_HELLO].handler = &WorldSession::HandleGossipHelloOpcode;
-	WorldPacketHandlers[CMSG_GOSSIP_SELECT_OPTION].handler =
-	    &WorldSession::HandleGossipSelectOptionOpcode;
+	WorldPacketHandlers[CMSG_GOSSIP_SELECT_OPTION].handler = &WorldSession::HandleGossipSelectOptionOpcode;
 	WorldPacketHandlers[CMSG_SPIRIT_HEALER_ACTIVATE].handler = &WorldSession::HandleSpiritHealerActivateOpcode;
 	WorldPacketHandlers[CMSG_NPC_TEXT_QUERY].handler = &WorldSession::HandleNpcTextQueryOpcode;
 	WorldPacketHandlers[CMSG_BINDER_ACTIVATE].handler =
@@ -922,23 +957,17 @@ void WorldSession::InitPacketHandlerTable()
 
 	// Item / Vendors
 	WorldPacketHandlers[CMSG_SWAP_INV_ITEM].handler = &WorldSession::HandleSwapInvItemOpcode;
-	WorldPacketHandlers[CMSG_SWAP_ITEM].handler =
-	    &WorldSession::HandleSwapItemOpcode;
-	WorldPacketHandlers[CMSG_DESTROYITEM].handler =
-	    &WorldSession::HandleDestroyItemOpcode;
+	WorldPacketHandlers[CMSG_SWAP_ITEM].handler = &WorldSession::HandleSwapItemOpcode;
+	WorldPacketHandlers[CMSG_DESTROYITEM].handler = &WorldSession::HandleDestroyItemOpcode;
 	WorldPacketHandlers[CMSG_AUTOEQUIP_ITEM].handler = &WorldSession::HandleAutoEquipItemOpcode;
-	WorldPacketHandlers[CMSG_AUTOEQUIP_ITEM_SLOT].handler =
-	    &WorldSession::HandleAutoEquipItemSlotOpcode;
+	//WorldPacketHandlers[CMSG_AUTOEQUIP_ITEM_SLOT].handler = &WorldSession::HandleAutoEquipItemSlotOpcode; // Gone
 	WorldPacketHandlers[CMSG_ITEM_QUERY_SINGLE].handler =
 	    &WorldSession::HandleItemQuerySingleOpcode;
-	WorldPacketHandlers[CMSG_SELL_ITEM].handler =
-	    &WorldSession::HandleSellItemOpcode;
+	WorldPacketHandlers[CMSG_SELL_ITEM].handler = &WorldSession::HandleSellItemOpcode;
 	WorldPacketHandlers[CMSG_BUY_ITEM_IN_SLOT].handler =
 	    &WorldSession::HandleBuyItemInSlotOpcode;
-	WorldPacketHandlers[CMSG_BUY_ITEM].handler =
-	    &WorldSession::HandleBuyItemOpcode;
-	WorldPacketHandlers[CMSG_LIST_INVENTORY].handler =
-	    &WorldSession::HandleListInventoryOpcode;
+	WorldPacketHandlers[CMSG_BUY_ITEM].handler = &WorldSession::HandleBuyItemOpcode;
+	WorldPacketHandlers[CMSG_LIST_INVENTORY].handler = &WorldSession::HandleListInventoryOpcode;
 	WorldPacketHandlers[CMSG_AUTOSTORE_BAG_ITEM].handler =
 	    &WorldSession::HandleAutoStoreBagItemOpcode;
 	WorldPacketHandlers[CMSG_SET_AMMO].handler =

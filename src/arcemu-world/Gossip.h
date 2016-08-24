@@ -160,6 +160,9 @@ namespace Arcemu
 				//************************************
 				void RemoveQuest(Quest*);
 
+                // Returns true if the menu id is coded
+                bool IsMenuItemCoded(uint32 menuItemId) const;
+
 				//************************************
 				// Purpose : Fills the packet with the menu data.
 				// Parameter:	WorldPacket & - the packet to fill

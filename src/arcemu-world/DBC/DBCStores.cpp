@@ -324,7 +324,7 @@ bool LoadDBCs()
 
     LOAD_DBC("DBC/ItemReforge.dbc", itemreforgeformat, true, dbcItemReforge, false);
 
-    LOAD_DBC("DBC/gtCombatRatings.dbc", gtClassfloatformat, false, dbcCombatRating, false);
+    LOAD_DBC("DBC/gtCombatRatings.dbc", CombatRatingEntryFmt, false, dbcCombatRating, false);
 
     LOAD_DBC("DBC/ChatChannels.dbc", chatchannelformat, true, dbcChatChannels, true);
 

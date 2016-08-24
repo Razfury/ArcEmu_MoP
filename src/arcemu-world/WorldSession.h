@@ -347,7 +347,8 @@ class SERVER_DECL WorldSession
 		int  Update(uint32 InstanceID);
 
 		void SendBuyFailed(uint64 guid, uint32 itemid, uint8 error);
-		void SendSellItem(uint64 vendorguid, uint64 itemid, uint8 error);
+        void SendBuyItem(ObjectGuid vendorGuid, uint32 amount, uint32 newAmount, uint32 vendorSlot, ItemPrototype* item);
+		void SendSellItem(uint64 vendorGuid, uint64 itemGuid, uint8 error);
 		void SendNotification(const char* message, ...);
 		void SendAuctionPlaceBidResultPacket(uint32 itemId, uint32 error);
 		void SendRefundInfo(uint64 GUID);

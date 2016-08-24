@@ -261,6 +261,7 @@ class SERVER_DECL GossipMenu
 		void BuildPacket(WorldPacket & Packet);
 		void SendTo(Player* Plr);
 		void SendGossipMenu(uint32 TitleTextId, uint64 npcGUID);
+        bool IsMenuItemCoded(uint32 menuItemId) const;
 		GossipMenuItem GetItem(uint32 Id);
 		ARCEMU_INLINE void SetTextID(uint32 TID) { TextId = TID; }
 

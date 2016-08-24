@@ -25,6 +25,7 @@ class CreatureTemplate;
 class GossipScript;
 
 #define MAX_CREATURE_INV_ITEMS 150
+#define MAX_VENDOR_ITEMS 150          // Limitation in 4.x.x item count in SMSG_LIST_INVENTORY
 #define MAX_CREATURE_LOOT 8
 #define MAX_CREATURE_PROTO_SPELLS 8
 #define MAX_PET_SPELL 4

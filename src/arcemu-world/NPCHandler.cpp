@@ -455,13 +455,38 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	uint32 option;
-	uint32 unk24;
-	uint64 guid;
+    ObjectGuid guid;
+    uint32 gossipListId;
+    uint32 menuId;
+    uint8 boxTextLength = 0;
+    std::string code = "";
 
-	recv_data >> guid >> unk24 >> option;
+    recv_data >> gossipListId >> menuId;
 
-	LOG_DETAIL("WORLD: CMSG_GOSSIP_SELECT_OPTION Option %i Guid %.8X", option, guid);
+    guid[3] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
+    guid[1] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    guid[5] = recv_data.ReadBit();
+    guid[6] = recv_data.ReadBit();
+    boxTextLength = recv_data.ReadBits(8);
+    guid[2] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[3]);
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[5]);
+
+    if (_player->CurrentGossipMenu->IsMenuItemCoded(gossipListId)) // To-Do; this always returns false atm
+        code = recv_data.ReadString(boxTextLength);
+
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[1]);
+
+    LOG_DETAIL("WORLD: CMSG_GOSSIP_SELECT_OPTION Option %i Guid %.8X", gossipListId, guid);
 	Arcemu::Gossip::Script* script = NULL;
 	uint32 guidtype = GET_TYPE_FROM_GUID(guid);
 
@@ -481,15 +506,12 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket & recv_data)
 		else if(guidtype == HIGHGUID_TYPE_GAMEOBJECT)
 			script = Arcemu::Gossip::Script::GetInterface(TO_GAMEOBJECT(qst_giver));
 	}
-	if(script != NULL)
+	if (script != NULL)
 	{
-		string str;
-		if(recv_data.rpos() != recv_data.wpos())
-			recv_data >> str;
-		if(str.length() > 0)
-			script->OnSelectOption(qst_giver, GetPlayer() , option, str.c_str());
+		if(code.length() > 0)
+            script->OnSelectOption(qst_giver, GetPlayer(), gossipListId, code.c_str());
 		else
-			script->OnSelectOption(qst_giver, GetPlayer() , option, NULL);
+            script->OnSelectOption(qst_giver, GetPlayer(), gossipListId, NULL);
 	}
 }
 

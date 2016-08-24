@@ -1822,6 +1822,11 @@ GossipMenuItem GossipMenu::GetItem(uint32 Id)
 	}
 }
 
+bool GossipMenu::IsMenuItemCoded(uint32 menuItemId) const
+{
+    return false; //! To-Do
+}
+
 uint32 ObjectMgr::GetGossipTextForNpc(uint32 ID)
 {
 	return mNpcToGossipText[ID];

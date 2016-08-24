@@ -2427,6 +2427,11 @@ struct NameGenEntry
     uint32 gender;
 };
 
+struct CombatRatingEntry
+{
+    //uint32 level;
+    float ratio;
+};
 
 #pragma pack(pop)
 

@@ -142,3 +142,4 @@ const char* SpellAuraOptionsEntryfmt = "uxxuuuuxx";
 const char* SpellAuraRestrictionsEntryfmt = "xxxuuuuuuuu";
 const char* SpellCooldownsEntryfmt = "xxxuuu";
 const char* SpellCategoriesEntryfmt = "xxxuuuuuux";
+const char* CombatRatingEntryFmt = "uf"; // gtClassLevelFloat

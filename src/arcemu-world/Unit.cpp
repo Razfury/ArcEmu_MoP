@@ -3080,6 +3080,8 @@ uint32 Unit::GetSpellDidHitResult(Unit* pVictim, uint32 weapon_damage_type, Spel
 	return roll_results[r];
 }
 
+//#define STRIKE_DEBUG
+
 void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability, int32 add_damage, int32 pct_dmg_mod, uint32 exclusive_damage, bool disable_proc, bool skip_hit_check, bool force_crit)
 {
 //==========================================================================================
@@ -3141,6 +3143,17 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 		else
 			dmg.school_type = SCHOOL_NORMAL;
 	}
+
+#ifdef STRIKE_DEBUG
+    printf("111 - %s:-\n", IsPlayer() ? "Player" : "Mob");
+    //printf("miss: %.2f\n", chances[0]);
+    printf("dodge: %.2f\n", dodge);
+    printf("parry: %.2f\n", parry);
+    printf("glanc: %.2f\n", glanc);
+    printf("block: %.2f\n", block);
+    printf("crit: %.2f\n", crit);
+    printf("crush: %.2f\n", crush);
+#endif
 
 //==========================================================================================
 //==============================Victim Skill Base Calculation===============================
@@ -3216,10 +3229,22 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 		{
 			if(c->GetCreatureInfo()->Rank == ELITE_WORLDBOSS)
 			{
-				victim_skill = std::max(victim_skill, ((int32)getLevel() + 3) * 5);     //used max to avoid situation when lowlvl hits boss.
+				victim_skill = std::max(victim_skill, ((int32)getLevel() + 3) * 5); // Used max to avoid situation when lowlvl hits boss.
 			}
 		}
 	}
+
+#ifdef STRIKE_DEBUG
+    printf("222 - %s:-\n", IsPlayer() ? "Player" : "Mob");
+    //printf("miss: %.2f\n", chances[0]);
+    printf("dodge: %.2f\n", dodge);
+    printf("parry: %.2f\n", parry);
+    printf("glanc: %.2f\n", glanc);
+    printf("block: %.2f\n", block);
+    printf("crit: %.2f\n", crit);
+    printf("crush: %.2f\n", crush);
+#endif
+
 //==========================================================================================
 //==============================Attacker Skill Base Calculation=============================
 //==========================================================================================
@@ -3276,7 +3301,7 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 			if(form == FORM_CAT || form == FORM_BEAR || form == FORM_DIREBEAR)
 			{
 				SubClassSkill = SKILL_FERAL_COMBAT;
-				self_skill += pr->getLevel() * 5;
+				//self_skill += pr->getLevel() * 5;
 			}
 		}
 
@@ -3295,6 +3320,16 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 		}
 		crit = 5.0f; //will be modified later
 	}
+#ifdef STRIKE_DEBUG
+    printf("333 - %s:-\n", IsPlayer() ? "Player" : "Mob");
+    //printf("miss: %.2f\n", chances[0]);
+    printf("dodge: %.2f\n", dodge);
+    printf("parry: %.2f\n", parry);
+    printf("glanc: %.2f\n", glanc);
+    printf("block: %.2f\n", block);
+    printf("crit: %.2f\n", crit);
+    printf("crush: %.2f\n", crush);
+#endif
 //==========================================================================================
 //==============================Special Chances Base Calculation============================
 //==========================================================================================
@@ -3322,6 +3357,16 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 		if(glanc < 0)
 			glanc = 0.0f;
 	}
+#ifdef STRIKE_DEBUG
+    printf("444 - %s:-\n", IsPlayer() ? "Player" : "Mob");
+    //printf("miss: %.2f\n", chances[0]);
+    printf("dodge: %.2f\n", dodge);
+    printf("parry: %.2f\n", parry);
+    printf("glanc: %.2f\n", glanc);
+    printf("block: %.2f\n", block);
+    printf("crit: %.2f\n", crit);
+    printf("crush: %.2f\n", crush);
+#endif
 //==========================================================================================
 //==============================Advanced Chances Modifications==============================
 //==========================================================================================
@@ -3340,6 +3385,17 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 		}
 	}
 	crit += (float)(pVictim->AttackerCritChanceMod[0]);
+
+#ifdef STRIKE_DEBUG
+    printf("555 - %s:-\n", IsPlayer() ? "Player" : "Mob");
+    //printf("miss: %.2f\n", chances[0]);
+    printf("dodge: %.2f\n", dodge);
+    printf("parry: %.2f\n", parry);
+    printf("glanc: %.2f\n", glanc);
+    printf("block: %.2f\n", block);
+    printf("crit: %.2f\n", crit);
+    printf("crush: %.2f\n", crush);
+#endif
 //--------------------------------by skill difference---------------------------------------
 
 	float vsk = (float)(self_skill - victim_skill);
@@ -3375,9 +3431,20 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 		SM_FFValue(SM_CriticalChance, &crit, ability->SpellGroupType);
 		SM_FFValue(SM_FHitchance, &hitchance, ability->SpellGroupType);
 	}
+#ifdef STRIKE_DEBUG
+    printf("666 - %s:-\n", IsPlayer() ? "Player" : "Mob");
+    //printf("miss: %.2f\n", chances[0]);
+    printf("dodge: %.2f\n", dodge);
+    printf("parry: %.2f\n", parry);
+    printf("glanc: %.2f\n", glanc);
+    printf("block: %.2f\n", block);
+    printf("crit: %.2f\n", crit);
+    printf("crush: %.2f\n", crush);
+#endif
 //--------------------------------by ratings------------------------------------------------
 	crit -= pVictim->IsPlayer() ? TO< Player* >(pVictim)->CalcRating(PLAYER_RATING_MODIFIER_MELEE_CRIT_RESILIENCE) : 0.0f;
-	if(crit < 0) crit = 0.0f;
+	if(crit < 0)
+        crit = 0.0f;
 	if(this->IsPlayer())
 	{
 		Player* plr = TO< Player* >(this);
@@ -3406,6 +3473,17 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 	//parry += m_CombatResult_Parry;
 	//if( parry < 0 )
 	//parry = 0.0f;
+
+#ifdef STRIKE_DEBUG
+    printf("777 - %s:-\n", IsPlayer() ? "Player" : "Mob");
+    //printf("miss: %.2f\n", chances[0]);
+    printf("dodge: %.2f\n", dodge);
+    printf("parry: %.2f\n", parry);
+    printf("glanc: %.2f\n", glanc);
+    printf("block: %.2f\n", block);
+    printf("crit: %.2f\n", crit);
+    printf("crush: %.2f\n", crush);
+#endif
 
 //--------------------------------by damage type and by weapon type-------------------------
 	if(weapon_damage_type == RANGED)
@@ -3459,6 +3537,17 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
     if (ability && ability->misc.AttributesExB & ATTRIBUTESEXB_CANT_CRIT)
 		crit = 0.0f;
 
+#ifdef STRIKE_DEBUG
+    printf("888 - %s:-\n", IsPlayer() ? "Player" : "Mob");
+    //printf("miss: %.2f\n", chances[0]);
+    printf("dodge: %.2f\n", dodge);
+    printf("parry: %.2f\n", parry);
+    printf("glanc: %.2f\n", glanc);
+    printf("block: %.2f\n", block);
+    printf("crit: %.2f\n", crit);
+    printf("crush: %.2f\n", crush);
+#endif
+
 //--------------------------------by victim state-------------------------------------------
 	if(pVictim->IsPlayer() && pVictim->GetStandState()) //every not standing state is >0
 	{
@@ -3492,6 +3581,7 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 	chances[5] = chances[4] + crit;
 	chances[6] = chances[5] + crush;
 
+#ifdef STRIKE_DEBUG
 	printf("%s:-\n", IsPlayer() ? "Player" : "Mob");
 	printf("miss: %.2f\n", chances[0]);
 	printf("dodge: %.2f\n", dodge);
@@ -3500,6 +3590,7 @@ void Unit::Strike(Unit* pVictim, uint32 weapon_damage_type, SpellEntry* ability,
 	printf("block: %.2f\n", block);
 	printf("crit: %.2f\n", crit);
 	printf("crush: %.2f\n", crush);
+#endif
 
 //--------------------------------roll------------------------------------------------------
 	float Roll = RandomFloat(100.0f);
