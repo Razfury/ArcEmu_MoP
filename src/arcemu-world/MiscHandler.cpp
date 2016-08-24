@@ -2746,7 +2746,6 @@ void WorldSession::HandleTimeSyncRespOpcode(WorldPacket & recv_data) // 4.3.4 (c
 	_player->m_timeSyncQueue.pop();
 }
 
-//! TODO check this
 void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket)
 {
     ObjectGuid guid;
@@ -2799,7 +2798,7 @@ void WorldSession::HandleRequestHotfixOpcode(WorldPacket & recv_data)
     {
         recv_data.ReadByteSeq(guids[i][1]);
         recv_data >> entry;
-        recv_data.ReadByteSeq(guids[i][5]);
+        recv_data.ReadByteSeq(guids[i][0]);
         recv_data.ReadByteSeq(guids[i][5]);
         recv_data.ReadByteSeq(guids[i][6]);
         recv_data.ReadByteSeq(guids[i][4]);
@@ -2807,7 +2806,6 @@ void WorldSession::HandleRequestHotfixOpcode(WorldPacket & recv_data)
         recv_data.ReadByteSeq(guids[i][2]);
         recv_data.ReadByteSeq(guids[i][3]);
 
-        //! TODO
         switch (type)
         {
         case DB2_REPLY_BROADCASTTEXT:
@@ -2820,8 +2818,8 @@ void WorldSession::HandleRequestHotfixOpcode(WorldPacket & recv_data)
             SendItemSparseDB2Reply(entry);
             break;
         default:
-            Log.Error("MiscHandler", "CMSG_REQUEST_HOTFIX: Received unknown hotfix type: %u", type);
-            recv_data.clear();
+            // Disabled because we don't support all hotfix types
+            //Log.Error("MiscHandler", "CMSG_REQUEST_HOTFIX: Received unknown hotfix type: %u", type);
             break;
         }
     }

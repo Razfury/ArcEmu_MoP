@@ -5440,7 +5440,7 @@ int32 Spell::DoCalculateEffect(uint32 i, Unit* target, int32 value)
 			{
 				if(p_caster != NULL)
 				{
-					value += (uint32)((p_caster->GetAP() * 0.1526f) + (p_caster->GetPower(POWER_TYPE_ENERGY) * GetProto()->eff[i].EffectChainMultiplier));
+                    value += (uint32)((p_caster->GetAP() * 0.1526f) + (p_caster->GetPower(POWER_TYPE_ENERGY) * GetProto()->eff[i].EffectDamageMultiplier));
 					p_caster->SetPower(POWER_TYPE_ENERGY, 0);
 				}
 				break;

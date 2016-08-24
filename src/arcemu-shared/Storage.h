@@ -318,7 +318,6 @@ class SERVER_DECL HashMapStorageContainer
 			return true;
 		}
 
-
 		T* LookupEntry(uint32 Entry)
 		{
 			typename HM_NAMESPACE::hash_map<uint32, T*>::iterator itr = _map.find(Entry);

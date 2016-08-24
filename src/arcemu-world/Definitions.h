@@ -25,7 +25,6 @@
 const unsigned NUM_MAPS = 980 + 100; // Probably not right
 const unsigned NUM_INSTANCE_MODES = 4;
 
-
 // Sorry...need this enumeration in Player.*
 enum INSTANCE_MODE
 {

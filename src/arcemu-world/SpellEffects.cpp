@@ -550,7 +550,7 @@ void Spell::SpellEffectSchoolDMG(uint32 i) // dmg school
 	{
 		if(GetProto()->Id == 32445 || GetProto()->Id == 28883)
 		{
-			int32 reduce = (int32)(GetProto()->eff[i].EffectChainMultiplier * 100.0f);
+            int32 reduce = (int32)(GetProto()->eff[i].EffectDamageMultiplier * 100.0f);
 			reduce -= 100;
 
 			if(reduce && chaindamage)
@@ -569,7 +569,7 @@ void Spell::SpellEffectSchoolDMG(uint32 i) // dmg school
 		}
 		else
 		{
-			int32 reduce = (int32)(GetProto()->eff[i].EffectChainMultiplier * 100.0f);
+            int32 reduce = (int32)(GetProto()->eff[i].EffectDamageMultiplier * 100.0f);
 
 			if(reduce && chaindamage)
 			{
@@ -3636,7 +3636,7 @@ void Spell::SpellEffectPowerBurn(uint32 i) // power burn
 
 	unitTarget->ModPower(POWER_TYPE_MANA, -mana);
 
-	m_caster->SpellNonMeleeDamageLog(unitTarget, GetProto()->Id, (uint32)(mana * GetProto()->eff[i].EffectMultipleValue), pSpellId == 0, true);
+	m_caster->SpellNonMeleeDamageLog(unitTarget, GetProto()->Id, (uint32)(mana * GetProto()->eff[i].EffectAmplitude), pSpellId == 0, true);
 }
 
 void Spell::SpellEffectThreat(uint32 i) // Threat

@@ -211,7 +211,7 @@ enum Opcodes
 	CMSG_CHANNEL_ANNOUNCEMENTS = 0xBAD,	// implemented
 	CMSG_CHANNEL_MODERATE = 0xBAD,	// implemented
 	SMSG_UPDATE_OBJECT = 0x1792, // 18414
-	SMSG_DESTROY_OBJECT = 0x14C2, // 18414
+    SMSG_DESTROY_OBJECT = 0x14C2, // 18414
 	CMSG_USE_ITEM = 0x1CC1,	// 18414
 	CMSG_OPEN_ITEM = 0xBAD,	// implemented
 	CMSG_READ_ITEM = 0xBAD,	// implemented
@@ -637,7 +637,7 @@ enum Opcodes
 	SMSG_DEBUGAURAPROC = 0x24D,	// not used in client
 	SMSG_PERIODICAURALOG = 0x24E,	// implemented
 	SMSG_SPELLDAMAGESHIELD = 0x24F,	// implemented
-	SMSG_SPELLNONMELEEDAMAGELOG = 0x250,	// implemented
+    SMSG_SPELLNONMELEEDAMAGELOG = 0x1450, // 18414
 	CMSG_LEARN_TALENT = 0x251,	// implemented
 	SMSG_RESURRECT_FAILED = 0x252,	// implemented
 	CMSG_TOGGLE_PVP = 0x253,	// implemented

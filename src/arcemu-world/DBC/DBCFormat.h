@@ -31,7 +31,7 @@ const char* SpellRuneCostFormat = "uuuuu";
 const char* GlyphPropertiesFormat = "niii";
 const char* GlyphSlotFormat = "nii";
 const char* LockFormat = "uuuuuuxxxuuuuuxxxuuuuuxxxxxxxxxxx";
-const char* spellcasttimeFormat = "uuxx";
+
 const char* spellradiusFormat = "ufxf";
 const char* spelldurationFormat = "uuuu";
 const char* factiontemplatedbcFormat = "uuuuuuuuuuuuuu";
@@ -59,16 +59,13 @@ const char* ItemArmorQualityfmt = "nfffffffi";
 const char* ItemArmorShieldfmt = "nifffffff";
 const char* ItemArmorTotalfmt = "niffff";
 const char* ItemDamagefmt = "nfffffffi";
-const char* SpellEffectEntryfmt = "xufuuiffiiiiiifiifiiiiiiiix";
 const char* SpellShapeshiftFormfmt = "uxxiixiiixxiiiiiiiixx";
 const char* SpellShapeshiftEntryfmt = "uixixx";
-const char* SpellAuraOptionsEntryfmt = "uuuuu";
-const char* SpellAuraRestrictionsEntryfmt = "uiiiiiiii";
 const char* SpellCastingRequirementsEntryfmt = "uixxixi";
-const char* SpellCategoriesEntryfmt = "uuuuuuu";
+
 const char* SpellClassOptionsEntryfmt = "uxiiiix";
 
-const char* SpellCooldownsEntryfmt = "uiii";
+
 const char* SpellEquippedItemsEntryfmt = "uiii";
 const char* SpellInterruptsEntryfmt = "uixixi";
 const char* SpellLevelsEntryfmt = "uiii";
@@ -139,3 +136,9 @@ const char* SkillLineAbilityFmt = "uuuuuuuuuuuxx";
 const char* SpellEntryFmt = "usssxuxxuuuuuuuuuuuuuuuuu";
 const char* SpellMiscEntryFmt = "uxxuuuuuuuuuuuuuuuuufuuuuu";
 const char* SpellPowerEntryfmt = "xxxuuuuuxfxxx";
+const char* SpellEffectEntryfmt = "uxufuuuffuuuuuufuufuuxuuuux";
+const char* spellcasttimeFormat = "uuxx";
+const char* SpellAuraOptionsEntryfmt = "uxxuuuuxx";
+const char* SpellAuraRestrictionsEntryfmt = "xxxuuuuuuuu";
+const char* SpellCooldownsEntryfmt = "xxxuuu";
+const char* SpellCategoriesEntryfmt = "xxxuuuuuux";

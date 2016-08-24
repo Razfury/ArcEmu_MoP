@@ -20,7 +20,7 @@
 
 #include "StdAfx.h"
 
-// c = uint8?
+// c = uint8
 /** Table formats converted to strings
  */
 const char * gItemPrototypeFormat						= "uuuusuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuffuffuuuuuuuuuufuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuusuuuuuuuuuuuuuuuuuuuuuuuuuuuuu";

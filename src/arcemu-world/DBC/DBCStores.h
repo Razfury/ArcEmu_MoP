@@ -1259,25 +1259,31 @@ enum SpellRequiredTargetTypes
 // SpellAuraOptions.dbc
 struct SpellAuraOptionsEntry
 {
-    uint32    Id;                                           // 0        m_ID
-    uint32    StackAmount;                                  // 51       m_cumulativeAura
-    uint32    procChance;                                   // 38       m_procChance
-    uint32    procCharges;                                  // 39       m_procCharges
-    uint32    procFlags;                                    // 37       m_procTypeMask
+    uint32    Id;                                           // 0       m_ID
+    //uint32  spellId;                                      // 1  - Pandaria
+    //uint32  unk0;                                         // 2  - Panadraia always  after spellId
+    uint32    StackAmount;                                  // 3       m_cumulativeAura
+    uint32    procChance;                                   // 4       m_procChance
+    uint32    procCharges;                                  // 5       m_procCharges
+    uint32    procFlags;                                    // 6       m_procTypeMask
+    //uint32  unk1                                          // 7 - Pandaria
+    //uint32  unk2                                          // 8 - Pandaria
 };
 
 // SpellAuraRestrictions.dbc
 struct SpellAuraRestrictionsEntry
 {
-    uint32    Id;                                           // 0        m_ID
-    uint32    CasterAuraState;                              // 21       m_casterAuraState
-    uint32    TargetAuraState;                              // 22       m_targetAuraState
-    uint32    CasterAuraStateNot;                           // 23       m_excludeCasterAuraState
-    uint32    TargetAuraStateNot;                           // 24       m_excludeTargetAuraState
-    uint32    casterAuraSpell;                              // 25       m_casterAuraSpell
-    uint32    targetAuraSpell;                              // 26       m_targetAuraSpell
-    uint32    casterAuraSpellNot;                       // 27       m_excludeCasterAuraSpell
-    uint32    targetAuraSpellNot;                       // 28       m_excludeTargetAuraSpell
+    //uint32    Id;                                         // 0        m_ID
+    //uint32 spellId;                                       // 1  - Pandaria
+    //uint32 unk0;                                          // 2  - Panadraia always  after spellId
+    uint32    CasterAuraState;                              // 3       m_casterAuraState
+    uint32    TargetAuraState;                              // 4       m_targetAuraState
+    uint32    CasterAuraStateNot;                           // 5       m_excludeCasterAuraState
+    uint32    TargetAuraStateNot;                           // 6       m_excludeTargetAuraState
+    uint32    casterAuraSpell;                              // 7       m_casterAuraSpell
+    uint32    targetAuraSpell;                              // 8       m_targetAuraSpell
+    uint32    casterAuraSpellNot;                           // 9       m_excludeCasterAuraSpell
+    uint32    targetAuraSpellNot;                           // 10      m_excludeTargetAuraSpell
 };
 
 // SpellCastingRequirements.dbc
@@ -1292,13 +1298,16 @@ struct SpellCastingRequirementsEntry
 // SpellCategories.dbc
 struct SpellCategoriesEntry
 {
-    uint32    Id;                                           // 0        m_ID
-    uint32    Category;                                     // 1        m_category
-    uint32    DmgClass;                                     // 153      m_defenseType
-    uint32    DispelType;                                       // 2        m_dispelType
-    uint32    Mechanic;                                     // 3        m_mechanic
-    uint32    PreventionType;                               // 154      m_preventionType
-    uint32    StartRecoveryCategory;                        // 145      m_startRecoveryCategory
+    //uint32    Id;                                         // 0        m_ID
+    //uint32 spellId;                                       // 1  - Pandaria
+    //uint32 unk0;                                          // 2  - Pandaria always after spellId
+    uint32    Category;                                     // 3        m_category
+    uint32    DmgClass;                                     // 4        m_defenseType
+    uint32    DispelType;                                   // 5        m_dispelType
+    uint32    Mechanic;                                     // 6        m_mechanic
+    uint32    PreventionType;                               // 7        m_preventionType
+    uint32    StartRecoveryCategory;                        // 8        m_startRecoveryCategory
+    //uint32 unk1;                                          // 9  - Pandaria
 };
 
 // SpellClassOptions.dbc
@@ -1312,42 +1321,47 @@ struct SpellClassOptionsEntry
 // SpellCooldowns.dbc
 struct SpellCooldownsEntry
 {
-    uint32    Id;                                          // 0        m_ID // not used?
-    int32    CategoryRecoveryTime;                         // 31       m_categoryRecoveryTime
-    int32    RecoveryTime;                                 // 30       m_recoveryTime
-    int32    StartRecoveryTime;                            // 146      m_startRecoveryTime
+    //uint32    Id;                                         // 0        m_ID
+    //uint32 spellId;                                       // 1  - Pandaria
+    //uint32 unk0;                                          // 2  - Panadraia always  after spellId
+    uint32    CategoryRecoveryTime;                         // 3       m_categoryRecoveryTime
+    uint32    RecoveryTime;                                 // 4       m_recoveryTime
+    uint32    StartRecoveryTime;                            // 5      m_startRecoveryTime
 };
 
-// SpellEffect.dbc
 #define SPELL_EFFECT_MAGIC_UNDECIDED_SPELL_POWER_COEFF	0.0000001f
 #define ITEM_SPELL_DEFAULT_SP_BENEFIT_COEF				0.001f
 
+// SpellEffect.dbc
 struct SpellEffectEntry
 {
-    //uint32    Id;                                           // 0        m_ID
-    uint32    Effect;                                       // 73-75    m_effect
-    float     EffectMultipleValue;                         // 106-108  m_effectAmplitude
-    uint32    EffectApplyAuraName;                          // 100-102  m_effectAura
-    uint32    EffectAmplitude;                              // 103-105  m_effectAuraPeriod
-    int32     EffectBasePoints;                             // 82-84    m_effectBasePoints (don't must be used in spell/auras explicitly, must be used cached Spell::m_currentBasePoints)
-    float	  EffectSpellPowerCoef;                         // 169-171  
-    float     EffectChainMultiplier;                         // 156-158  m_effectChainAmplitude -- dmg_multiplier i guess
-    int32     EffectChainTarget;                            // 109-111  m_effectChainTargets
-    int32     EffectDieSides;                               // 76-78    m_effectDieSides
-    uint32    EffectItemType;                               // 112-114  m_effectItemType
-    uint32    EffectMechanic;                               // 85-87    m_effectMechanic
-    int32     EffectMiscValue;                              // 115-117  m_effectMiscValue
-    int32     EffectMiscValueB;                             // 118-120  m_effectMiscValueB
-    float     EffectPointsPerComboPoint;                    // 124-126  m_effectPointsPerCombo
-    uint32    EffectRadiusIndex;                            // 94-96    m_effectRadiusIndex - spellradius.dbc
-    uint32    EffectRadiusMaxIndex;                        // 97-99    4.0.0
-    float     EffectRealPointsPerLevel;                     // 79-81    m_effectRealPointsPerLevel
-    uint32    EffectSpellGroupRelation[3];                  // 127-129  m_effectSpellClassMaskA, effect 0
-    uint32    EffectTriggerSpell;                           // 121-123  m_effectTriggerSpell
-    uint32    EffectImplicitTargetA;                        // 88-90    m_implicitTargetA
-    uint32    EffectImplicitTargetB;                        // 91-93    m_implicitTargetB
-    uint32    EffectSpellId;                                // new 4.0.0 - most important, we will attach effects to spells based on this :P
-    uint32    EffectIndex;                                  // new 4.0.0
+    uint32    Id;                                           // 0         m_ID
+    //uint32    Unk0;                                       // 1         unk - Pandaria
+    uint32    Effect;                                       // 2         m_effect
+    float     EffectValueMultiplier;                        // 3         m_effectValueMultiplier
+    uint32    EffectApplyAuraName;                          // 4         m_effectAura
+    uint32    EffectAmplitude;                              // 5         m_effectAuraTickCount
+    int32     EffectBasePoints;                             // 6         m_effectBasePoints (don't must be used in spell/auras explicitly, must be used cached Spell::m_currentBasePoints)
+    float     EffectBonusMultiplier;                        // 7         m_effectBonusMultiplier
+    float     EffectDamageMultiplier;                       // 8         m_effectDamageMultiplier
+    uint32    EffectChainTarget;                            // 9         m_effectChainTargets
+    int32     EffectDieSides;                               // 10        m_effectDieSides
+    uint32    EffectItemType;                               // 11        m_effectItemType
+    uint32    EffectMechanic;                               // 12        m_effectMechanic
+    int32     EffectMiscValue;                              // 13        m_effectMiscValue
+    int32     EffectMiscValueB;                             // 14        m_effectMiscValueB
+    float     EffectPointsPerComboPoint;                    // 15        m_effectPointsPerCombo
+    uint32    EffectRadiusIndex;                            // 16        m_effectRadiusIndex - spellradius.dbc
+    uint32    EffectRadiusMaxIndex;                         // 17        4.0.0
+    float     EffectRealPointsPerLevel;                     // 18        m_effectRealPointsPerLevel
+    uint32    EffectSpellGroupRelation[3]; // [3] OR ELSE   // 19 20 21 22 m_effectSpellClassMask1(2/3), effect 0
+    uint32    EffectTriggerSpell;                           // 23        m_effectTriggerSpell
+    //uint32  Unk0                                          // 24        unk - Pandaria
+    uint32    EffectImplicitTargetA;                        // 25        m_implicitTargetA
+    uint32    EffectImplicitTargetB;                        // 26        m_implicitTargetB
+    uint32    EffectSpellId;                                // 27        new 4.0.0
+    uint32    EffectIndex;                                  // 28        new 4.0.0
+    //uint32  Unk0                                          // 29        4.2.0 only 0 or 1
 };
 
 // SpellEquippedItems.dbc
@@ -1503,8 +1517,8 @@ class SpellCanTargetedScript;
 class Object;
 
 #define TEMP_DISABLE_SPELL_COEFS		//seems like 403 client is not using this anymore according to GUI
-#define MAX_SPELL_EFFECT_COUNT		3	//don't be an idiot and put a value that is not initialized by DBC, you will have random spells poping up
-#define MAX_SPELL_EFFECTS 3 // same shit, but twice
+#define MAX_SPELL_EFFECT_COUNT 32	//don't be an idiot and put a value that is not initialized by DBC, you will have random spells poping up
+#define MAX_SPELL_EFFECTS 32 // same shit, but twice
 
 // Spell.dbc
 struct SpellEntry
@@ -1935,6 +1949,8 @@ struct SpellCastTime
 {
     uint32 ID;
     uint32 CastTime;
+    //float CastTimePerLevel; // Not sure; per skill?
+    //int32 MinCastTime; // Not sure
 };
 
 struct SpellRadius

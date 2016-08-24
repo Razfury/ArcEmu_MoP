@@ -2063,38 +2063,66 @@ void Object::SendSpellLog(Object* Caster, Object* Target, uint32 Ability, uint8 
 	Caster->SendMessageToSet(&data, true);
 }
 
-
 void Object::SendSpellNonMeleeDamageLog(Object* Caster, Object* Target, uint32 SpellID, uint32 Damage, uint8 School, uint32 AbsorbedDamage, uint32 ResistedDamage, bool PhysicalDamage, uint32 BlockedDamage, bool CriticalHit, bool bToset)
 {
 	if (!Caster || !Target || !SpellID)
 		return;
 
-	uint32 Overkill = 0;
+    ObjectGuid attackerGuid = Caster->GetGUID();
+    ObjectGuid targetGuid = Target->GetGUID();
+    int32 Overkill = 0;
 
 	if (Damage > Target->GetUInt32Value(UNIT_FIELD_HEALTH))
-		Overkill = Damage - Target->GetUInt32Value(UNIT_FIELD_HEALTH);
+        Overkill = Damage - Target->GetUInt32Value(UNIT_FIELD_HEALTH);
 
 	WorldPacket data(SMSG_SPELLNONMELEEDAMAGELOG, 48);
+    data.WriteBit(targetGuid[2]);
+    data.WriteBit(attackerGuid[7]);
+    data.WriteBit(attackerGuid[6]);
+    data.WriteBit(attackerGuid[1]);
+    data.WriteBit(attackerGuid[5]);
+    data.WriteBit(0); // Unk
+    data.WriteBit(attackerGuid[0]);
+    data.WriteBit(targetGuid[0]);
+    data.WriteBit(targetGuid[7]);
+    data.WriteBit(attackerGuid[3]);
+    data.WriteBit(targetGuid[6]);
+    data.WriteBit(0); // Unk
+    data.WriteBit(0); // HasPowerData
+    data.WriteBit(targetGuid[1]);
+    data.WriteBit(0); // No floats
+    data.WriteBit(targetGuid[5]);
+    data.WriteBit(attackerGuid[2]);
+    data.WriteBit(attackerGuid[4]);
+    data.WriteBit(targetGuid[3]);
+    data.WriteBit(targetGuid[4]);
 
-	data << Target->GetNewGUID();
-	data << Caster->GetNewGUID();
-	data << uint32(SpellID);                      // SpellID / AbilityID
-	data << uint32(Damage);                       // All Damage
-	data << uint32(Overkill);					// Overkill
-	data << uint8(g_spellSchoolConversionTable[School]);     // School
-	data << uint32(AbsorbedDamage);               // Absorbed Damage
-	data << uint32(ResistedDamage);               // Resisted Damage
-	data << uint8(PhysicalDamage);        // Physical Damage (true/false)
-	data << uint8(0);                     // unknown or it binds with Physical Damage
-	data << uint32(BlockedDamage);		       // Physical Damage (true/false)
+    data.FlushBits();
 
-	// unknown const
-	if (CriticalHit)
-		data << uint8(7);
-	else
-		data << uint8(5);
-
-	data << uint32(0);
+    data << uint32(BlockedDamage);
+    data.WriteByteSeq(attackerGuid[1]);
+    data << uint32(Overkill > 0 ? Overkill : 0);
+    data.WriteByteSeq(targetGuid[3]);
+    data.WriteByteSeq(attackerGuid[0]);
+    data.WriteByteSeq(targetGuid[6]);
+    data.WriteByteSeq(targetGuid[4]);
+    data.WriteByteSeq(attackerGuid[7]);
+    data << uint32(ResistedDamage);
+    data << uint32(AbsorbedDamage);
+    data.WriteByteSeq(attackerGuid[5]);
+    data.WriteByteSeq(targetGuid[5]);
+    data.WriteByteSeq(attackerGuid[3]);
+    data.WriteByteSeq(attackerGuid[2]);
+    data.WriteByteSeq(targetGuid[2]);
+    data.WriteByteSeq(attackerGuid[6]);
+    data.WriteByteSeq(targetGuid[0]);
+    data.WriteByteSeq(attackerGuid[4]);
+    data << uint32(Damage);
+    data << uint8(g_spellSchoolConversionTable[School]);
+    data.WriteByteSeq(targetGuid[7]);
+    data << uint32(PhysicalDamage); // Hit info
+    data.WriteByteSeq(targetGuid[1]);
+    data << uint32(SpellID);
 
 	Caster->SendMessageToSet(&data, bToset);
 }
@@ -2300,7 +2328,6 @@ void Object::SetByte(uint32 index, uint32 index1, uint8 value)
 			m_objectUpdated = true;
 		}
 	}
-
 }
 
 void Object::SetByteFlag(uint16 index, uint8 offset, uint8 newFlag)
@@ -2394,7 +2421,6 @@ bool Object::IsInBg()
 
 uint32 Object::GetTeam()
 {
-
 	switch (m_factionDBC->ID)
 	{
 		// Human
@@ -2425,7 +2451,7 @@ uint32 Object::GetTeam()
 	return static_cast< uint32 >(-1);
 }
 
-//Manipulates the phase value, see "enum PHASECOMMANDS" in Object.h for a longer explanation!
+// Manipulates the phase value, see "enum PHASECOMMANDS" in Object.h for a longer explanation!
 void Object::Phase(uint8 command, uint32 newphase)
 {
 	switch (command)
@@ -2516,9 +2542,7 @@ void Object::RemoveSelfFromInrangeSets()
 		ARCEMU_ASSERT(o != NULL);
 
 		o->RemoveInRangeObject(this);
-
 	}
-
 }
 
 
@@ -2621,35 +2645,35 @@ void Object::SendAIReaction(uint32 reaction)
 void Object::SendDestroyObject()
 {
 	Player* target;
+    ObjectGuid guid = GetGUID();
 	bool onDeath = false;
 
 	ASSERT(target);
 
-	WorldPacket data(SMSG_DESTROY_OBJECT, 2 + 8);
+    WorldPacket data(SMSG_DESTROY_OBJECT, 2 + 8);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[1]);
 
-	ObjectGuid guid(GetGUID());
+    //! OnDeath() does for eg trigger death animation and interrupts certain spells/missiles/auras/sounds...
+    data.WriteBit(onDeath);
 
-	data.WriteBit(guid[3]);
-	data.WriteBit(guid[2]);
-	data.WriteBit(guid[4]);
-	data.WriteBit(guid[1]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[5]);
 
-	data.WriteBit(onDeath);
+    data.FlushBits();
 
-	data.WriteBit(guid[7]);
-	data.WriteBit(guid[0]);
-	data.WriteBit(guid[6]);
-	data.WriteBit(guid[5]);
-	data.FlushBits();
-
-	data.WriteByteSeq(guid[0]);
-	data.WriteByteSeq(guid[4]);
-	data.WriteByteSeq(guid[7]);
-	data.WriteByteSeq(guid[2]);
-	data.WriteByteSeq(guid[6]);
-	data.WriteByteSeq(guid[3]);
-	data.WriteByteSeq(guid[1]);
-	data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[5]);
 
 	LOG_ERROR("DESTROYED OBJECT : %u", GetGUID());
 

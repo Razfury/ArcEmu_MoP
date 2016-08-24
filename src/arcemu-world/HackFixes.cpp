@@ -36,7 +36,7 @@ void CreateDummySpell(uint32 id)
 	sp->eff[0].Effect = SPELL_EFFECT_DUMMY;
 	sp->eff[0].EffectImplicitTargetA = 25;
 	sp->NameHash = crc32((const unsigned char*)name, (unsigned int)strlen(name));
-	sp->eff[0].EffectChainMultiplier = 1.0f;
+    sp->eff[0].EffectDamageMultiplier = 1.0f;
 	//sp->StanceBarOrder = -1; // not used
 	dbcSpellEntry.SetRow(id, sp);
 	sWorld.dummyspells.push_back(sp);
@@ -175,12 +175,12 @@ void ApplyNormalFixes()
 					temp = sp->eff[col1_swap].EffectAmplitude;
 					sp->eff[col1_swap].EffectAmplitude = sp->eff[col2_swap].EffectAmplitude;
 					sp->eff[col2_swap].EffectAmplitude = temp;
-					ftemp = sp->eff[col1_swap].EffectMultipleValue;
-					sp->eff[col1_swap].EffectMultipleValue = sp->eff[col2_swap].EffectMultipleValue ;
-					sp->eff[col2_swap].EffectMultipleValue = ftemp;
-					temp = sp->eff[col1_swap].EffectChainTarget;
-					sp->eff[col1_swap].EffectChainTarget = sp->eff[col2_swap].EffectChainTarget ;
-					sp->eff[col2_swap].EffectChainTarget = temp;
+					//ftemp = sp->eff[col1_swap].EffectMultipleValue;
+					//sp->eff[col1_swap].EffectMultipleValue = sp->eff[col2_swap].EffectMultipleValue ;
+					//sp->eff[col2_swap].EffectMultipleValue = ftemp;
+					//temp = sp->eff[col1_swap].EffectChainTarget;
+					//sp->eff[col1_swap].EffectChainTarget = sp->eff[col2_swap].EffectChainTarget ;
+					//sp->eff[col2_swap].EffectChainTarget = temp;
 					temp = sp->eff[col1_swap].EffectMiscValue;
 					sp->eff[col1_swap].EffectMiscValue = sp->eff[col2_swap].EffectMiscValue ;
 					sp->eff[col2_swap].EffectMiscValue = temp;
