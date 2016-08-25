@@ -1459,6 +1459,8 @@ void WorldSession::SendBuyItem(ObjectGuid vendorGuid, uint32 amount, uint32 newA
     data.WriteByteSeq(vendorGuid[0]);
     data.WriteByteSeq(vendorGuid[4]);
     data << uint32(vendorSlot + 1); // Numbered from 1 at client
+
+    SendPacket(&data);
 }
 
 void WorldSession::HandleListInventoryOpcode(WorldPacket & recv_data)

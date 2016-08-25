@@ -142,7 +142,7 @@ struct GossipMenuItem
 	uint32		Id;
 	uint32		IntId;
 	uint8		Icon;
-	uint8		Extra;
+	uint8		Extra; // Coded?
 	string		Text;
 	uint32      m_gSender;
 	uint32      m_gAction;

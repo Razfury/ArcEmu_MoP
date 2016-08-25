@@ -17,6 +17,7 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *
 */
+
 // Class WorldSocket - Main network code functions, handles
 // reading/writing of all packets.
 
@@ -564,7 +565,7 @@ void WorldSocket::SendAuthResponse(uint8 code, bool queued, uint32 queuePos)
 
 	if (!classResult || !raceResult)
 	{
-		LOG_ERROR("You need to apply \"mop_race_class_combinations.sql\" from \"sql\character_updates\" before you can log in!");
+		LOG_ERROR("You need to apply \"mop_race_class_combinations.sql\" from \"sql/character_updates\" before you can log in!");
 		return;
 	}
 

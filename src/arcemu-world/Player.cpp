@@ -978,7 +978,7 @@ void Player::Update(uint32 p_time)
 	if (mstime >= m_explorationTimer)
 	{
 		_EventExploration();
-		m_explorationTimer = mstime + 3000;
+        m_explorationTimer = mstime + 3000;
 	}
 
 	if (m_pvpTimer)
@@ -1336,17 +1336,6 @@ void Player::_EventExploration()
 
 	uint32 AreaId = at->AreaId;
 
-	/*char areaname[200];
-	if(at)
-	{
-	strcpy(areaname, sAreaStore.LookupString((uint32)at->name));
-	}
-	else
-	{
-	strcpy(areaname, "UNKNOWN");
-	}
-	sChatHandler.BlueSystemMessageToPlr(this,areaname);*/
-
 	int offset = at->explorationFlag / 32;
 	offset += PLAYER_EXPLORED_ZONES_1;
 
@@ -1412,7 +1401,8 @@ void Player::_EventExploration()
 
 	if (rest_on)
 	{
-		if (!m_isResting) ApplyPlayerRestState(true);
+		if (!m_isResting)
+            ApplyPlayerRestState(true);
 	}
 	else
 	{
@@ -10217,7 +10207,6 @@ void Player::Possess(uint64 GUID, uint32 delay)
 
 	/* update target faction set */
 	pTarget->UpdateOppFactionSet();
-
 
 	if (!(pTarget->IsPet() && TO< Pet* >(pTarget) == GetSummon()))
 	{

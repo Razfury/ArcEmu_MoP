@@ -180,6 +180,8 @@
 #define SKILL_TYPE_PROFESSION           11
 #define SKILL_TYPE_NA                   12
 
+#define MAX_SKILL_VALUE 0 //! To-Do
+
 typedef struct
 {
 	uint8 itemclass;

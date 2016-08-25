@@ -1760,6 +1760,7 @@ void GossipMenu::AddItem(GossipMenuItem* GossipItem)
 	Menu.push_back(*GossipItem);
 }
 
+//! To-Do remove this
 void GossipMenu::BuildPacket(WorldPacket & Packet)
 {
 	Packet << CreatureGuid;
@@ -1781,10 +1782,54 @@ void GossipMenu::BuildPacket(WorldPacket & Packet)
 
 void GossipMenu::SendTo(Player* Plr)
 {
-	WorldPacket data(SMSG_GOSSIP_MESSAGE, Menu.size() * 50 + 24);
-	BuildPacket(data);
-	data << uint32(0);  // 0 quests obviously
-	Plr->GetSession()->SendPacket(&data);
+    WorldPacket packet(SMSG_GOSSIP_MESSAGE, 512);
+
+    ObjectGuid guid = CreatureGuid;
+
+    packet.WriteBits(0, 19); // Quest list
+
+    packet.WriteBit(guid[5]);
+    packet.WriteBit(guid[7]);
+    packet.WriteBit(guid[4]);
+    packet.WriteBit(guid[0]);
+    packet.WriteBits(Menu.size(), 20); // max count 0x10
+    packet.WriteBit(guid[6]);
+    packet.WriteBit(guid[2]);
+
+    for (std::vector<GossipMenuItem>::iterator iter = Menu.begin(); iter != Menu.end(); ++iter)
+    {
+        packet.WriteBits(iter->m_gBoxMessage.length(), 12);
+        packet.WriteBits(iter->Text.length(), 12);
+    }
+
+    packet.WriteBit(guid[3]);
+    packet.WriteBit(guid[1]);
+    packet.FlushBits();
+
+    packet.WriteByteSeq(guid[1]);
+    packet.WriteByteSeq(guid[0]);
+
+    for (std::vector<GossipMenuItem>::iterator iter = Menu.begin(); iter != Menu.end(); ++iter)
+    {
+        packet << int32(iter->m_gBoxMoney);
+        packet.WriteString(iter->m_gBoxMessage);
+        packet << int32(iter->Id);
+        packet << int8(0); // Coded (iter->Extra)?
+        packet.WriteString(iter->Text);
+        packet << int8(iter->Icon);
+    }
+
+    packet.WriteByteSeq(guid[5]);
+    packet.WriteByteSeq(guid[3]);
+    packet << int32(0); // new 2.4.0; Menu id
+    packet.WriteByteSeq(guid[2]);
+    packet.WriteByteSeq(guid[6]);
+    packet.WriteByteSeq(guid[4]);
+    packet << int32(0); // friend faction ID?
+    packet.WriteByteSeq(guid[7]);
+    packet << int32(TextId);
+
+	Plr->GetSession()->SendPacket(&packet);
 }
 
 void ObjectMgr::CreateGossipMenuForPlayer(GossipMenu** Location, uint64 Guid, uint32 TextID, Player* Plr)

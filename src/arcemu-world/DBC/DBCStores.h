@@ -2406,7 +2406,6 @@ struct MailTemplateEntry
     uint32      ID;		        // 0
     char*       subject;		// 1 // so we do not use this anymore?
     char*       content;		// 2
-
 };
 
 struct WMOAreaTableEntry
@@ -2668,12 +2667,12 @@ public:
             if (*t == 'x')
             {
                 ++t;
-                continue;		// skip!
+                continue; // skip!
             }
 #ifdef USING_BIG_ENDIAN
             swap32(&val);
 #endif
-            else if (*t == 's')
+            else if (*t == 's') // string
             {
                 char ** new_ptr = (char**)dest_ptr;
                 static const char * null_str = "";
@@ -2687,7 +2686,7 @@ public:
                 new_ptr++;
                 dest_ptr = (uint32*)new_ptr;
             }
-            else if (*t == 'L')	//uint64
+            else if (*t == 'L')	// uint64
             {
                 *dest_ptr = val;
                 dest_ptr++;
@@ -2695,7 +2694,7 @@ public:
                 *dest_ptr = val;
                 dest_ptr++;
             }
-            else
+            else // uint32
             {
                 *dest_ptr = val;
                 dest_ptr++;
