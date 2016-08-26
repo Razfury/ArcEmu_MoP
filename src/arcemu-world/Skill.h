@@ -180,7 +180,7 @@
 #define SKILL_TYPE_PROFESSION           11
 #define SKILL_TYPE_NA                   12
 
-#define MAX_SKILL_VALUE 0 //! To-Do
+#define MAX_SKILL_VALUE 600
 
 typedef struct
 {
