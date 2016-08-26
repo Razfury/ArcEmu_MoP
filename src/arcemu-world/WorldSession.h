@@ -589,11 +589,13 @@ class SERVER_DECL WorldSession
 		void HandlePetCastSpell(WorldPacket & recvPacket);
 		void HandleCancelTotem(WorldPacket & recv_data);
 
-		/// Skill opcodes (SkillHandler.spp)
+        //! To-Do actually create SkillHandler.cpp, these are defined in WorldSession.cpp atm
+		/// Skill opcodes (SkillHandler.cpp)
 		//void HandleSkillLevelUpOpcode(WorldPacket& recvPacket);
 		void HandleLearnTalentOpcode(WorldPacket & recvPacket);
 		void HandleLearnMultipleTalentsOpcode(WorldPacket & recvPacket);
 		void HandleUnlearnTalents(WorldPacket & recv_data);
+        void HandleSetPrimaryTalentTree(WorldPacket & recvData);
 
 		/// Quest opcodes (QuestHandler.cpp)
 		void HandleQuestgiverStatusQueryOpcode(WorldPacket & recvPacket);

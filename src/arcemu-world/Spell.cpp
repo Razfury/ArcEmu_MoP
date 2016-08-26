@@ -180,6 +180,8 @@ Spell::Spell(Object* Caster, SpellEntry* info, bool triggered, Aura* aur)
 {
 	ARCEMU_ASSERT(Caster != NULL && info != NULL);
 
+    m_spellMisc = dbcSpellMiscEntry.LookupEntry(info->Id);
+
 	Caster->m_pendingSpells.insert(this);
 	m_overrideBasePoints = false;
 	m_overridenBasePoints[0] = 0xFFFFFFFF;
@@ -338,8 +340,6 @@ Spell::~Spell()
 	///////////////////////////// This is from the virtual_destructor shit ///////////////
 	if(m_caster->GetCurrentSpell() == this)
 		m_caster->SetCurrentSpell(NULL);
-
-
 
 	if(m_spellInfo_override != NULL)
 		delete[] m_spellInfo_override;
@@ -923,7 +923,8 @@ uint8 Spell::prepare(SpellCastTargets* targets)
 		m_castTime = 0;
 	else
 	{
-        m_castTime = GetCastTime(dbcSpellCastTime.LookupEntry(GetProto()->misc.CastingTimeIndex));
+        //m_castTime = GetCastTime(dbcSpellCastTime.LookupEntry(GetProto()->misc.CastingTimeIndex));
+        m_castTime = GetCastTime(dbcSpellCastTime.LookupEntry(m_spellMisc->CastingTimeIndex));
 
 		if(m_castTime && GetProto()->SpellGroupType && u_caster != NULL)
 		{
@@ -2017,12 +2018,12 @@ void Spell::SendSpellStart()
     bool hasTargetMask = m_targets.m_targetMask != 0;
     bool hasCastImmunities = castFlags & CAST_FLAG_IMMUNITY;
     bool hasCastSchoolImmunities = castFlags & CAST_FLAG_IMMUNITY;
-    bool hasElevation = m_missileTravelTime != 0 ? true : false; // castFlags & CAST_FLAG_ADJUST_MISSILE;
+    bool hasElevation = castFlags & CAST_FLAG_ADJUST_MISSILE;
     bool hasVisualChain = false; // castFlags & CAST_FLAG_VISUAL_CHAIN;
-    bool hasAmmoDisplayId = hasAttributeExC(FLAGS4_PLAYER_RANGED_SPELLS) ? true : false; // castFlags & CAST_FLAG_PROJECTILE;
+    bool hasAmmoDisplayId = GetType() == SPELL_DMG_TYPE_RANGED ? true : false;
     bool hasAmmoInventoryType = hasAmmoDisplayId;
     uint8 runeCooldownPassedCount = false; // FOR NOW (castFlags & CAST_FLAG_RUNE_LIST) && u_caster->GetTypeId() == TYPEID_PLAYER ? MAX_RUNES : 0;
-    uint8 predictedPowerCount = false; // FOR NOW castFlags & CAST_FLAG_POWER_LEFT_SELF ? 1 : 0;
+    uint8 predictedPowerCount = castFlags & SPELL_GO_FLAGS_POWER_UPDATE;
 
     WorldPacket data(SMSG_SPELL_START, 25);
 
@@ -2253,7 +2254,8 @@ void Spell::SendSpellStart()
         }*/
 
         data << uint8(GetProto()->PowerEntry.powerType);
-        data << int32(p_caster->GetPower(GetProto()->PowerEntry.powerType)); // I think?
+        data << int32(p_caster->GetPowerType());
+        //data << int32(p_caster->GetPower(GetProto()->PowerEntry.powerType)); // I think?
         //data << int32(m_caster->GetPower((Powers)m_spellInfo->PowerType));
     }
 
@@ -2453,13 +2455,13 @@ void Spell::SendSpellGo()
     bool hasTargetMask = m_targets.m_targetMask != 0;
     bool hasCastImmunities = castFlags & CAST_FLAG_IMMUNITY;
     bool hasCastSchoolImmunities = castFlags & CAST_FLAG_IMMUNITY;
-    bool hasElevation = m_missileTravelTime != 0 ? true : false; // castFlags & CAST_FLAG_ADJUST_MISSILE;
+    bool hasElevation = castFlags & CAST_FLAG_ADJUST_MISSILE;
     bool hasDelayTime = hasElevation;
     bool hasVisualChain = false; // castFlags & CAST_FLAG_VISUAL_CHAIN;
-    bool hasAmmoDisplayId = hasAttributeExC(FLAGS4_PLAYER_RANGED_SPELLS) ? true : false; // castFlags & CAST_FLAG_PROJECTILE;
+    bool hasAmmoDisplayId = GetType() == SPELL_DMG_TYPE_RANGED ? true : false;
     bool hasAmmoInventoryType = hasAmmoDisplayId;
     uint8 runeCooldownPassedCount = false; // FOR NOW (castFlags & CAST_FLAG_RUNE_LIST) && u_caster->GetTypeId() == TYPEID_PLAYER ? MAX_RUNES : 0;
-    uint8 predictedPowerCount = false; // FOR NOW castFlags & CAST_FLAG_POWER_LEFT_SELF ? 1 : 0;
+    uint8 predictedPowerCount = castFlags & SPELL_GO_FLAGS_POWER_UPDATE;
 
     WorldPacket data(SMSG_SPELL_GO, 25);
 
@@ -2735,8 +2737,7 @@ void Spell::SendSpellGo()
     data.WriteByteSeq(unkGuid[0]);
 
     if (hasDelayTime)
-        data << uint32(0);
-    //data << uint32(m_delayMoment);
+        data << uint32(m_missileTravelTime);
 
     data << uint32(getMSTime());
 
@@ -2831,7 +2832,8 @@ void Spell::SendSpellGo()
         //}
 
         data << uint8(GetProto()->PowerEntry.powerType);
-        data << int32(p_caster->GetPower(GetProto()->PowerEntry.powerType)); // I think?
+        data << int32(p_caster->GetPowerType());
+        //data << int32(p_caster->GetPower(GetProto()->PowerEntry.powerType)); // I think?
         //data << int32(m_caster->GetPower((Powers)m_spellInfo->PowerType));
     }
 
@@ -3243,7 +3245,6 @@ bool Spell::HasPower()
 			}
 			break;
 	}
-
 
 	//FIX ME: add handler for UNIT_FIELD_POWER_COST_MODIFIER
 	//UNIT_FIELD_POWER_COST_MULTIPLIER

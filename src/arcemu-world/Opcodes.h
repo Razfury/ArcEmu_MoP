@@ -638,7 +638,7 @@ enum Opcodes
 	SMSG_PERIODICAURALOG = 0x24E,	// implemented
 	SMSG_SPELLDAMAGESHIELD = 0x24F,	// implemented
     SMSG_SPELLNONMELEEDAMAGELOG = 0x1450, // 18414
-	CMSG_LEARN_TALENT = 0x251,	// implemented
+    CMSG_LEARN_TALENT = 0x02A7, // 18414
 	SMSG_RESURRECT_FAILED = 0x252,	// implemented
 	CMSG_TOGGLE_PVP = 0x253,	// implemented
 	SMSG_ZONE_UNDER_ATTACK = 0x254,	// implemented
@@ -1237,7 +1237,7 @@ enum Opcodes
 	UMSG_UNKNOWN_1189 = 0x4A5,	/// TODO: investigate, old SMSG_PET_GUIDS
 	SMSG_UNKNOWN_1190 = 0x4A6,	/// TODO: investigate, old SMSG_CLIENTCACHE_VERSION
 	SMSG_PLAYER_VEHICLE_DATA = 0x4A7,	/// TODO: investigate, smsg guid+uint32 (vehicle)
-	CMSG_PLAYER_VEHICLE_ENTER = 0x4A8,	/// TODO: investigate, cmsg uint64
+    CMSG_PLAYER_VEHICLE_ENTER = 0x0277, // 18414
 	CMSG_EJECT_PASSENGER = 0x4A9,	/// TODO: investigate, cmsg uint64
 	SMSG_PET_GUIDS = 0xBAD,	/// TODO: implement
 	SMSG_CLIENTCACHE_VERSION = 0x002A,	// 18414
@@ -1309,7 +1309,8 @@ enum Opcodes
     CMSG_RETURN_TO_GRAVEYARD = 0x12EA, // 18414
     SMSG_MOVE_TELEPORT = 0x0B39, // 18414
     CMSG_CORPSE_QUERY = 0x1FBE, // 18414
-    SMSG_DB_REPLY = 0x103B // 18414
+    SMSG_DB_REPLY = 0x103B, // 18414
+    CMSG_SET_PRIMARY_TALENT_TREE = 0x06C6 // 18414
 };
 
 enum FriendsResult

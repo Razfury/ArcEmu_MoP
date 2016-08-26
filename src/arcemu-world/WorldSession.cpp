@@ -1018,14 +1018,14 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleCancelAutoRepeatSpellOpcode;
 	WorldPacketHandlers[CMSG_TOTEM_DESTROYED].handler =
 	    &WorldSession::HandleCancelTotem;
-	WorldPacketHandlers[CMSG_LEARN_TALENT].handler =
-	    &WorldSession::HandleLearnTalentOpcode;
+	WorldPacketHandlers[CMSG_LEARN_TALENT].handler = &WorldSession::HandleLearnTalentOpcode;
 	WorldPacketHandlers[CMSG_LEARN_TALENTS_MULTIPLE].handler =
 	    &WorldSession::HandleLearnMultipleTalentsOpcode;
 	WorldPacketHandlers[CMSG_UNLEARN_TALENTS].handler =
 	    &WorldSession::HandleUnlearnTalents;
 	WorldPacketHandlers[MSG_TALENT_WIPE_CONFIRM].handler =
 	    &WorldSession::HandleUnlearnTalents;
+    WorldPacketHandlers[CMSG_SET_PRIMARY_TALENT_TREE].handler = &WorldSession::HandleSetPrimaryTalentTree;
 
 	// Combat / Duel
 	WorldPacketHandlers[CMSG_ATTACKSWING].handler = &WorldSession::HandleAttackSwingOpcode;
@@ -1632,10 +1632,50 @@ void WorldSession::SendAccountDataTimes(uint32 mask)
 
 void WorldSession::HandleLearnTalentOpcode(WorldPacket & recv_data)
 {
-	CHECK_INWORLD_RETURN uint32 talent_id, requested_rank, unk;
-	recv_data >> talent_id >> requested_rank >> unk;
+	CHECK_INWORLD_RETURN
+        
+    uint32 talentCount = recv_data.ReadBits(23);
+    uint16 talentId;
+    bool anythingLearned = false;
 
-	_player->LearnTalent(talent_id, requested_rank);
+    for (int i = 0; i != talentCount; i++)
+    {
+        recv_data >> talentId;
+        //if (_player->LearnTalent(talentId))
+            anythingLearned = true;
+    }
+
+	//_player->LearnTalent(talent_id, requested_rank);
+}
+
+// Set talent specialization
+void WorldSession::HandleSetPrimaryTalentTree(WorldPacket & recvData)
+{
+    uint32 specializationTabId;
+    recvData >> specializationTabId;
+
+    /*
+    if (specializationTabId > MAX_TALENT_TABS)
+        return;
+
+    if (_player->GetTalentSpecialization(_player->GetActiveSpec()))
+        return;
+
+    uint32 specializationId = GetClassSpecializations(_player->getClass())[specializationTabId];
+    uint32 specializationSpell = 0;
+
+    _player->SetTalentSpecialization(_player->GetActiveSpec(), specializationId);
+    _player->SetUInt32Value(PLAYER_FIELD_CURRENT_SPEC_ID, specializationId);
+    _player->SendTalentsInfoData();
+
+    std::list<uint32> learnList = GetSpellsForLevels(0, _player->getRaceMask(), _player->GetTalentSpecialization(_player->GetActiveSpec()), 0, _player->getLevel());
+    for (std::list<uint32>::const_iterator iter = learnList.begin(); iter != learnList.end(); iter++)
+    {
+        if (!_player->HasSpell(*iter))
+            _player->learnSpell(*iter, true);
+    }
+
+    _player->SaveToDB();*/
 }
 
 void WorldSession::HandleUnlearnTalents(WorldPacket & recv_data)

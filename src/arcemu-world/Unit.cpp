@@ -8702,7 +8702,8 @@ void Unit::BuildPetSpellList(WorldPacket & data)
 	data << uint64(0);
 }
 
-void Unit::CastOnMeleeSpell(){
+void Unit::CastOnMeleeSpell()
+{
 	SpellEntry *spellInfo = dbcSpellEntry.LookupEntry( GetOnMeleeSpell() );
 	Spell *spell = sSpellFactoryMgr.NewSpell( this, spellInfo, true, NULL );
 	spell->extra_cast_number = GetOnMeleeSpellEcn();	
@@ -8712,7 +8713,8 @@ void Unit::CastOnMeleeSpell(){
 	SetOnMeleeSpell(0);
 }
 
-void Unit::SendHopOnVehicle( Unit *vehicleowner, uint32 seat ){
+void Unit::SendHopOnVehicle( Unit *vehicleowner, uint32 seat )
+{
 	WorldPacket data(SMSG_MONSTER_MOVE_TRANSPORT, 50);
 	data << GetNewGUID();
 	data << vehicleowner->GetNewGUID();

@@ -155,12 +155,29 @@ void WorldSession::HandleLeaveVehicle( WorldPacket &recv_data ){
 }
 
 
-void WorldSession::HandleEnterVehicle( WorldPacket &recv_data ){
-	uint64 guid;
+void WorldSession::HandleEnterVehicle( WorldPacket &recv_data )
+{
+    ObjectGuid Guid;
+    Guid[5] = recv_data.ReadBit();
+    Guid[7] = recv_data.ReadBit();
+    Guid[3] = recv_data.ReadBit();
+    Guid[0] = recv_data.ReadBit();
+    Guid[2] = recv_data.ReadBit();
+    Guid[4] = recv_data.ReadBit();
+    Guid[6] = recv_data.ReadBit();
+    Guid[1] = recv_data.ReadBit();
 
-	recv_data >> guid;
+    recv_data.ReadByteSeq(Guid[5]);
+    recv_data.ReadByteSeq(Guid[3]);
+    recv_data.ReadByteSeq(Guid[1]);
+    recv_data.ReadByteSeq(Guid[2]);
+    recv_data.ReadByteSeq(Guid[7]);
+    recv_data.ReadByteSeq(Guid[0]);
+    recv_data.ReadByteSeq(Guid[6]);
+    recv_data.ReadByteSeq(Guid[4]);
 
-	Unit *v = _player->GetMapMgr()->GetUnit( guid );
+
+	Unit *v = _player->GetMapMgr()->GetUnit( Guid );
 	if( v == NULL )
 		return;
 
@@ -172,5 +189,3 @@ void WorldSession::HandleEnterVehicle( WorldPacket &recv_data ){
 
 	v->GetVehicleComponent()->AddPassenger( _player );
 }
-
-

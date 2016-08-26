@@ -65,7 +65,7 @@ SERVER_DECL DBCStorage<SpellRuneCostEntry>			dbcSpellRuneCostEntry;
 SERVER_DECL DBCStorage<SpellRadius>					dbcSpellRadius;
 SERVER_DECL DBCStorage<SpellCastTime>				dbcSpellCastTime;
 SERVER_DECL DBCStorage<SpellEntry>					dbcSpellEntry;
-SERVER_DECL DBCStorage<SpellMiscEntry>              dbcSpellEntryMiscEntry;
+SERVER_DECL DBCStorage<SpellMiscEntry>              dbcSpellMiscEntry;
 SERVER_DECL DBCStorage<SpellDuration>				dbcSpellDuration;
 SERVER_DECL DBCStorage<SpellRange>					dbcSpellRange;
 SERVER_DECL DBCStorage<SpellEffectEntry>			dbcSpellEffect;
@@ -274,11 +274,11 @@ bool LoadDBCs()
 
     LOAD_DBC("DBC/SkillLine.dbc", SkillLineFmt, true, dbcSkillLine, true);
 
-    LOAD_DBC("DBC/SpellMisc.dbc", SpellMiscEntryFmt, true, dbcSpellEntryMiscEntry, false);
+    LOAD_DBC("DBC/SpellMisc.dbc", SpellMiscEntryFmt, true, dbcSpellMiscEntry, false);
     LOAD_DBC("DBC/Spell.dbc", SpellEntryFmt, true, dbcSpellEntry, true);
 
     LOAD_DBC("DBC/Talent.dbc", talententryFormat, true, dbcTalent, false);
-
+    
     LOAD_DBC("DBC/TalentTab.dbc", talenttabentryFormat, true, dbcTalentTab, false);
     LOAD_DBC("DBC/TalentTreePrimarySpells.dbc", talentprimaryspellFormat, true, dbcTalentPrimarySpells, false);
 

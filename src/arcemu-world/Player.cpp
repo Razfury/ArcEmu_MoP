@@ -7511,6 +7511,11 @@ void Player::ResetAllCooldowns()
 		ClearCooldownsOnLine(134, guid);
 	}
 	break;
+    case MONK:
+    {
+        //! To-Do
+    }
+    break;
 
 	default:
 		return;
@@ -8786,7 +8791,7 @@ void Player::UpdatePvPArea()
 		return;
 
 #ifdef PVP_REALM_MEANS_CONSTANT_PVP
-	//zack : This might be huge crap. I have no idea how it is on blizz but i think a pvp realm should alow me to gank anybody anywhere :(
+	//zack : This might be huge crap. I have no idea how it is on blizz but i think a pvp realm should allow me to gank anybody anywhere :(
 	if (sWorld.GetRealmType() == REALM_PVP)
 	{
 		SetPvPFlag();
@@ -10782,8 +10787,6 @@ void Player::EventTalentHearthOfWildChange(bool apply)
 		SetAttackPowerMultiplier(GetFloatValue(UNIT_FIELD_ATTACK_POWER_MULTIPLIER) + tval / 200.0f);
 		SetRangedAttackPowerMultiplier(GetRangedAttackPowerMultiplier() + tval / 200.0f);
 		UpdateStats();
-
-
 	}
 }
 
@@ -12374,7 +12377,6 @@ void Player::RemoveSanctuaryFlag()
 
 void Player::SendExploreXP(uint32 areaid, uint32 xp)
 {
-
 	WorldPacket data(SMSG_EXPLORATION_EXPERIENCE, 8);
 	data << uint32(areaid);
 	data << uint32(xp);
@@ -12396,7 +12398,6 @@ void Player::HandleSpellLoot(uint32 itemid)
 		m_ItemInterface->AddItemById(looteditemid, count, 0);
 	}
 }
-
 
 void Player::LearnTalent(uint32 talentid, uint32 rank, bool isPreviewed)
 {
@@ -12466,7 +12467,6 @@ void Player::LearnTalent(uint32 talentid, uint32 rank, bool isPreviewed)
 		m_session->Disconnect();
 		return;
 	}
-
 
 	if (talentInfo->Row > 0)
 	{
@@ -12633,12 +12633,10 @@ void Player::SendPreventSchoolCast(uint32 SpellSchool, uint32 unTimeMs)
 
 void Player::ToggleXpGain()
 {
-
 	if (m_XpGain)
 		m_XpGain = false;
 	else
 		m_XpGain = true;
-
 }
 
 bool Player::CanGainXp()
@@ -12649,14 +12647,11 @@ bool Player::CanGainXp()
 void Player::RemoveGarbageItems()
 {
 	std::list< Item* >::iterator itr;
-
 	for (itr = m_GarbageItems.begin(); itr != m_GarbageItems.end(); ++itr)
 	{
 		Item* it = *itr;
-
 		delete it;
 	}
-
 	m_GarbageItems.clear();
 }
 
@@ -12680,19 +12675,19 @@ void Player::SendMoveTeleport(const LocationVector & v)
     data.WriteBit(guid[5]);
     data.WriteBit(guid[7]);
     data.WriteBit(guid[2]);
-    data.WriteBit(0); // has transport data
+    data.WriteBit(0); // Has transport data
     data.WriteBit(guid[4]);
     data.WriteBit(guid[3]);
     data.WriteBit(guid[1]);
     data.WriteBit(0);
     data.WriteByteSeq(guid[4]);
     data.WriteByteSeq(guid[7]);
-    data << v.z; // GetPositionZ();
-    data << v.y; // GetPositionY();
+    data << v.z;
+    data << v.y;
     data.WriteByteSeq(guid[2]);
     data.WriteByteSeq(guid[3]);
     data.WriteByteSeq(guid[5]);
-    data << v.x; // GetPositionX();
+    data << v.x;
     data << uint32(m_movementCounter++);
     data.WriteByteSeq(guid[0]);
     data.WriteByteSeq(guid[6]);
@@ -13137,7 +13132,6 @@ void Player::DealDamage(Unit* pVictim, uint32 damage, uint32 targetEvent, uint32
 
 void Player::TakeDamage(Unit* pAttacker, uint32 damage, uint32 spellid, bool no_remove_auras)
 {
-
 	if (!no_remove_auras)
 	{
 		//zack 2007 04 24 : root should not remove self (and also other unknown spells)
@@ -13158,7 +13152,6 @@ void Player::TakeDamage(Unit* pAttacker, uint32 damage, uint32 spellid, bool no_
 	if (CombatStatus.IsInCombat())
 		sHookInterface.OnEnterCombat(this, pAttacker);
 
-
 	// Rage generation on damage
 	if (GetPowerType() == POWER_TYPE_RAGE && pAttacker != this)
 	{
@@ -13178,13 +13171,11 @@ void Player::TakeDamage(Unit* pAttacker, uint32 damage, uint32 spellid, bool no_
 
 
 	// Cannibalize, when we are hit we need to stop munching that nice fresh corpse
+    if (cannibalize)
 	{
-		if (cannibalize)
-		{
-			sEventMgr.RemoveEvents(this, EVENT_CANNIBALIZE);
-			SetEmoteState(0);
-			cannibalize = false;
-		}
+		sEventMgr.RemoveEvents(this, EVENT_CANNIBALIZE);
+		SetEmoteState(0);
+		cannibalize = false;
 	}
 
 	if (pAttacker != this)
@@ -13254,10 +13245,8 @@ void Player::Die(Unit* pAttacker, uint32 damage, uint32 spellid)
 	if (!pAttacker->IsPlayer())
 		DeathDurabilityLoss(0.10);
 
-
 	if (GetChannelSpellTargetGUID() != 0)
 	{
-
 		Spell* spl = GetCurrentSpell();
 
 		if (spl != NULL)
@@ -13330,7 +13319,6 @@ void Player::Die(Unit* pAttacker, uint32 damage, uint32 spellid)
 
 	/* Tell Unit that it's target has Died */
 	pAttacker->addStateFlag(UF_TARGET_DIED);
-
 
 	m_UnderwaterTime = 0;
 	m_UnderwaterState = 0;
@@ -13475,7 +13463,6 @@ void Player::SendChatMessageToPlayer(uint8 type, uint32 lang, const char* msg, P
 
 void Player::AcceptQuest(uint64 guid, uint32 quest_id)
 {
-
 	bool bValid = false;
 	bool hasquest = true;
 	bool bSkipLevelCheck = false;
@@ -13999,7 +13986,8 @@ void Player::BuildPetSpellList(WorldPacket & data)
 	data << uint64(0);
 }
 
-void Player::AddVehicleComponent(uint32 creature_entry, uint32 vehicleid){
+void Player::AddVehicleComponent(uint32 creature_entry, uint32 vehicleid)
+{
 	if (mountvehicleid == 0){
 		LOG_ERROR("Tried to add a vehicle component with 0 as vehicle id for player %u ( %s )", GetLowGUID(), GetName());
 		return;
@@ -14014,7 +14002,8 @@ void Player::AddVehicleComponent(uint32 creature_entry, uint32 vehicleid){
 	vehicle->Load(this, creature_entry, vehicleid);
 }
 
-void Player::RemoveVehicleComponent(){
+void Player::RemoveVehicleComponent()
+{
 	delete vehicle;
 	vehicle = NULL;
 }

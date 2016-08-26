@@ -96,8 +96,8 @@ bool Vehicle::HasEmptySeat(){
 		return false;
 }
 
-void Vehicle::AddPassenger( Unit *passenger ){
-
+void Vehicle::AddPassenger( Unit *passenger )
+{
 	// find seat
 	uint32 seatid = MAX_VEHICLE_SEATS;
 	for( uint32 i = 0; i < MAX_VEHICLE_SEATS; i++ )
@@ -113,7 +113,8 @@ void Vehicle::AddPassenger( Unit *passenger ){
 	AddPassengerToSeat( passenger, seatid );
 }
 
-void Vehicle::AddPassengerToSeat( Unit *passenger, uint32 seatid ){
+void Vehicle::AddPassengerToSeat( Unit *passenger, uint32 seatid )
+{
 	if( seats[ seatid ]->HasPassenger() )
 		return;
 
@@ -134,10 +135,12 @@ void Vehicle::AddPassengerToSeat( Unit *passenger, uint32 seatid ){
 	// root passenger
 	passenger->Root();
 
-	WorldPacket ack( 0x049D );
-	passenger->SendPacket( &ack );
+    // This doesn't exist anymore?
+	//WorldPacket ack( SMSG_CONTROL_VEHICLE );
+    //passenger->SendPacket( &ack );
 
-	passenger->SendHopOnVehicle( owner, seatid );
+    // This sends SMSG_MONSTER_MOVE_TRANSPORT which does not exist in 5.4.8
+	//passenger->SendHopOnVehicle( owner, seatid );
 
 	LocationVector v( owner->GetPosition() );
 	v.x += seats[ seatid ]->GetSeatInfo()->attachmentOffsetX;
@@ -152,18 +155,19 @@ void Vehicle::AddPassengerToSeat( Unit *passenger, uint32 seatid ){
 		passenger->transporter_info.seat = seatid;
 	}
 
-	if( passenger->IsPlayer() ){
-		WorldPacket ack( SMSG_CONTROL_VEHICLE, 0);
-		passenger->SendPacket( &ack );
+	if( passenger->IsPlayer() )
+    {
+		//WorldPacket ack( SMSG_CONTROL_VEHICLE, 0);
+		//passenger->SendPacket( &ack );
 
 		passenger->SetFlag( UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE );
 
 		static_cast< Player* >( passenger )->SetFarsightTarget( owner->GetGUID() );
 
 		if( seats[ seatid ]->Controller() ){
-			ack.Initialize( SMSG_CLIENT_CONTROL_UPDATE );
-			ack << owner->GetNewGUID() << uint8(1);
-			passenger->SendPacket(&ack);
+			//ack.Initialize( SMSG_CLIENT_CONTROL_UPDATE );
+			//ack << owner->GetNewGUID() << uint8(1);
+			//passenger->SendPacket(&ack);
 
 			passenger->SetCharmedUnitGUID( owner->GetGUID() );
 			owner->SetCharmedByGUID( passenger->GetGUID() );
@@ -434,7 +438,6 @@ void Vehicle::MovePassengers( float x, float y, float z, float o ){
 		}
 	}
 }
-
 
 uint32 Vehicle::GetPassengerCount() const{
 	uint32 count = 0;

@@ -3668,7 +3668,7 @@ void ObjectMgr::LoadCreatureBaseStats()
 
     if (!result)
     {
-        Log.Error("MySQL", "Cannot load creature base stats!");
+        Log.Error("MySQL", "Cannot load creature_basestats!");
         return;
     }
 
@@ -3692,7 +3692,7 @@ void ObjectMgr::LoadCreatureBaseStats()
         {
             if (stats.BaseHealth[i] < 1)
             {
-                sLog.Error("MySQL", "Creature base stats for class %u, level %u has invalid zero base HP[%u] - set to 1", Class, Level, i);
+                sLog.Error("MySQL", "Creature base stats for class %u, level %u has invalid zero base HP[%u]; Setting it to 1", Class, Level, i);
                 stats.BaseHealth[i] = 1;
             }
         }
@@ -3704,5 +3704,5 @@ void ObjectMgr::LoadCreatureBaseStats()
 
     delete result;
 
-    Log.Success("ObjectMgr", "Loaded %u creature base stats.", count);
+    Log.Success("Storage", "Loaded %u creature base stats.", count);
 }

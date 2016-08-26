@@ -756,7 +756,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket & recvPacket)
 		destTransportGuid[4] = recvPacket.ReadBit();
 	}
 
-
 	if (hasMovement)
 	{
 		unkMovementLoopCounter = recvPacket.ReadBits(22);
@@ -1011,9 +1010,8 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket & recvPacket)
 	if (hasGlyphIndex)
 		recvPacket >> glyphIndex;
 
-	sLog.outError("WORLD: got cast spell packet, castCount: %u, spellId: %u, castFlags: %u, data length = %u", castCount, spellId, castFlags, (uint32)recvPacket.size());
+	//sLog.outError("WORLD: got cast spell packet, castCount: %u, spellId: %u, castFlags: %u, data length = %u", castCount, spellId, castFlags, (uint32)recvPacket.size());
 
-	
 	// check for spell id
 	SpellEntry* spellInfo = dbcSpellEntry.LookupEntryForced(spellId);
 

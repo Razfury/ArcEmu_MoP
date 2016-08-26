@@ -1038,7 +1038,6 @@ void WorldSession::HandleZoneUpdateOpcode(WorldPacket & recv_data)
 void WorldSession::HandleSetSelectionOpcode(WorldPacket & recv_data)
 {
 	ObjectGuid guid;
-
 	guid[7] = recv_data.ReadBit();
 	guid[6] = recv_data.ReadBit();
 	guid[5] = recv_data.ReadBit();
@@ -1056,8 +1055,6 @@ void WorldSession::HandleSetSelectionOpcode(WorldPacket & recv_data)
 	recv_data.ReadByteSeq(guid[4]);
 	recv_data.ReadByteSeq(guid[6]);
 	recv_data.ReadByteSeq(guid[2]);
-
-	sLog.outError("Setting %u as target.", Arcemu::Util::GUID_LOPART(guid)); // TODO change Arcemu::Util::GUID_LOPART
 
 	_player->SetSelection(guid);
 
