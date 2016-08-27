@@ -405,7 +405,7 @@ struct AchievementEntry
     uint32      points;                                       // 39 reward points
     uint32      orderInCategory;                              // 40
     uint32      flags;                                        // 41
-    uint32      unknown2;                                     // 42
+    uint32      icon;                                     // 42
     const char* rewardName;                                   // 43-58 title/item reward name
     //	uint32      rewardName_flags;                             // 59
     uint32      count;                                        // 60
@@ -1060,7 +1060,7 @@ struct AchievementCriteriaEntry
         struct
         {
             uint32  field3;                                 // 3 main requirement
-            uint64  field4;                                  // 4 main requirement count
+            uint64  count;                                  // 4 main requirement count
             uint32  additionalRequirement1_type;            // 5 additional requirement 1 type
             uint32  additionalRequirement1_value;           // 6 additional requirement 1 value
             uint32  additionalRequirement2_type;            // 7 additional requirement 2 type

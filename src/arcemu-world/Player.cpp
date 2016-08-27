@@ -3662,11 +3662,11 @@ void Player::AddToWorld(MapMgr* pMapMgr)
 
 void Player::OnPrePushToWorld()
 {
-	SendInitialLogonPackets();
-	// remember to change this, i haven't updated achievement opcodes, so we won't use this for now :P
-	/*#ifdef ENABLE_ACHIEVEMENTS
-	m_achievementMgr.SendAllAchievementData(this);
-	#endif*/
+    SendInitialLogonPackets();
+
+#ifdef ENABLE_ACHIEVEMENTS
+    m_achievementMgr.SendAllAchievementData(this);
+#endif
 }
 
 void Player::OnPushToWorld()

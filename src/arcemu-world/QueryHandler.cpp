@@ -51,7 +51,6 @@ void WorldSession::HandleNameQueryOpcode(WorldPacket & recv_data)
 	recv_data.ReadByteSeq(guid[4]);
 
 	// virtual and native realm Addresses
-
 	if (bit14)
 		recv_data >> unk;
 
@@ -567,14 +566,33 @@ void WorldSession::HandleAchievmentQueryOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN;
 
-	uint64 guid = recv_data.unpackGUID(); // Get the inspectee's GUID
+    ObjectGuid guid;
+
+    guid[2] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    guid[1] = recv_data.ReadBit();
+    guid[5] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[6] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[3]);
+
 	Player* pTarget = objmgr.GetPlayer((uint32)guid);
 	if(!pTarget)
 	{
 		return;
 	}
 #ifdef ENABLE_ACHIEVEMENTS
-	pTarget->GetAchievementMgr().SendAllAchievementData(GetPlayer());
+    pTarget->GetAchievementMgr().SendRespondInspectAchievements(GetPlayer());
 #endif
 }
 

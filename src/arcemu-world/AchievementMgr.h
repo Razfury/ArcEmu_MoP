@@ -179,6 +179,7 @@ class SERVER_DECL AchievementMgr
 		void SaveToDB(QueryBuffer* buf);
 		void CheckAllAchievementCriteria();
 		void SendAllAchievementData(Player* player);
+        void SendRespondInspectAchievements(Player* player);
 		void UpdateAchievementCriteria(AchievementCriteriaTypes type, int32 miscvalue1, int32 miscvalue2, uint32 time);
 		void UpdateAchievementCriteria(AchievementCriteriaTypes type);
 		bool GMCompleteAchievement(WorldSession* gmSession, int32 achievementID);

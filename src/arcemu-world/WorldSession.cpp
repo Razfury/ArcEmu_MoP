@@ -634,8 +634,7 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandlePageTextQueryOpcode;
 	WorldPacketHandlers[CMSG_ITEM_NAME_QUERY].handler =
 	    &WorldSession::HandleItemNameQueryOpcode;
-	WorldPacketHandlers[CMSG_QUERY_INSPECT_ACHIEVEMENTS].handler =
-	    &WorldSession::HandleAchievmentQueryOpcode;
+	WorldPacketHandlers[CMSG_QUERY_INSPECT_ACHIEVEMENTS].handler = &WorldSession::HandleAchievmentQueryOpcode;
 
 	// Movement
 	WorldPacketHandlers[MSG_MOVE_HEARTBEAT].handler =
