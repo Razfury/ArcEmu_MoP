@@ -20,7 +20,7 @@
 #include "StdAfx.h"
 #include "TerrainMgr.h"
 
-#define BUILD_MAGIC 18414
+#define BUILD_VERSION 18414 // Wow version
 
 TerrainTile* TerrainHolder::GetTile(float x, float y)
 {
@@ -282,9 +282,9 @@ void TileMap::Load(char* filename)
 
 	fread(&header, 1, sizeof(header), f);
 
-	if(header.buildMagic != BUILD_MAGIC)  // Wow version
+	if(header.buildMagic != BUILD_VERSION)
 	{
-		sLog.Error("Terrain", "%s: from incorrect client (you: %u us: %u)", filename, header.buildMagic, BUILD_MAGIC);
+        sLog.Error("Terrain", "%s: from incorrect client (you: %u us: %u)", filename, header.buildMagic, BUILD_VERSION);
 		fclose(f);
 		return;
 	}
