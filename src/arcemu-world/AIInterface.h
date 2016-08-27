@@ -400,6 +400,7 @@ class SERVER_DECL AIInterface
 		void _UpdateTotem(uint32 p_time);
 
 		// Movement
+        void WriteMovementStop();
 		void SendMoveToPacket();
 		//void SendMoveToSplinesPacket(std::list<Waypoint> wp, bool run);
 		bool MoveTo(float x, float y, float z, float o);

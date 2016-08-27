@@ -32,7 +32,7 @@
     and make a function to not log
     some packets that we don't want to
 */
-//#define ECHO_PACKET_LOG_TO_CONSOLE 1
+#define ECHO_PACKET_LOG_TO_CONSOLE 1
 
 #pragma pack(push, 1)
 
@@ -170,7 +170,7 @@ void WorldSocket::OnDisconnect()
 
 	if (mQueued)
 	{
-		sWorld.RemoveQueuedSocket(this);	// Remove from queued sockets.
+        sWorld.RemoveQueuedSocket(this); // Remove from queued sockets.
 		mQueued = false;
 	}
 }
@@ -330,6 +330,7 @@ void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
 	*recvPacket >> AuthDigest[10];
 	*recvPacket >> addonSize;
 
+    // We should send this in addon info :)
 	addonsData.resize(addonSize);
 	recvPacket->read((uint8*)addonsData.contents(), addonSize);
 
@@ -539,11 +540,12 @@ void WorldSocket::Authenticate()
 
 	SendAuthResponse(AUTH_OK, false, NULL);
 
-	WorldPacket cdata(SMSG_CLIENTCACHE_VERSION, 4);
-	cdata << uint32(18414);
-	SendPacket(&cdata);
+	WorldPacket data(SMSG_CLIENTCACHE_VERSION, 4);
+	data << uint32(18414);
+	SendPacket(&data);
 
-	sAddonMgr.SendAddonInfoPacket(pAuthenticationPacket, static_cast< uint32 >(pAuthenticationPacket->rpos()), mSession);
+    // Doesn't work
+	//sAddonMgr.SendAddonInfoPacket(pAuthenticationPacket, static_cast< uint32 >(pAuthenticationPacket->rpos()), mSession);
 	mSession->_latency = _latency;
 
 	delete pAuthenticationPacket;

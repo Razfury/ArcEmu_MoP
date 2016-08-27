@@ -412,7 +412,6 @@ struct AchievementEntry
     uint32      refAchievement;                               // 61
 };
 
-
 #define	 ACHIEVEMENT_CRITERIA_COMPLETE_FLAG_ALL  2 //complete one and completes all. ex 689
 #define  ACHIEVEMENT_CRITERIA_GROUP_NOT_IN_GROUP 2 //only if not in group
 

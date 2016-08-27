@@ -85,7 +85,6 @@ enum QUEST_FLAG
     QUEST_FLAGS_UNK5              = 0x00020000,                // has something to do with ReqItemId and SrcItemId
     QUEST_FLAGS_UNK6              = 0x00040000,                // use Objective text as Complete text
     QUEST_FLAGS_AUTO_ACCEPT       = 0x00080000,                // quests in starting areas
-
 };
 
 enum FAILED_REASON
@@ -132,6 +131,8 @@ enum QUEST_SHARE
 #define arcemu_QUEST_REPEATABLE 1
 #define arcemu_QUEST_REPEATABLE_DAILY 2
 #define MAX_REQUIRED_QUEST_ITEM 6
+#define QUEST_REWARD_CURRENCY_COUNT 4
+#define QUEST_REPUTATIONS_COUNT 5
 
 class QuestScript;
 #pragma pack(push,1)
@@ -183,8 +184,8 @@ struct Quest
 	uint32 reward_item[4];
 	uint32 reward_itemcount[4];
 
-	uint32 reward_repfaction[6];
-	int32 reward_repvalue[6];
+    uint32 reward_repfaction[QUEST_REPUTATIONS_COUNT]; // Was 6 before
+    int32 reward_repvalue[QUEST_REPUTATIONS_COUNT]; // Was 6 before
 	uint32 reward_replimit;
 
 	int32 reward_money;
@@ -209,7 +210,7 @@ struct Quest
 	uint32 receive_items[4];
 	uint32 receive_itemcount[4];
 	int is_repeatable;
-	//
+
 	uint32 bonushonor;
 	uint32 bonusarenapoints;
 	uint32 rewardtitleid;
@@ -228,7 +229,28 @@ struct Quest
 	uint32 iscompletedbyspelleffect;
 	uint32 RewXPId;
 
+    // New in 4.x
+    uint32 MinimapTargetMark;
+    uint32 RewardSkillId;
+    uint32 RewardSkillPoints;
+    uint32 RewardReputationMask;
+    uint32 QuestGiverPortrait;
+    uint32 QuestTurnInPortrait;
+    std::string QuestGiverTextWindow;
+    std::string QuestGiverTargetName;
+    std::string QuestTurnTextWindow;
+    std::string QuestTurnTargetName;
+    uint32 SoundAccept;
+    uint32 SoundTurnIn;
+    // new in 5.x
+    uint32 Flags2;
+    uint32 RewardPackageItemId;
+
 	/* this marks the end of the fields loaded from db - don't remove the comment please */
+
+    // 4.x
+    uint32 RewardCurrencyId[QUEST_REWARD_CURRENCY_COUNT];
+    uint32 RewardCurrencyCount[QUEST_REWARD_CURRENCY_COUNT];
 
 	uint32 count_required_mob;
 	uint32 count_requiredquests;
@@ -277,7 +299,8 @@ class QuestScript;
 
 #define MAX_QUEST_LOG_SIZE 25
 
-enum QuestCompletionStatus{
+enum QuestCompletionStatus
+{
 	QUEST_INCOMPLETE = 0,
 	QUEST_COMPLETE   = 1,
 	QUEST_FAILED     = 2
@@ -314,7 +337,6 @@ class SERVER_DECL QuestLogEntry : public EventableObject
 		void SetSlot(int32 i);
 		void Finish();
 
-
 		//////////////////////////////////////////////////////////////
 		//void Fail( bool timerexpired )
 		//  Marks the quest as failed
@@ -344,13 +366,13 @@ class SERVER_DECL QuestLogEntry : public EventableObject
 		//
 		//
 		/////////////////////////////////////////////////////////////
-		bool HasFailed(){
+		bool HasFailed()
+        {
 			if( completed == QUEST_FAILED )
 				return true;
 			else
 				return false;
 		}
-
 
 		void SendQuestComplete();
 		void SendUpdateAddKill(uint32 i);

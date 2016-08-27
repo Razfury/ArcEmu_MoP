@@ -20,6 +20,8 @@
 #include "StdAfx.h"
 #include "TerrainMgr.h"
 
+#define BUILD_MAGIC 18414
+
 TerrainTile* TerrainHolder::GetTile(float x, float y)
 {
 	int32 tx = (int32)(32 - (x / TERRAIN_TILE_SIZE));
@@ -280,13 +282,12 @@ void TileMap::Load(char* filename)
 
 	fread(&header, 1, sizeof(header), f);
 
-	if(header.buildMagic != 18273)  //wow version
+	if(header.buildMagic != BUILD_MAGIC)  // Wow version
 	{
-		sLog.Error("Terrain", "%s: from incorrect client (you: %u us: %u)", filename, header.buildMagic, 18273);
+		sLog.Error("Terrain", "%s: from incorrect client (you: %u us: %u)", filename, header.buildMagic, BUILD_MAGIC);
 		fclose(f);
 		return;
 	}
-
 
 	if(header.areaMapOffset != 0)
 		LoadAreaData(f, header);
