@@ -4724,7 +4724,6 @@ void Player::KillPlayer()
 		currentvehicle->EjectPassenger(this);
 
 	sHookInterface.OnDeath(this);
-
 }
 
 void Player::CreateCorpse()
@@ -6446,12 +6445,12 @@ bool Player::removeDeletedSpell(uint32 SpellID)
 
 void Player::EventActivateGameObject(GameObject* obj)
 {
-	obj->BuildFieldUpdatePacket(this, 8+8, 1 | 8);
+    obj->BuildFieldUpdatePacket(this, OBJECT_FIELD_DYNAMIC_FLAGS, 1 | 8);
 }
 
 void Player::EventDeActivateGameObject(GameObject* obj)
 {
-	obj->BuildFieldUpdatePacket(this, 8+8, 0);
+    obj->BuildFieldUpdatePacket(this, OBJECT_FIELD_DYNAMIC_FLAGS, 0);
 }
 
 void Player::EventTimedQuestExpire(uint32 questid){
@@ -13472,7 +13471,7 @@ void Player::AcceptQuest(uint64 guid, uint32 quest_id)
 
 	if (guidtype == HIGHGUID_TYPE_UNIT)
 	{
-		Creature* quest_giver = m_mapMgr->GetCreature(GET_LOWGUID_PART(guid));
+		Creature* quest_giver = m_mapMgr->GetCreature(GUID_LOPART_TEST(guid));
 		if (quest_giver)
 			qst_giver = quest_giver;
 		else
@@ -13486,7 +13485,7 @@ void Player::AcceptQuest(uint64 guid, uint32 quest_id)
 	}
 	else if (guidtype == HIGHGUID_TYPE_GAMEOBJECT)
 	{
-		GameObject* quest_giver = m_mapMgr->GetGameObject(GET_LOWGUID_PART(guid));
+        GameObject* quest_giver = m_mapMgr->GetGameObject(GUID_LOPART_TEST(guid));
 		if (quest_giver)
 			qst_giver = quest_giver;
 		else
@@ -13559,7 +13558,8 @@ void Player::AcceptQuest(uint64 guid, uint32 quest_id)
 		return;
 	}
 
-	if ((qst->time != 0) && HasTimedQuest()){
+	if ((qst->time != 0) && HasTimedQuest())
+    {
 		sQuestMgr.SendQuestInvalid(INVALID_REASON_HAVE_TIMED_QUEST, this);
 		return;
 	}

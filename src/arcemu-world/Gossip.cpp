@@ -224,9 +224,9 @@ void Gossip::Menu::Send(Player* plr) const
 
         LocalizedQuest* lq = sLocalizationMgr.GetLocalizedQuest(itr->first->id, language_);
         if (lq != NULL)
-            packet.WriteBits(strlen(lq->Title) + 1, 9); // + 1?
+            packet.WriteBits(strlen(lq->Title), 9);
         else
-            packet.WriteBits(strlen(itr->first->title) + 1, 9); // + 1?
+            packet.WriteBits(strlen(itr->first->title), 9);
     }
 
     packet.WriteBit(guid[5]);

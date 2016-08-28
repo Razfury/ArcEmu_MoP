@@ -184,8 +184,10 @@ struct Quest
 	uint32 reward_item[4];
 	uint32 reward_itemcount[4];
 
-    uint32 reward_repfaction[QUEST_REPUTATIONS_COUNT]; // Was 6 before
-    int32 reward_repvalue[QUEST_REPUTATIONS_COUNT]; // Was 6 before
+    //uint32 reward_repfaction[QUEST_REPUTATIONS_COUNT]; // Was 6 before
+    //int32 reward_repvalue[QUEST_REPUTATIONS_COUNT]; // Was 6 before
+    uint32 reward_repfaction[6]; // QUEST_REPUTATIONS_COUNT is 5, not 6; 6th field is not used anyways
+    int32 reward_repvalue[6]; // When updating the DB to the new structure, eliminate repfaction[5] and repvalue[5] as they're not used
 	uint32 reward_replimit;
 
 	int32 reward_money;

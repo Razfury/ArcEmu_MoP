@@ -838,10 +838,10 @@ void Object::_BuildValuesUpdate(ByteBuffer* data, UpdateMask* updateMask, Player
 
 	if (activate_quest_object)
 	{
-		oldflags = m_uint32Values[8+8];
-		if (!updateMask->GetBit(8+8))
-			updateMask->SetBit(8+8);
-		m_uint32Values[8+8] = 1 | 8; // 8 to show sparkles
+        oldflags = m_uint32Values[OBJECT_FIELD_DYNAMIC_FLAGS];
+        if (!updateMask->GetBit(OBJECT_FIELD_DYNAMIC_FLAGS))
+            updateMask->SetBit(OBJECT_FIELD_DYNAMIC_FLAGS);
+        m_uint32Values[OBJECT_FIELD_DYNAMIC_FLAGS] = 1 | 8; // 8 to show sparkles
 		reset = true;
 	}
 
@@ -879,7 +879,7 @@ void Object::_BuildValuesUpdate(ByteBuffer* data, UpdateMask* updateMask, Player
 			m_uint32Values[OBJECT_FIELD_DYNAMIC_FLAGS] = oldflags;
 			break;
 		case TYPEID_GAMEOBJECT:
-			m_uint32Values[8+8] = oldflags;
+            m_uint32Values[OBJECT_FIELD_DYNAMIC_FLAGS] = oldflags;
 			break;
 		}
 	}

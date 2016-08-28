@@ -172,20 +172,36 @@ void WorldSession::HandleQuestGiverQueryQuestOpcode(WorldPacket & recv_data)
 
 	LOG_DEBUG("WORLD: Received CMSG_QUESTGIVER_QUERY_QUEST.");
 
-	WorldPacket data;
-	uint64 guid;
-	uint32 quest_id;
+	WorldPacket data(100);
 	uint32 status = 0;
-	uint8 unk;
 
-	recv_data >> guid;
-	recv_data >> quest_id;
-	recv_data >> unk;
+    ObjectGuid guid;
+    uint32 questId;
+
+    recv_data >> questId;
+    guid[2] = recv_data.ReadBit();
+    guid[6] = recv_data.ReadBit();
+    guid[5] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[1] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[3]);
+    recv_data.ReadByteSeq(guid[6]);
 
 	Object* qst_giver = NULL;
 
 	bool bValid = false;
-	Quest* qst = QuestStorage.LookupEntry(quest_id);
+	Quest* qst = QuestStorage.LookupEntry(questId);
 
 	if(!qst)
 	{
@@ -196,7 +212,7 @@ void WorldSession::HandleQuestGiverQueryQuestOpcode(WorldPacket & recv_data)
 	uint32 guidtype = GET_TYPE_FROM_GUID(guid);
 	if(guidtype == HIGHGUID_TYPE_UNIT)
 	{
-		Creature* quest_giver = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+		Creature* quest_giver = _player->GetMapMgr()->GetCreature(GUID_LOPART_TEST(guid));
 		if(quest_giver)
 			qst_giver = quest_giver;
 		else
@@ -209,7 +225,7 @@ void WorldSession::HandleQuestGiverQueryQuestOpcode(WorldPacket & recv_data)
 	}
 	else if(guidtype == HIGHGUID_TYPE_GAMEOBJECT)
 	{
-		GameObject* quest_giver = _player->GetMapMgr()->GetGameObject(GET_LOWGUID_PART(guid));
+        GameObject* quest_giver = _player->GetMapMgr()->GetGameObject(GUID_LOPART_TEST(guid));
 		if(quest_giver)
 			qst_giver = quest_giver;
 		else
@@ -281,14 +297,31 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPacket & recv_data)
 
 	LOG_DEBUG("WORLD: Received CMSG_QUESTGIVER_ACCEPT_QUEST");
 
-	uint64 guid;
-	uint32 quest_id;
+    ObjectGuid guid;
+    uint32 questId;
 
-	recv_data >> guid;
-	recv_data >> quest_id;
+    recv_data >> questId;
 
-	_player->AcceptQuest(guid, quest_id);
+    guid[6] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
+    recv_data.ReadBit();
+    guid[2] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    guid[5] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[1] = recv_data.ReadBit();
 
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[3]);
+    recv_data.ReadByteSeq(guid[7]);
+
+	_player->AcceptQuest(guid, questId);
 }
 
 void WorldSession::HandleQuestgiverCancelOpcode(WorldPacket & recvPacket)
@@ -454,7 +487,7 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode(WorldPacket & recv_data)
 	}
 	else if(guidtype == HIGHGUID_TYPE_GAMEOBJECT)
 	{
-		GameObject* quest_giver = _player->GetMapMgr()->GetGameObject(GET_LOWGUID_PART(guid));
+		GameObject* quest_giver = _player->GetMapMgr()->GetGameObject(GUID_LOPART_TEST(guid));
 		if(quest_giver)
 			qst_giver = quest_giver;
 		else
@@ -643,7 +676,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket & recvPacket)
 
 	if(guidtype == HIGHGUID_TYPE_UNIT)
 	{
-		Creature* quest_giver = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
+		Creature* quest_giver = _player->GetMapMgr()->GetCreature(GUID_LOPART_TEST(guid));
 		if(quest_giver)
 			qst_giver = quest_giver;
 		else
@@ -656,7 +689,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket & recvPacket)
 	}
 	else if(guidtype == HIGHGUID_TYPE_GAMEOBJECT)
 	{
-		GameObject* quest_giver = _player->GetMapMgr()->GetGameObject(GET_LOWGUID_PART(guid));
+		GameObject* quest_giver = _player->GetMapMgr()->GetGameObject(GUID_LOPART_TEST(guid));
 		if(quest_giver)
 			qst_giver = quest_giver;
 		else

@@ -2189,11 +2189,10 @@ struct CharClassEntry
     uint32 APPerAgility;                                    // 11       Attack Power bonus per point of agility
     uint32 RAPPerAgility;                                   // 12       Ranged Attack Power bonus per point of agility
     //uint32 unk1                                           // 13       Pandaria
-    //uint32 unk1                                           // 14       Pandaria
-    //uint32 unk1                                           // 15       Pandaria
-    //uint32 unk1                                           // 16       Pandaria
-    //uint32 unk1                                           // 17       Pandaria
-
+    //uint32 unk2                                           // 14       Pandaria
+    //uint32 unk3                                           // 15       Pandaria
+    //uint32 unk4                                           // 16       Pandaria
+    //uint32 unk5                                           // 17       Pandaria
 };
 
 struct CreatureFamilyEntry

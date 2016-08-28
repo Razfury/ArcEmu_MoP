@@ -353,9 +353,7 @@ void AchievementMgr::LoadFromDB(QueryResult* achievementResult, QueryResult* cri
 void AchievementMgr::SendAchievementEarned(AchievementEntry const* achievement)
 {
 	if(achievement == NULL || isCharacterLoading)
-	{
 		return;
-	}
 
 	const char* msg = "|Hplayer:$N|h[$N]|h has earned the achievement $a!";
 	uint32* guidList = NULL;
@@ -405,16 +403,18 @@ void AchievementMgr::SendAchievementEarned(AchievementEntry const* achievement)
 			}
 		}
 		// Build generic packet for group members and nearby players
-		WorldPacket cdata(SMSG_MESSAGECHAT, 200);
-		cdata << uint8(CHAT_MSG_ACHIEVEMENT);
-		cdata << uint32(LANG_UNIVERSAL);
-		cdata << uint64(GetPlayer()->GetGUID());
-		cdata << uint32(5);
-		cdata << uint64(GetPlayer()->GetGUID());
-		cdata << uint32(strlen(msg) + 1);
-		cdata << msg;
-		cdata << uint8(0);
-		cdata << uint32(achievement->ID);
+        WorldPacket messageData = *sChatHandler.BuildChatPacket(CHAT_MSG_ACHIEVEMENT, LANG_UNIVERSAL, GetPlayer()->GetGUID(), 0, msg, 0);
+
+		//WorldPacket cdata(SMSG_MESSAGECHAT, 200);
+		//cdata << uint8(CHAT_MSG_ACHIEVEMENT);
+		//cdata << uint32(LANG_UNIVERSAL);
+		//cdata << uint64(GetPlayer()->GetGUID());
+		//cdata << uint32(5);
+		//cdata << uint64(GetPlayer()->GetGUID());
+		//cdata << uint32(strlen(msg) + 1);
+		//cdata << msg;
+		//cdata << uint8(0);
+		//cdata << uint32(achievement->ID);
 		bool alreadySent;
 		// Send Achievement message to group members
 		Group* grp = GetPlayer()->GetGroup();
@@ -452,7 +452,7 @@ void AchievementMgr::SendAchievementEarned(AchievementEntry const* achievement)
 						}
 						if(!alreadySent)
 						{
-							(*groupItr)->m_loggedInPlayer->GetSession()->SendPacket(&cdata);
+							(*groupItr)->m_loggedInPlayer->GetSession()->SendPacket(&messageData);
 							guidList[guidCount++] = (*groupItr)->guid;
 						}
 					}
@@ -482,7 +482,7 @@ void AchievementMgr::SendAchievementEarned(AchievementEntry const* achievement)
 				}
 				if(!alreadySent)
 				{
-					p->GetSession()->SendPacket(&cdata);
+                    p->GetSession()->SendPacket(&messageData);
 					guidList[guidCount++] = p->GetLowGUID();
 				}
 			}
@@ -498,7 +498,7 @@ void AchievementMgr::SendAchievementEarned(AchievementEntry const* achievement)
 			}
 			if(!alreadySent)
 			{
-				GetPlayer()->GetSession()->SendPacket(&cdata);
+                GetPlayer()->GetSession()->SendPacket(&messageData);
 			}
 		}
 	}
@@ -1709,7 +1709,6 @@ void AchievementMgr::CompletedAchievement(AchievementEntry const* achievement)
 */
 void AchievementMgr::SendAllAchievementData(Player* player)
 {
-
     CompletedAchievementMap::iterator completeIter = m_completedAchievements.begin();
     CriteriaProgressMap::iterator progressIter = m_criteriaProgress.begin();
     size_t numCriteria = m_criteriaProgress.size();

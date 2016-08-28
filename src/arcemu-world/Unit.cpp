@@ -4409,8 +4409,8 @@ void Unit::SendAttackStart(Unit* pVictim)
         return;
 
     // yes, the two GUIDs are intentionally swapped!
-	ObjectGuid attackerGuid = GetGUID();
-	ObjectGuid victimGuid = pVictim->GetGUID();
+    ObjectGuid attackerGuid = GetGUID();
+    ObjectGuid victimGuid = pVictim->GetGUID();
 
     WorldPacket data(SMSG_ATTACKSTART, 8 + 8);
 

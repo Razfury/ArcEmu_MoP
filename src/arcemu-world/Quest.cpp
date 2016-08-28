@@ -30,9 +30,9 @@ WorldPacket* WorldSession::BuildQuestQueryResponse(Quest* qst)
     *data << uint32(qst->id);
     data->WriteBit(1); // Has data
     data->WriteBits(qst->QuestTurnTextWindow.size(), 10);
-    data->WriteBits(strlen(qst->title) + 1, 9);
-    data->WriteBits(strlen(qst->completiontext) + 1, 11);
-    data->WriteBits(strlen(qst->details) + 1, 12);
+    data->WriteBits(strlen(qst->title), 9);
+    data->WriteBits(strlen(qst->completiontext), 11);
+    data->WriteBits(strlen(qst->details), 12);
     data->WriteBits(qst->QuestTurnTargetName.size(), 8);
     data->WriteBits(qst->QuestGiverTargetName.size(), 8);
     data->WriteBits(qst->QuestGiverTextWindow.size(), 10);
@@ -241,6 +241,7 @@ void QuestLogEntry::ClearAffectedUnits()
 	if(m_affected_units.size() > 0)
 		m_affected_units.clear();
 }
+
 void QuestLogEntry::AddAffectedUnit(Unit* target)
 {
 	if(!target)
@@ -248,6 +249,7 @@ void QuestLogEntry::AddAffectedUnit(Unit* target)
 	if(!IsUnitAffected(target))
 		m_affected_units.insert(target->GetGUID());
 }
+
 bool QuestLogEntry::IsUnitAffected(Unit* target)
 {
 	if(!target)

@@ -61,7 +61,7 @@ void Player::Gossip_SendPOI(float X, float Y, uint32 Icon, uint32 Flags, uint32 
 	if(Name != NULL)
 		namelen = strlen(Name);
 
-	WorldPacket data(SMSG_GOSSIP_POI, 21 + namelen);
+    WorldPacket data(SMSG_GOSSIP_POI, 4 + 4 + 4 + 4 + 4 + 10);  // Guessed size
 
 	data << uint32(Flags);
 	data << float(X);
@@ -72,7 +72,7 @@ void Player::Gossip_SendPOI(float X, float Y, uint32 Icon, uint32 Flags, uint32 
 	if(namelen == 0)
 		data << uint8(0);
 	else
-		data.append((const uint8*)Name, namelen + 1);
+		data.append((const uint8*)Name, namelen + 1); // Icon text
 
 	m_session->SendPacket(&data);
 }

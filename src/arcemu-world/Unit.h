@@ -684,6 +684,13 @@ enum UnitSpecialStates
     UNIT_STATE_FROZEN    = 0x4000,
 };
 
+enum UnitBytes0Offsets
+{
+    UNIT_BYTES_0_OFFSET_RACE   = 0,
+    UNIT_BYTES_0_OFFSET_CLASS  = 1,
+    UNIT_BYTES_0_OFFSET_GENDER = 3
+};
+
 // byte flags value (UNIT_FIELD_BYTES_1,2)
 enum UnitStandFlags
 {
@@ -757,7 +764,6 @@ enum ShapeshiftForm
     FORM_MOONKIN            = 31,
     FORM_SPIRITOFREDEMPTION = 32,
 };
-
 
 enum UnitFieldFlags // UNIT_FIELD_FLAGS #46 - these are client flags
 {
@@ -1930,17 +1936,17 @@ class SERVER_DECL Unit : public Object
 
 		//////////////////////////////////////////////////// bytes 0 //////////////////////////////////////////////////////
 
-		void setRace(uint8 race) { SetByte(UNIT_FIELD_BYTES_0, 0, race); }
-		uint8 getRace() { return GetByte(UNIT_FIELD_BYTES_0, 0); }
+        void setRace(uint8 race) { SetByte(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_RACE, race); }
+        uint8 getRace() { return GetByte(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_RACE); }
 
-		void setClass(uint8 class_) { SetByte(UNIT_FIELD_BYTES_0, 1, class_); }
-		uint8 getClass() { return GetByte(UNIT_FIELD_BYTES_0, 1); }
+        void setClass(uint8 class_) { SetByte(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_CLASS, class_); }
+        uint8 getClass() { return GetByte(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_CLASS); }
 
-		uint8 getGender() { return GetByte(UNIT_FIELD_BYTES_0, 2); }
-		void setGender(uint8 gender) { SetByte(UNIT_FIELD_BYTES_0, 2, gender); }
+        uint8 getGender() { return GetByte(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER); }
+        void setGender(uint8 gender) { SetByte(UNIT_FIELD_BYTES_0, UNIT_BYTES_0_OFFSET_GENDER, gender); }
 
-		void SetPowerType(uint8 type) { SetByte(UNIT_FIELD_BYTES_0, 3, type); }
-		uint8 GetPowerType() { return GetByte(UNIT_FIELD_BYTES_0, 3); }
+        void SetPowerType(uint8 type) { SetUInt32Value(UNIT_FIELD_DISPLAY_POWER, type); }
+        uint8 GetPowerType() { return GetUInt32Value(UNIT_FIELD_DISPLAY_POWER); }
 		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		void SetHealth(uint32 val) { SetUInt32Value(UNIT_FIELD_HEALTH, val); }

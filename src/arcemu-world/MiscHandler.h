@@ -21,6 +21,7 @@
 #define __MISCHANDLER_H
 
 #pragma pack(push,1)
+
 struct GraveyardTeleport
 {
 	uint32 ID;
@@ -33,6 +34,15 @@ struct GraveyardTeleport
 	uint32 MapId;
 	uint32 FactionID;
 };
+
+enum BarberShopResult
+{
+    BARBER_SHOP_SUCCESS = 0,
+    BARBER_SHOP_NOT_ENOUGH_MONEY = 1,
+    BARBER_SHOP_NOT_SITTING = 2
+    /*BARBER_SHOP_NOT_ENOUGH_MONEY = 3*/
+};
+
 #pragma pack(pop)
 
 #endif

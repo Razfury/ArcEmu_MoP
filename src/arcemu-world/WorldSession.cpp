@@ -412,6 +412,7 @@ void WorldSession::LogoutPlayer(bool Save)
 		delete _player;
 		_player = NULL;
 
+        // Client will respond by sending CMSG_CANCEL_TRADE 3 times
 		WorldPacket data(SMSG_LOGOUT_COMPLETE, 3);
 		ObjectGuid guid = 0;
 
@@ -795,10 +796,8 @@ void WorldSession::InitPacketHandlerTable()
 
 	// Player Interaction
 	WorldPacketHandlers[CMSG_GAMEOBJ_USE].handler = &WorldSession::HandleGameObjectUse;
-	WorldPacketHandlers[CMSG_PLAYED_TIME].handler =
-	    &WorldSession::HandlePlayedTimeOpcode;
-	WorldPacketHandlers[CMSG_SETSHEATHED].handler =
-	    &WorldSession::HandleSetSheathedOpcode;
+	WorldPacketHandlers[CMSG_PLAYED_TIME].handler = &WorldSession::HandlePlayedTimeOpcode;
+	WorldPacketHandlers[CMSG_SETSHEATHED].handler = &WorldSession::HandleSetSheathedOpcode;
 	WorldPacketHandlers[CMSG_EMOTE].handler = &WorldSession::HandleEmoteOpcode;
 	WorldPacketHandlers[CMSG_TEXT_EMOTE].handler =
 	    &WorldSession::HandleTextEmoteOpcode;
@@ -1059,14 +1058,12 @@ void WorldSession::InitPacketHandlerTable()
 	WorldPacketHandlers[CMSG_QUESTGIVER_STATUS_QUERY].handler =
 	    &WorldSession::HandleQuestgiverStatusQueryOpcode;
 	WorldPacketHandlers[CMSG_QUESTGIVER_HELLO].handler = &WorldSession::HandleQuestgiverHelloOpcode;
-	WorldPacketHandlers[CMSG_QUESTGIVER_ACCEPT_QUEST].handler =
-	    &WorldSession::HandleQuestgiverAcceptQuestOpcode;
+	WorldPacketHandlers[CMSG_QUESTGIVER_ACCEPT_QUEST].handler = &WorldSession::HandleQuestgiverAcceptQuestOpcode;
 	//WorldPacketHandlers[CMSG_QUESTGIVER_CANCEL].handler = &WorldSession::HandleQuestgiverCancelOpcode; // Gone?
 	WorldPacketHandlers[CMSG_QUESTGIVER_CHOOSE_REWARD].handler = &WorldSession::HandleQuestgiverChooseRewardOpcode;
 	WorldPacketHandlers[CMSG_QUESTGIVER_REQUEST_REWARD].handler = &WorldSession::HandleQuestgiverRequestRewardOpcode;
 	WorldPacketHandlers[CMSG_QUEST_QUERY].handler = &WorldSession::HandleQuestQueryOpcode;
-	WorldPacketHandlers[CMSG_QUESTGIVER_QUERY_QUEST].handler =
-	    &WorldSession::HandleQuestGiverQueryQuestOpcode;
+	WorldPacketHandlers[CMSG_QUESTGIVER_QUERY_QUEST].handler = &WorldSession::HandleQuestGiverQueryQuestOpcode;
 	WorldPacketHandlers[CMSG_QUESTGIVER_COMPLETE_QUEST].handler = &WorldSession::HandleQuestgiverCompleteQuestOpcode;
 	WorldPacketHandlers[CMSG_QUESTLOG_REMOVE_QUEST].handler =
 	    &WorldSession::HandleQuestlogRemoveQuestOpcode;

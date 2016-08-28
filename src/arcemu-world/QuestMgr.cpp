@@ -389,11 +389,161 @@ void QuestMgr::BuildOfferReward(WorldPacket* data, Quest* qst, Object* qst_giver
 
 void QuestMgr::BuildQuestDetails(WorldPacket* data, Quest* qst, Object* qst_giver, uint32 menutype, uint32 language, Player* plr)
 {
-	LocalizedQuest* lq = (language > 0) ? sLocalizationMgr.GetLocalizedQuest(qst->id, language) : NULL;
-	std::map<uint32, uint8>::const_iterator itr;
+    LocalizedQuest* lq = (language > 0) ? sLocalizationMgr.GetLocalizedQuest(qst->id, language) : NULL;
+    std::map<uint32, uint8>::const_iterator itr;
+    ItemPrototype* ip;
 
-	data->SetOpcode(SMSG_QUESTGIVER_QUEST_DETAILS);
+    uint32 RewardItemDisplayId[6];
+    uint32 RewardChoiceItemDisplayId[6];
 
+    for (uint8 i = 0; i < 6; ++i)
+    {
+        ip = ItemPrototypeStorage.LookupEntry(qst->reward_item[i]);
+        RewardItemDisplayId[i] = ip ? ip->DisplayInfoID : 0;
+    }
+
+    for (uint8 i = 0; i < 6; ++i)
+    {
+        ip = ItemPrototypeStorage.LookupEntry(qst->reward_choiceitem[i]);
+        RewardChoiceItemDisplayId[i] = ip ? ip->DisplayInfoID : 0;
+    }
+
+    ObjectGuid guid = qst_giver->GetGUID();
+    ObjectGuid guid2 = qst_giver->GetGUID(); // Quest ender guid?
+
+    data->SetOpcode(SMSG_QUESTGIVER_QUEST_DETAILS);
+
+    *data << uint32(qst->reward_itemcount[3]);
+    *data << uint32(RewardChoiceItemDisplayId[4]);
+    *data << uint32(qst->reward_choiceitem[2]);
+
+    for (uint8 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; i++)
+    {
+        *data << uint32(qst->RewardCurrencyCount[i]);
+        *data << uint32(qst->RewardCurrencyId[i]);
+    }
+
+    *data << uint32(qst->count_reward_choiceitem);
+    *data << uint32(qst->reward_choiceitemcount[2]);
+    *data << uint32(qst->reward_itemcount[1]);
+    *data << uint32(0); // Unknown
+    *data << uint32(qst->reward_itemcount[0]);
+    *data << uint32(RewardItemDisplayId[3]);
+    *data << uint32(qst->reward_choiceitem[0]);
+    *data << uint32(qst->reward_choiceitemcount[3]);
+    *data << uint32(0); // Model Id, usually used in wanted or boss quests
+    *data << uint32(RewardChoiceItemDisplayId[3]);
+    *data << uint32(qst->reward_item[0]);
+    *data << uint32(qst->id); // Quest id
+    *data << uint32(qst->suggestedplayers);
+    *data << uint32(RewardChoiceItemDisplayId[0]);
+    *data << uint32(qst->reward_choiceitemcount[4]);
+    *data << uint32(qst->reward_choiceitemcount[5]);
+    *data << uint32(qst->rewardtalents); // Bonus talents?
+    *data << uint32(qst->reward_choiceitemcount[1]);
+    *data << uint32(RewardChoiceItemDisplayId[2]);
+
+    for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; i++)
+    {
+        *data << uint32(qst->reward_repvalue[i]);
+        *data << uint32(0); // Rep limit?
+        *data << uint32(qst->reward_repfaction[i]);
+    }
+
+    *data << uint32(qst->reward_item[3]);
+    *data << uint32(0); // Unknown
+    *data << uint32(GenerateQuestXP(plr, qst));
+    *data << uint32(qst->RewardReputationMask);
+    *data << uint32(RewardItemDisplayId[2]);
+    *data << uint32(qst->reward_item[1]);
+    *data << uint32(qst->reward_choiceitem[1]);
+    *data << uint32(qst->reward_choiceitem[5]);
+    *data << uint32(RewardItemDisplayId[0]);
+    *data << uint32(qst->quest_flags);
+    *data << uint32(qst->rewardtitleid); // Char title
+    *data << uint32(qst->reward_item[2]);
+    *data << uint32(GenerateRewardMoney(plr, qst));
+    *data << uint32(qst->reward_itemcount[2]);
+    *data << uint32(qst->Flags2);
+    *data << uint32(qst->reward_spell);
+    *data << uint32(qst->reward_choiceitem[3]);
+    *data << uint32(qst->count_reward_item);
+    *data << uint32(0); // Unknown
+    *data << uint32(RewardChoiceItemDisplayId[5]);
+    *data << uint32(qst->reward_choiceitem[4]);
+    *data << uint32(qst->RewardPackageItemId);
+    *data << uint32(qst->reward_choiceitemcount[0]);
+    *data << uint32(RewardItemDisplayId[1]);
+    *data << uint32(RewardChoiceItemDisplayId[1]);
+    *data << uint32(0); // Unknown
+
+    data->WriteBit(guid[7]);
+    data->WriteBit(guid2[1]);
+    data->WriteBits(qst->QuestTurnTargetName.size(), 8);
+    data->WriteBit(guid2[2]);
+    data->WriteBits(qst->QuestGiverTextWindow.size(), 10);
+    data->WriteBit(0); // Unknown
+    data->WriteBit(guid[2]);
+    data->WriteBits(strlen(qst->title), 9);
+    data->WriteBits(4, 21); // Quest emote count
+    data->WriteBit(guid[0]);
+    data->WriteBit(guid2[6]);
+    data->WriteBit(guid2[5]);
+    data->WriteBits(qst->QuestGiverTargetName.size(), 8);
+    data->WriteBit(guid2[3]);
+    data->WriteBit(guid[1]);
+    data->WriteBit(guid2[0]);
+    data->WriteBit(0);                                       // unknown
+    data->WriteBit(guid2[4]);
+    data->WriteBit(guid[3]);
+    data->WriteBit(guid[5]);
+    data->WriteBit(guid[4]);
+    data->WriteBits(qst->QuestTurnTextWindow.size(), 10);
+    data->WriteBit(0);                                       // unknown
+    data->WriteBit(guid[6]);
+    data->WriteBit(guid2[7]);
+    data->WriteBits(strlen(qst->details), 12);
+    data->WriteBits(0, 22);                                  // unknown counter
+    data->WriteBits(0, 20); // m_questObjectives.size()
+    data->WriteBits(strlen(qst->objectives), 12);
+    data->FlushBits();
+
+    data->WriteByteSeq(guid[0]);
+    data->WriteString(qst->QuestGiverTargetName);
+    data->WriteString(qst->QuestTurnTextWindow);
+    data->WriteString(qst->title);
+    data->WriteByteSeq(guid2[6]);
+    data->WriteString(qst->objectives);
+    data->WriteByteSeq(guid[2]);
+    data->WriteString(qst->QuestGiverTextWindow);
+    //data->append(objData); // It's empty atm :)
+    data->WriteString(qst->QuestTurnTargetName);
+    data->WriteString(qst->details);
+    data->WriteByteSeq(guid[5]);
+    data->WriteByteSeq(guid[7]);
+    data->WriteByteSeq(guid2[7]);
+    data->WriteByteSeq(guid2[3]);
+    data->WriteByteSeq(guid2[0]);
+
+    for (uint8 i = 0; i < 4; i++) // 4 = QUEST_EMOTE_COUNT
+    {
+        *data << uint32(qst->detailemotedelay[i]); // DetailsEmoteDelay (in ms)
+        *data << uint32(qst->detailemote[i]);
+    }
+
+    data->WriteByteSeq(guid[4]);
+    data->WriteByteSeq(guid[3]);
+    data->WriteByteSeq(guid2[5]);
+    data->WriteByteSeq(guid2[1]);
+    data->WriteByteSeq(guid2[2]);
+    data->WriteByteSeq(guid[1]);
+    data->WriteByteSeq(guid[6]);
+    data->WriteByteSeq(guid2[4]);
+
+    /*for (uint i = 0; i < unkCounterBits22; i++)
+    data << uint32(0);*/
+
+    /*
 	*data << qst_giver->GetGUID();			// npc guid
 	*data << uint64(qst_giver->IsPlayer() ? qst_giver->GetGUID() : 0);						// (questsharer?) guid
 	*data << qst->id;						// quest id
@@ -468,6 +618,7 @@ void QuestMgr::BuildQuestDetails(WorldPacket* data, Quest* qst, Object* qst_give
 		*data << qst->detailemote[i];			// Emote ID
 		*data << qst->detailemotedelay[i];		// Emote Delay
 	}
+    */
 }
 
 void QuestMgr::BuildRequestItems(WorldPacket* data, Quest* qst, Object* qst_giver, uint32 status, uint32 language)
@@ -585,19 +736,30 @@ void QuestMgr::BuildQuestComplete(Player* plr, Quest* qst)
 
 void QuestMgr::BuildQuestList(WorldPacket* data, Object* qst_giver, Player* plr, uint32 language)
 {
-	if(!plr || !plr->GetSession()) return;
+	if(!plr || !plr->GetSession())
+        return;
 	uint32 status;
 	list<QuestRelation*>::iterator it;
 	list<QuestRelation*>::iterator st;
 	list<QuestRelation*>::iterator ed;
 	map<uint32, uint8> tmp_map;
 
+    ByteBuffer questData;
+    ObjectGuid guid = qst_giver->GetGUID();
 	data->Initialize(SMSG_QUESTGIVER_QUEST_LIST);
 
-	*data << qst_giver->GetGUID();
-	*data << plr->GetSession()->LocalizedWorldSrv(70);//"How can I help you?"; //Hello line
-	*data << uint32(1);//Emote Delay
-	*data << uint32(1);//Emote
+    std::string line = plr->GetSession()->LocalizedWorldSrv(70); // "How can I help you?"
+
+    *data << uint32(1); // Emote Delay
+    *data << uint32(1); // Emote
+    data->WriteBit(guid[2]);
+    data->WriteBits(line.size(), 11); // Not sure if this is needed here
+    data->WriteBit(guid[6]);
+    data->WriteBit(guid[0]);
+
+    uint32 count = 0;
+    size_t countPos = data->bitwpos();
+    data->WriteBits(count, 19);
 
 	bool bValid = false;
 	if(qst_giver->IsGameObject())
@@ -619,11 +781,8 @@ void QuestMgr::BuildQuestList(WorldPacket* data, Object* qst_giver, Player* plr,
 		}
 	}
 
-	if(!bValid)
-	{
-		*data << uint8(0);
-		return;
-	}
+	if (!bValid)
+	    return; // Probably we should finish sending the packet without quest data...
 
 	*data << uint8(sQuestMgr.ActiveQuestsCount(qst_giver, plr));
 
@@ -637,38 +796,64 @@ void QuestMgr::BuildQuestList(WorldPacket* data, Object* qst_giver, Player* plr,
 				tmp_map.insert(std::map<uint32, uint8>::value_type((*it)->qst->id, 1));
 				LocalizedQuest* lq = (language > 0) ? sLocalizationMgr.GetLocalizedQuest((*it)->qst->id, language) : NULL;
 
-				*data << (*it)->qst->id;
-				/**data << sQuestMgr.CalcQuestStatus(qst_giver, plr, *it);
-				*data << uint32(0);*/
+                data->WriteBit(0); // Unknown bit
+                if (lq)
+                    data->WriteBits(strlen(lq->Title), 9);
+                else
+                    data->WriteBits(strlen((*it)->qst->title), 9);
 
-				switch(status)
-				{
-					case QMGR_QUEST_NOT_FINISHED:
-						*data << uint32(4);
-						break;
+                questData << ((*it)->qst->quest_flags);
+                questData << uint32((*it)->qst->id);
 
-					case QMGR_QUEST_FINISHED:
-						*data << uint32(4);
-						break;
+                if (lq)
+                    questData.WriteString(lq->Title);
+                else
+                    questData.WriteString((*it)->qst->title);
 
-					case QMGR_QUEST_CHAT:
-						*data << uint32(QMGR_QUEST_AVAILABLE);
-						break;
+                questData << uint32((*it)->qst->Flags2);
 
-					default:
-						*data << status;
-				}
-				*data << int32((*it)->qst->questlevel);
-				*data << uint32((*it)->qst->quest_flags);
-				*data << uint8(0);   // According to MANGOS: "changes icon: blue question or yellow exclamation"
+                // Quest icon?
+                switch (status)
+                {
+                case QMGR_QUEST_NOT_FINISHED:
+                    questData << uint32(4);
+                    break;
 
-				if(lq)
-					*data << lq->Title;
-				else
-					*data << (*it)->qst->title;
+                case QMGR_QUEST_FINISHED:
+                    questData << uint32(4);
+                    break;
+
+                case QMGR_QUEST_CHAT:
+                    questData << uint32(QMGR_QUEST_AVAILABLE);
+                    break;
+
+                default:
+                    questData << status;
+                }
+
+                questData << uint32((*it)->qst->questlevel);
 			}
 		}
 	}
+
+    data->WriteBit(guid[1]);
+    data->WriteBit(guid[3]);
+    data->WriteBit(guid[4]);
+    data->WriteBit(guid[5]);
+    data->WriteBit(guid[7]);
+    data->PutBits(countPos, count, 19);
+    data->FlushBits();
+
+    data->WriteByteSeq(guid[1]);
+    data->WriteByteSeq(guid[0]);
+    data->WriteByteSeq(guid[6]);
+    data->WriteByteSeq(guid[7]);
+    data->append(questData);
+    data->WriteByteSeq(guid[5]);
+    data->WriteByteSeq(guid[3]);
+    data->WriteByteSeq(guid[2]);
+    data->WriteString(line); // Not sure
+    data->WriteByteSeq(guid[4]);
 }
 
 void QuestMgr::BuildQuestUpdateAddItem(WorldPacket* data, uint32 itemid, uint32 count)
@@ -730,7 +915,7 @@ bool QuestMgr::OnGameObjectActivate(Player* plr, GameObject* go)
 	uint32 entry = go->GetEntry();
 	Quest* qst;
 
-	for(i = 0; i < 25; ++i)
+	for(i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
 	{
 		qle = plr->GetQuestLogInSlot(i);
 		if(qle != NULL)
@@ -793,7 +978,7 @@ void QuestMgr::_OnPlayerKill(Player* plr, uint32 entry, bool IsGroupKill)
 
 	if(plr->HasQuestMob(entry))
 	{
-		for(i = 0; i < 25; ++i)
+		for(i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
 		{
 			qle = plr->GetQuestLogInSlot(i);
 			if(qle != NULL)
@@ -892,7 +1077,7 @@ void QuestMgr::OnPlayerCast(Player* plr, uint32 spellid, uint64 & victimguid)
 	uint32 i, j;
 	uint32 entry = (victim) ? victim->GetEntry() : 0;
 	QuestLogEntry* qle;
-	for(i = 0; i < 25; ++i)
+    for (i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
 	{
 		if((qle = plr->GetQuestLogInSlot(i)) != 0)
 		{
@@ -933,15 +1118,13 @@ void QuestMgr::OnPlayerCast(Player* plr, uint32 spellid, uint64 & victimguid)
 	}
 }
 
-
-
 void QuestMgr::OnPlayerItemPickup(Player* plr, Item* item)
 {
 	uint32 i, j;
 	uint32 pcount;
 	uint32 entry = item->GetEntry();
 	QuestLogEntry* qle;
-	for(i = 0; i < 25; ++i)
+    for (i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
 	{
 		if((qle = plr->GetQuestLogInSlot(i))  != 0)
 		{
@@ -974,7 +1157,7 @@ void QuestMgr::OnPlayerExploreArea(Player* plr, uint32 AreaID)
 {
 	uint32 i, j;
 	QuestLogEntry* qle;
-	for(i = 0; i < 25; ++i)
+    for (i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
 	{
 		if((qle = plr->GetQuestLogInSlot(i)) != 0)
 		{
@@ -1003,7 +1186,7 @@ void QuestMgr::AreaExplored(Player* plr, uint32 QuestID)
 {
 	uint32 i, j;
 	QuestLogEntry* qle;
-	for(i = 0; i < 25; ++i)
+    for (i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
 	{
 		if((qle = plr->GetQuestLogInSlot(i)) != 0)
 		{
@@ -1772,7 +1955,7 @@ bool QuestMgr::OnActivateQuestGiver(Object* qst_giver, Player* plr)
 		return false;
 
 	uint32 questCount = sQuestMgr.ActiveQuestsCount(qst_giver, plr);
-	WorldPacket data(1004);
+	WorldPacket data(100);
 
 	if(questCount == 0)
 	{
@@ -1972,6 +2155,31 @@ void QuestMgr::LoadExtraQuestStuff()
 	while(!it->AtEnd())
 	{
 		qst = it->Get();
+
+        //! These are the new 4.x and 5.x fields
+        // Until we update the DB to support them
+        // We set them to 0
+        qst->MinimapTargetMark = 0;
+        qst->RewardSkillId = 0;
+        qst->RewardSkillPoints = 0;
+        qst->RewardReputationMask = 0;
+        qst->QuestGiverPortrait = 0;
+        qst->QuestTurnInPortrait = 0;
+        qst->QuestGiverTextWindow = "";
+        qst->QuestGiverTargetName = "";
+        qst->QuestTurnTextWindow = "";
+        qst->QuestTurnTargetName = "";
+        qst->SoundAccept = 0;
+        qst->SoundTurnIn = 0;
+        qst->Flags2 = 0;
+        qst->RewardPackageItemId = 0;
+
+        for (uint8 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
+        {
+            qst->RewardCurrencyId[i] = 0;
+            qst->RewardCurrencyCount[i] = 0;
+        }
+        // Remove until this point!
 
 		// 0 them out
 		qst->count_required_item = 0;

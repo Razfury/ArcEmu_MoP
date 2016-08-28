@@ -1539,15 +1539,16 @@ void WorldSession::HandleBarberShopResult(WorldPacket & recv_data)
 		cost += (uint32)(cutcosts->cost * 0.75f);
 	}
 
+    // To-Do: move packet sending to function in Player
 	if(!_player->HasGold(cost))
 	{
 		WorldPacket data(SMSG_BARBER_SHOP_RESULT, 4);
-		data << uint32(1);                                  // no money
+        data << uint32(BARBER_SHOP_NOT_ENOUGH_MONEY);
 		SendPacket(&data);
 		return;
 	}
 	WorldPacket data(SMSG_BARBER_SHOP_RESULT, 4);
-	data << uint32(0);                                  // ok
+    data << uint32(BARBER_SHOP_SUCCESS);
 	SendPacket(&data);
 
 	_player->SetByte(PLAYER_BYTES, 2, static_cast<uint8>(newhair));
@@ -1916,9 +1917,13 @@ void WorldSession::HandleSetSheathedOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	uint32 active;
-	recv_data >> active;
-	_player->SetByte(UNIT_FIELD_BYTES_2, 0, (uint8)active);
+    uint32 sheathed;
+    bool hasData = false;
+
+    recv_data >> sheathed;
+    hasData = recv_data.ReadBit();
+
+    _player->SetByte(UNIT_FIELD_BYTES_2, 0, uint8(sheathed)); // Probably not right
 }
 
 void WorldSession::HandlePlayedTimeOpcode(WorldPacket & recv_data)
@@ -1926,23 +1931,12 @@ void WorldSession::HandlePlayedTimeOpcode(WorldPacket & recv_data)
 	CHECK_INWORLD_RETURN
 
 	uint32 playedt = (uint32)UNIXTIME - _player->m_playedtime[2];
-	uint8 displayinui = 0;
+	uint8 DisplayInChatFrame = 0;
 
-	///////////////////////////////////////////////////////////////////////////////////////////
-	// As of 3.2.0a this is what the client sends to poll the /played time
-	//
-	// {CLIENT} Packet: (0x01CC) CMSG_PLAYED_TIME PacketSize = 1 TimeStamp = 691943484
-	// 01
-	//
-	// Structure:
-	// uint8 displayonui   -  1 when it should be printed on the screen, 0 when it shouldn't
-	//
-	//////////////////////////////////////////////////////////////////////////////////////////
-
-	recv_data >> displayinui;
+    recv_data >> DisplayInChatFrame;
 
 	LOG_DEBUG("Recieved CMSG_PLAYED_TIME.");
-	LOG_DEBUG("displayinui: %lu", displayinui);
+    LOG_DEBUG("Display in chat frame (0 or 1): %lu", DisplayInChatFrame);
 
 	if(playedt)
 	{
@@ -1951,32 +1945,14 @@ void WorldSession::HandlePlayedTimeOpcode(WorldPacket & recv_data)
 		_player->m_playedtime[2] += playedt;
 	}
 
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-	//
-	// As of 3.2.0a the server sends this as a response to the client /played time packet
-	//
-	//  {SERVER} Packet: (0x01CD) SMSG_PLAYED_TIME PacketSize = 9 TimeStamp = 691944000
-	//  FE 0C 00 00 FE 0C 00 00 01
-	//
-	//
-	// Structure:
-	//
-	// uint32 playedtotal      -   total time played in seconds
-	// uint32 playedlevel      -   time played on this level in seconds
-	// uint32 displayinui      -   1 when it should be printed on the screen, 0 when it shouldn't
-	//
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // VLack: again, an Aspire trick, with an uint8(0) -- I hate packet structure changes...
-    // I hate them too. You should see MoP :D
-	WorldPacket data(SMSG_PLAYED_TIME, 9);
-	data << (uint32)_player->m_playedtime[1];
-	data << (uint32)_player->m_playedtime[0];
-	data << uint8(displayinui);
+	WorldPacket data(SMSG_PLAYED_TIME, 4 + 4 + 1);
+	data << (uint32)_player->m_playedtime[1]; // Total played time (in seconds)
+	data << (uint32)_player->m_playedtime[0]; // Time played at current level (in seconds)
+    data << uint8(DisplayInChatFrame);
 	SendPacket(&data);
 
 	LOG_DEBUG("Sent SMSG_PLAYED_TIME.");
-	LOG_DEBUG("total: %lu level: %lu", _player->m_playedtime[1], _player->m_playedtime[0]);
+	LOG_DEBUG("Total: %lu Level: %lu", _player->m_playedtime[1], _player->m_playedtime[0]);
 }
 
 void WorldSession::HandleInspectOpcode(WorldPacket & recv_data)
