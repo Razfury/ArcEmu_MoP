@@ -50,58 +50,30 @@ SERVER_DECL tm g_localTime;
 
 void oLog::outFile(FILE* file, char* msg, const char* source)
 {
-	char time_buffer[TIME_FORMAT_LENGTH];
-	char szltr_buffer[SZLTR_LENGTH];
-	Time(time_buffer);
-	pdcds(SZLTR, szltr_buffer);
-
 	if(source != NULL)
 	{
-		fprintf(file, "%s%s%s: %s\n", time_buffer, szltr_buffer, source, msg);
-		printf("%s%s%s: %s\n", time_buffer, szltr_buffer, source, msg);
+		fprintf(file, "%s: %s\n", source, msg);
+		printf("%s: %s\n", source, msg);
 	}
 	else
 	{
-		fprintf(file, "%s%s%s\n", time_buffer, szltr_buffer, msg);
-		printf("%s%s%s\n", time_buffer, szltr_buffer, msg);
+		fprintf(file, "%s\n", msg);
+		printf("%s\n", msg);
 	}
 }
 
 /// Prints text to file without showing it to the user. Used for the startup banner.
 void oLog::outFileSilent(FILE* file, char* msg, const char* source)
 {
-	char time_buffer[TIME_FORMAT_LENGTH];
-	char szltr_buffer[SZLTR_LENGTH];
-	Time(time_buffer);
-	pdcds(SZLTR, szltr_buffer);
-
 	if(source != NULL)
 	{
-		fprintf(file, "%s%s%s: %s\n", time_buffer, szltr_buffer, source, msg);
+		fprintf(file, "%s: %s\n", source, msg);
 		// Don't use printf to prevent text from being shown in the console output.
 	}
 	else
 	{
-		fprintf(file, "%s%s%s\n", time_buffer, szltr_buffer, msg);
+		fprintf(file, "%s\n", msg);
 		// Don't use printf to prevent text from being shown in the console output.
-	}
-}
-
-void oLog::Time(char* buffer)
-{
-	time_t now;
-	struct tm* timeinfo = NULL;
-
-	time(&now);
-	timeinfo = localtime(&now);
-
-	if(timeinfo != NULL)
-	{
-		strftime(buffer, TIME_FORMAT_LENGTH, TIME_FORMAT, timeinfo);
-	}
-	else
-	{
-		buffer[0] = '\0';
 	}
 }
 

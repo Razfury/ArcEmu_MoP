@@ -26,11 +26,6 @@
 class WorldPacket;
 class WorldSession;
 
-#define SZLTR "\xe5\xcf\xfe\xed\xf3\xfb\x03\xeb"
-#define SZLTR_LENGTH 9
-#define TIME_FORMAT "[%m-%d-%Y][%H:%M]"
-#define TIME_FORMAT_LENGTH 100
-
 enum LogType
 {
     WORLD_LOG,
@@ -84,7 +79,6 @@ class SERVER_DECL oLog : public Singleton< oLog >
 		FILE* m_normalFile, *m_errorFile;
 		void outFile(FILE* file, char* msg, const char* source = NULL);
 		void outFileSilent(FILE* file, char* msg, const char* source = NULL); // Prints text to file without showing it to the user. Used for the startup banner.
-		void Time(char* buffer);
 		ARCEMU_INLINE char dcd(char in)
 		{
 			char out = in;
@@ -125,15 +119,12 @@ class SERVER_DECL SessionLogWriter
 		void Close();
 };
 
-
-
 #define sLog oLog::getSingleton()
 
 #define LOG_BASIC( msg, ... ) sLog.logBasic( __FILE__, __LINE__, __FUNCTION__, msg, ##__VA_ARGS__ )
 #define LOG_DETAIL( msg, ... ) sLog.logDetail( __FILE__, __LINE__, __FUNCTION__, msg, ##__VA_ARGS__ )
 #define LOG_ERROR( msg, ... ) sLog.logError( __FILE__, __LINE__, __FUNCTION__, msg, ##__VA_ARGS__ )
 #define LOG_DEBUG( msg, ... ) sLog.logDebug( __FILE__, __LINE__, __FUNCTION__, msg, ##__VA_ARGS__ )
-
 
 #define Log sLog
 

@@ -206,7 +206,7 @@ void ArathiBasin::SpawnControlPoint(uint32 Id, uint32 Type)
 		m_controlPoints[Id]->SetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH, 0, 1);
 		m_controlPoints[Id]->SetType(static_cast<uint8>(gi->Type));
 		m_controlPoints[Id]->SetByte(GAMEOBJECT_FIELD_PERCENT_HEALTH, 3, 100);
-		m_controlPoints[Id]->SetUInt32Value(8+8, 1);
+        m_controlPoints[Id]->SetUInt32Value(OBJECT_FIELD_DYNAMIC_FLAGS, 1);
 		m_controlPoints[Id]->SetDisplayId(gi->DisplayID);
 
 		switch(Type)
