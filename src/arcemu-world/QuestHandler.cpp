@@ -209,7 +209,7 @@ void WorldSession::HandleQuestGiverQueryQuestOpcode(WorldPacket & recv_data)
 		return;
 	}
 
-	uint32 guidtype = GET_TYPE_FROM_GUID(guid);
+	uint32 guidtype = GUID_HIPAR_TESTT(guid);
 	if(guidtype == HIGHGUID_TYPE_UNIT)
 	{
 		Creature* quest_giver = _player->GetMapMgr()->GetCreature(GUID_LOPART_TEST(guid));
@@ -459,7 +459,7 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode(WorldPacket & recv_data)
 	Quest* qst = NULL;
 	Object* qst_giver = NULL;
 	uint32 status = 0;
-	uint32 guidtype = GET_TYPE_FROM_GUID(guid);
+	uint32 guidtype = GUID_HIPAR_TESTT(guid);
 
 	if(guidtype == HIGHGUID_TYPE_UNIT)
 	{

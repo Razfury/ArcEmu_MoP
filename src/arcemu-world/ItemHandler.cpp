@@ -37,7 +37,6 @@ bool VerifyBagSlots(int8 ContainerSlot, int8 Slot)
 void WorldSession::HandleSplitOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN;
-	CHECK_PACKET_SIZE(recv_data, 8);
 	int8 DstInvSlot = 0, DstSlot = 0, SrcInvSlot = 0, SrcSlot = 0;
 	int32 count = 0;
 
@@ -626,7 +625,6 @@ void WorldSession::HandleAutoEquipItemSlotOpcode(WorldPacket & recv_data)
 	CHECK_INWORLD_RETURN
 
 	LOG_DETAIL("WORLD: Received CMSG_AUTOEQUIP_ITEM_SLOT");
-	CHECK_PACKET_SIZE(recv_data, 8 + 1);
 	uint64 itemguid;
 	int8 destSlot;
 	//int8 error = 0; // useless?
@@ -841,7 +839,6 @@ void WorldSession::HandleBuyBackOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recv_data, 8);
 	uint64 guid;
 	int32 stuff;
 	Item* add ;
@@ -1057,8 +1054,6 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recv_data)
 void WorldSession::HandleBuyItemInSlotOpcode(WorldPacket & recv_data)   // drag & drop
 {
 	CHECK_INWORLD_RETURN
-
-	CHECK_PACKET_SIZE(recv_data, 22);
 
 	LOG_DETAIL("WORLD: Received CMSG_BUY_ITEM_IN_SLOT");
 
@@ -1625,7 +1620,6 @@ void WorldSession::HandleAutoStoreBagItemOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recv_data, 3);
 	LOG_DETAIL("WORLD: Recvd CMSG_AUTO_STORE_BAG_ITEM");
 
 	//WorldPacket data;
@@ -1741,7 +1735,6 @@ void WorldSession::HandleReadItemOpcode(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 2);
 	int8 uslot = 0, slot = 0;
 	recvPacket >> uslot >> slot;
 
@@ -1773,8 +1766,6 @@ void WorldSession::HandleReadItemOpcode(WorldPacket & recvPacket)
 void WorldSession::HandleRepairItemOpcode(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
-
-	CHECK_PACKET_SIZE(recvPacket, 17);//8+8+1
 
 	uint64 npcguid;
 	uint64 itemguid;
@@ -1866,8 +1857,6 @@ void WorldSession::HandleBuyBankSlotOpcode(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 8);
-
 	uint64 guid;
 	recvPacket >> guid;
 	Creature* Banker = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(guid));
@@ -1919,7 +1908,6 @@ void WorldSession::HandleAutoBankItemOpcode(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 2);
 	LOG_DEBUG("WORLD: CMSG_AUTO_BANK_ITEM");
 
 	//WorldPacket data;
@@ -1965,7 +1953,6 @@ void WorldSession::HandleAutoStoreBankItemOpcode(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 2);
 	LOG_DEBUG("WORLD: CMSG_AUTOSTORE_BANK_ITEM");
 
 	//WorldPacket data;

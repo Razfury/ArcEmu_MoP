@@ -26,7 +26,6 @@
 void WorldSession::HandleGroupInviteOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN;
-	CHECK_PACKET_SIZE(recv_data, 1);
 	WorldPacket data(100);
 	std::string membername;
 	Group* group = NULL;
@@ -195,7 +194,6 @@ void WorldSession::HandleGroupDeclineOpcode(WorldPacket & recv_data)
 void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN;
-	CHECK_PACKET_SIZE(recv_data, 1);
 	std::string membername;
 	Group* group;
 	Player* player;
@@ -245,7 +243,6 @@ void WorldSession::HandleGroupUninviteOpcode(WorldPacket & recv_data)
 void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN;
-	CHECK_PACKET_SIZE(recv_data, 1);
 	uint64 PlayerGUID;
 	std::string membername = "unknown";
 	Group* group;
@@ -299,7 +296,6 @@ void WorldSession::HandleGroupSetLeaderOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN;
 	// important note _player->GetName() can be wrong.
-	CHECK_PACKET_SIZE(recv_data, 1);
 	WorldPacket data;
 	uint64 MemberGuid;
 	Player* player;
@@ -357,7 +353,6 @@ void WorldSession::HandleGroupDisbandOpcode(WorldPacket & recv_data)
 void WorldSession::HandleLootMethodOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN;
-	CHECK_PACKET_SIZE(recv_data, 16);
 	uint32 lootMethod;
 	uint64 lootMaster;
 	uint32 threshold;
@@ -390,7 +385,6 @@ void WorldSession::HandleLootMethodOpcode(WorldPacket & recv_data)
 void WorldSession::HandleMinimapPingOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN;
-	CHECK_PACKET_SIZE(recv_data, 8);
 	if(!_player->InGroup())
 		return;
 	Group* party = _player->GetGroup();

@@ -286,7 +286,7 @@ uint32 QuestMgr::ActiveQuestsCount(Object* quest_giver, Player* plr)
 
 	for(itr = q_begin; itr != q_end; ++itr)
 	{
-		if(CalcQuestStatus(quest_giver, plr, *itr) >= QMGR_QUEST_CHAT)
+        if (CalcQuestStatus(quest_giver, plr, *itr) >= QMGR_QUEST_AVAILABLELOW_LEVEL)
 		{
 			if(tmp_map.find((*itr)->qst->id) == tmp_map.end())
 			{
@@ -624,69 +624,65 @@ void QuestMgr::BuildQuestDetails(WorldPacket* data, Quest* qst, Object* qst_give
 void QuestMgr::BuildRequestItems(WorldPacket* data, Quest* qst, Object* qst_giver, uint32 status, uint32 language)
 {
 	LocalizedQuest* lq = (language > 0) ? sLocalizationMgr.GetLocalizedQuest(qst->id, language) : NULL;
-	ItemPrototype* it;
-	data->SetOpcode(SMSG_QUESTGIVER_REQUEST_ITEMS);
+	//ItemPrototype* it; // Uncomment when we use this
 
-	*data << qst_giver->GetGUID();
-	*data << qst->id;
+    ObjectGuid guid = qst_giver->GetGUID();
+    bool canComplete = status == QMGR_QUEST_FINISHED;
+    bool closeOnCancel = false; // @todo ?
 
-	if(lq)
-	{
-		*data << lq->Title;
-		*data << ((lq->IncompleteText[0]) ? lq->IncompleteText : lq->Details);
-	}
-	else
-	{
-		*data << qst->title;
-		*data << (qst->incompletetext[0] ? qst->incompletetext : qst->details);
-	}
+    std::string questTitle = lq ? lq->Title : qst->title;
+    std::string requestItemsText = lq ? lq->IncompleteText : qst->incompletetext; // I think
 
-	*data << uint32(0);
+    data->SetOpcode(SMSG_QUESTGIVER_REQUEST_ITEMS);
 
-	if(status == QMGR_QUEST_NOT_FINISHED)
-		*data << qst->incompleteemote;
-	else
-		*data << qst->completeemote;
+    *data << uint32(0);
+    *data << uint32(qst->quest_flags);
+    *data << uint32(0);
+    *data << uint32(canComplete ? 0x5F : 0x5B); // Status flags
+    *data << uint32(qst->reward_money < 0 ? -qst->reward_money : 0); // Required money
+    *data << uint32(0); // Quest starter NPC/GO entry
+    *data << uint32(0);
+    *data << uint32(canComplete ? qst->completeemote : qst->incompleteemote);
+    *data << uint32(qst->id); // Quest id
 
-	*data << uint32(0);
-	*data << qst->quest_flags;
-	*data << qst->suggestedplayers;
-	*data << uint32(qst->reward_money < 0 ? -qst->reward_money : 0);	     // Required Money
+    /*
+    *  TODO: Quest System
+    *
+    *  Finish structure, missing values:
+    *      Flags2, SuggestPartyMembers, EmoteDelay
+    *
+    *  Research StatusFlags:
+    *  0x5B = 0x01 + 0x02 + 0x08 + 0x10 + 0x40
+    *  0x5F = 0x01 + 0x02 + 0x04 + 0x08 + 0x10 + 0x40
+    */
 
-	// item count
-	*data << qst->count_required_item;
+    data->WriteBits(0, 21); // Currency counter
+    data->WriteBit(closeOnCancel);
+    data->WriteBit(guid[2]);
+    data->WriteBit(guid[5]);
+    data->WriteBit(guid[1]);
+    data->WriteBits(questTitle.size(), 9);
+    data->WriteBits(requestItemsText.size(), 12);
+    data->WriteBit(guid[6]);
+    data->WriteBit(guid[0]);
+    data->WriteBits(qst->count_required_item, 20); // Item counter
+    data->WriteBit(guid[4]);
+    data->WriteBit(guid[7]);
+    data->WriteBit(guid[3]);
+    data->FlushBits();
 
-	// (loop for each item)
-	for(uint32 i = 0; i < MAX_REQUIRED_QUEST_ITEM; ++i)
-	{
-		if(qst->required_item[i] != 0)
-		{
-			*data << qst->required_item[i];
-			*data << qst->required_itemcount[i];
-			it = ItemPrototypeStorage.LookupEntry(qst->required_item[i]);
-			*data << (it ? it->DisplayInfoID : uint32(0));
-		}
-		else
-		{
-			*data << uint32(0);
-			*data << uint32(0);
-			*data << uint32(0);
-		}
-	}
-
-	// wtf is this?
-	if(status == QMGR_QUEST_NOT_FINISHED)
-	{
-		*data << uint32(0); //incomplete button
-	}
-	else
-	{
-		*data << uint32(3);
-	}
-
-	*data << uint32(4);
-	*data << uint32(8);
-	*data << uint32(10);
+    data->WriteByteSeq(guid[0]);
+    data->WriteByteSeq(guid[2]);
+    data->WriteString(questTitle);
+    //data->append(currencyData);
+    //data->append(itemData);
+    data->WriteByteSeq(guid[3]);
+    data->WriteByteSeq(guid[1]);
+    data->WriteString(requestItemsText);
+    data->WriteByteSeq(guid[4]);
+    data->WriteByteSeq(guid[5]);
+    data->WriteByteSeq(guid[7]);
+    data->WriteByteSeq(guid[6]);
 }
 
 void QuestMgr::BuildQuestComplete(Player* plr, Quest* qst)
@@ -748,7 +744,7 @@ void QuestMgr::BuildQuestList(WorldPacket* data, Object* qst_giver, Player* plr,
     ObjectGuid guid = qst_giver->GetGUID();
 	data->Initialize(SMSG_QUESTGIVER_QUEST_LIST);
 
-    std::string line = plr->GetSession()->LocalizedWorldSrv(70); // "How can I help you?"
+    std::string line = ""; // plr->GetSession()->LocalizedWorldSrv(70); // "How can I help you?"
 
     *data << uint32(1); // Emote Delay
     *data << uint32(1); // Emote
@@ -789,12 +785,14 @@ void QuestMgr::BuildQuestList(WorldPacket* data, Object* qst_giver, Player* plr,
 	for(it = st; it != ed; ++it)
 	{
 		status = sQuestMgr.CalcQuestStatus(qst_giver, plr, *it);
-		if(status >= QMGR_QUEST_CHAT)
+        if (status > QMGR_QUEST_AVAILABLELOW_LEVEL)
 		{
 			if(tmp_map.find((*it)->qst->id) == tmp_map.end())
 			{
 				tmp_map.insert(std::map<uint32, uint8>::value_type((*it)->qst->id, 1));
 				LocalizedQuest* lq = (language > 0) ? sLocalizationMgr.GetLocalizedQuest((*it)->qst->id, language) : NULL;
+
+                ++count;
 
                 data->WriteBit(0); // Unknown bit
                 if (lq)
@@ -868,7 +866,7 @@ void QuestMgr::SendQuestUpdateAddKill(Player* plr, uint32 questid, uint32 entry,
 	WorldPacket data (SMSG_QUESTUPDATE_ADD_KILL, 22); // SMSG_QUESTUPDATE_ADD_CREDIT
 
     data << uint16(count); // New count (old + new)
-    data << uint8(0); // Objective type TODO
+    data << uint8(0); // @todo objective type
     data << uint32(questid);
     data << uint32(tcount); // Required mob count
     data << uint32(entry); // Required mob id
@@ -1955,7 +1953,7 @@ bool QuestMgr::OnActivateQuestGiver(Object* qst_giver, Player* plr)
 		return false;
 
 	uint32 questCount = sQuestMgr.ActiveQuestsCount(qst_giver, plr);
-	WorldPacket data(100);
+	WorldPacket data(1004);
 
 	if(questCount == 0)
 	{
@@ -1996,7 +1994,7 @@ bool QuestMgr::OnActivateQuestGiver(Object* qst_giver, Player* plr)
 		}
 
 		for(itr = q_begin; itr != q_end; ++itr)
-			if(sQuestMgr.CalcQuestStatus(qst_giver, plr, *itr) >= QMGR_QUEST_CHAT)
+            if (sQuestMgr.CalcQuestStatus(qst_giver, plr, *itr) > QMGR_QUEST_AVAILABLELOW_LEVEL)
 				break;
 
 		if(sQuestMgr.CalcStatus(qst_giver, plr) < QMGR_QUEST_CHAT)
@@ -2025,7 +2023,6 @@ bool QuestMgr::OnActivateQuestGiver(Object* qst_giver, Player* plr)
 		else if(status == QMGR_QUEST_NOT_FINISHED)
 		{
 			sQuestMgr.BuildRequestItems(&data, (*itr)->qst, qst_giver, status, plr->GetSession()->language);
-			plr->GetSession()->SendPacket(&data);
 			LOG_DEBUG("WORLD: Sent SMSG_QUESTGIVER_REQUEST_ITEMS.");
 		}
 	}
@@ -2691,10 +2688,6 @@ void QuestMgr::FillQuestMenu(Creature* giver, Player* plr, Arcemu::Gossip::Menu 
 
 					case QMGR_QUEST_FINISHED:
 						icon = QMGR_QUEST_REPEATABLE_LOWLEVEL;
-						break;
-
-					case QMGR_QUEST_CHAT:
-						icon = QMGR_QUEST_AVAILABLE;
 						break;
 
 					default:

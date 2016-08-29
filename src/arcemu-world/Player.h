@@ -51,6 +51,16 @@ class SpeedCheatDetector;
 
 #define MAX_ACCOUNT_TUTORIAL_VALUES 8
 
+enum QuestSlotOffsets
+{
+    QUEST_ID_OFFSET = 0,
+    QUEST_STATE_OFFSET = 1,
+    QUEST_COUNTS_OFFSET = 2,
+    QUEST_TIME_OFFSET = 4
+};
+
+#define MAX_QUEST_OFFSET 15
+
 /* action button defines */
 #define PLAYER_ACTION_BUTTON_COUNT 132
 #define PLAYER_ACTION_BUTTON_SIZE PLAYER_ACTION_BUTTON_COUNT * sizeof(uint32)

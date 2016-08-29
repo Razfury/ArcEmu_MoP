@@ -184,20 +184,20 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recv_data)
 
 	if (ci)
 	{
-		data.WriteBits(ci->SubName ? strlen(ci->SubName) + 1 : 0, 11);
+		data.WriteBits(ci->SubName ? strlen(ci->SubName) : 0, 11);
 		data.WriteBits(6, 22); // Max creature quest items
 		data.WriteBits(0, 11);
 
 		for (int i = 0; i < 8; i++)
 		{
 			if (i == 0)
-				data.WriteBits(strlen(ci->Name) + 1, 11);
+				data.WriteBits(strlen(ci->Name), 11);
 			else
 				data.WriteBits(0, 11);
 		}
 
 		data.WriteBit(ci->Leader);
-		data.WriteBits(strlen(ci->info_str) + 1 + 1, 6);
+		data.WriteBits(strlen(ci->info_str) + 1, 6); // @todo check this
 		data.FlushBits();
 
 		data << uint32(ci->killcredit[0]);
@@ -420,7 +420,6 @@ void WorldSession::HandlePageTextQueryOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recv_data, 4);
 	uint32 pageid = 0;
 	recv_data >> pageid;
 
@@ -450,7 +449,6 @@ void WorldSession::HandleItemNameQueryOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recv_data, 4);
 	WorldPacket reply(SMSG_ITEM_NAME_QUERY_RESPONSE, 100);
 	uint32 itemid;
 	recv_data >> itemid;
@@ -493,7 +491,6 @@ void WorldSession::HandleInrangeQuestgiverQuery(WorldPacket & recv_data)
 
 	size_t pos = data.bitwpos();
     data.WriteBits(count, 21); // Placeholder
-
 
 	for (itr = _player->m_objectsInRange.begin(); itr != _player->m_objectsInRange.end(); ++itr)
 	{
@@ -591,6 +588,7 @@ void WorldSession::HandleAchievmentQueryOpcode(WorldPacket & recv_data)
 	{
 		return;
 	}
+
 #ifdef ENABLE_ACHIEVEMENTS
     pTarget->GetAchievementMgr().SendRespondInspectAchievements(GetPlayer());
 #endif
@@ -614,8 +612,8 @@ void WorldSession::SendRealmNameQueryOpcode(uint32 realmId)
 			found = true;
 		}
 
-		Realm* realm = new Realm;
-		std::string realmName = Config.RealmConfig.GetStringVA("Name", "SomeRealm", "Realm%u");
+        // @todo get realm id here, maybe store it in sWorld, realm name too
+		std::string realmName = Config.RealmConfig.GetStringVA("Name", "SomeRealm", "Realm1");
 
 		WorldPacket data(SMSG_REALM_NAME_QUERY_RESPONSE, 28);
 		data << uint8(!found);

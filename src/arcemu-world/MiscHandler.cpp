@@ -1957,7 +1957,6 @@ void WorldSession::HandlePlayedTimeOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleInspectOpcode(WorldPacket & recv_data)
 {
-	CHECK_PACKET_SIZE(recv_data, 8);
 	CHECK_INWORLD_RETURN;
 
 	uint64 guid;
@@ -2407,7 +2406,6 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recv_data, 2);
 	int8 slot, containerslot;
 	recv_data >> containerslot >> slot;
 
@@ -2658,7 +2656,6 @@ void WorldSession::HandleWorldStateUITimerUpdate(WorldPacket & recv_data)
 void WorldSession::HandleSetTaxiBenchmarkOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
-	CHECK_PACKET_SIZE(recv_data, 1);
 
 	uint8 mode;
 	recv_data >> mode;

@@ -24,8 +24,6 @@ void WorldSession::HandleGuildQuery(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recv_data, 4);
-
 	uint32 guildId;
 	recv_data >> guildId;
 
@@ -50,8 +48,6 @@ void WorldSession::HandleCreateGuild(WorldPacket & recv_data)
 void WorldSession::HandleInviteToGuild(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
-
-	CHECK_PACKET_SIZE(recv_data, 1);
 
 	std::string inviteeName;
 	recv_data >> inviteeName;
@@ -171,7 +167,6 @@ void WorldSession::HandleSetGuildInformation(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recv_data, 1);
 	std::string NewGuildInfo;
 	recv_data >> NewGuildInfo;
 
@@ -207,8 +202,6 @@ void WorldSession::HandleGuildPromote(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recv_data, 1);
-
 	std::string name;
 	recv_data >> name;
 
@@ -228,8 +221,6 @@ void WorldSession::HandleGuildPromote(WorldPacket & recv_data)
 void WorldSession::HandleGuildDemote(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
-
-	CHECK_PACKET_SIZE(recv_data, 1);
 
 	std::string name;
 	recv_data >> name;
@@ -263,8 +254,6 @@ void WorldSession::HandleGuildLeave(WorldPacket & recv_data)
 void WorldSession::HandleGuildRemove(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
-
-	CHECK_PACKET_SIZE(recv_data, 1);
 
 	std::string name;
 	recv_data >> name;
@@ -305,8 +294,6 @@ void WorldSession::HandleGuildLeader(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recv_data, 1);
-
 	std::string name;
 	recv_data >> name;
 
@@ -346,8 +333,6 @@ void WorldSession::HandleGuildMotd(WorldPacket & recv_data)
 void WorldSession::HandleGuildRank(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
-
-	CHECK_PACKET_SIZE(recv_data, 9);
 
 	if(!_player->m_playerInfo->guild)
 	{
@@ -517,7 +502,6 @@ void WorldSession::HandleSaveGuildEmblem(WorldPacket & recv_data)
 	WorldPacket data(MSG_SAVE_GUILD_EMBLEM, 4);
 	recv_data >> guid;
 
-	CHECK_PACKET_SIZE(recv_data, 28);
 	CHECK_GUID_EXISTS(guid);
 
 	recv_data >> emblemStyle >> emblemColor >> borderStyle >> borderColor >> backgroundColor;

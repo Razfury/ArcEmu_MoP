@@ -429,10 +429,10 @@ void QuestLogEntry::Finish()
 	sEventMgr.RemoveEvents( m_plr, EVENT_TIMED_QUEST_EXPIRE );
 
 	uint32 base = GetBaseField(m_slot);
-	m_plr->SetUInt32Value(base + 0, 0);
-	m_plr->SetUInt32Value(base + 1, 0);
-	m_plr->SetUInt64Value(base + 2, 0);
-	m_plr->SetUInt32Value(base + 4, 0);
+	m_plr->SetUInt32Value(base + QUEST_ID_OFFSET, 0);
+    m_plr->SetUInt32Value(base + QUEST_STATE_OFFSET, 0);
+    m_plr->SetUInt64Value(base + QUEST_COUNTS_OFFSET, 0);
+    m_plr->SetUInt32Value(base + QUEST_TIME_OFFSET, 0);
 
 	// clear from player log
 	m_plr->SetQuestLogSlot(NULL, m_slot);
@@ -465,7 +465,7 @@ void QuestLogEntry::UpdatePlayerFields()
 		return;
 
 	uint32 base = GetBaseField(m_slot);
-	m_plr->SetUInt32Value(base + 0, m_quest->id);
+    m_plr->SetUInt32Value(base + QUEST_ID_OFFSET, m_quest->id);
 	uint32 field0 = 0; // 0x01000000 = "Objective Complete" - 0x02 = Quest Failed - 0x04 = Quest Accepted
 
 	// next field is count (kills, etc)
@@ -555,14 +555,16 @@ void QuestLogEntry::UpdatePlayerFields()
 	if( completed == QUEST_FAILED )
 		field0 |= 2;
 
-	m_plr->SetUInt32Value(base + 1, field0);
-	m_plr->SetUInt64Value(base + 2, field1);
+    m_plr->SetUInt32Value(base + QUEST_STATE_OFFSET, field0);
+    m_plr->SetUInt32Value(base + QUEST_COUNTS_OFFSET, field1);
 
-	if( ( m_quest->time != 0 ) && ( completed != QUEST_FAILED ) ){
-		m_plr->SetUInt32Value( base + 4, expirytime );
+	if( ( m_quest->time != 0 ) && ( completed != QUEST_FAILED ) )
+    {
+        m_plr->SetUInt32Value(base + QUEST_TIME_OFFSET, expirytime);
 		sEventMgr.AddEvent( m_plr, &Player::EventTimedQuestExpire, m_quest->id, EVENT_TIMED_QUEST_EXPIRE, ( expirytime - UNIXTIME ) * 1000, 1, EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT );
-	}else
-		m_plr->SetUInt32Value( base + 4, 0 );
+	}
+    else
+        m_plr->SetUInt32Value(base + QUEST_TIME_OFFSET, 0);
 }
 
 void QuestLogEntry::SendQuestComplete()

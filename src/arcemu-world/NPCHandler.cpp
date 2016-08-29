@@ -488,7 +488,7 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket & recv_data)
 
     LOG_DETAIL("WORLD: CMSG_GOSSIP_SELECT_OPTION Option %i Guid %.8X", gossipListId, guid);
 	Arcemu::Gossip::Script* script = NULL;
-	uint32 guidtype = GET_TYPE_FROM_GUID(guid);
+	uint32 guidtype = GUID_HIPAR_TESTT(guid);
 
 	Object* qst_giver;
 	if(guidtype == HIGHGUID_TYPE_ITEM)	// Item objects are retrieved differently.

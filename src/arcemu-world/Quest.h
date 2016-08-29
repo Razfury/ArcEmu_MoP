@@ -18,37 +18,23 @@
  *
  */
 
-#ifndef WOWSERVER_QUEST_H
-#define WOWSERVER_QUEST_H
+#ifndef QUEST_H
+#define QUEST_H
 
-using namespace std;
-/*
-2.3.0 research
-not available because low level = 1
-available but quest low level = 2
-question mark = 3 (not got objectives)
-blue question mark = 4
-blue exclamation mark = 5
-yellow exclamation mark = 6
-yellow question mark = 7
-finished = 8
-132 error = 9
-*/
+using namespace std; // @todo get rid of all of these someday
 
-enum QUEST_STATUS
+enum QuestStatus
 {
-    QMGR_QUEST_NOT_AVAILABLE					= 0x00,	// There aren't any quests available.		| "No Mark"
-    QMGR_QUEST_AVAILABLELOW_LEVEL				= 0x01,	// Quest available, and your level isn't enough.| "Gray Quotation Mark !"
-    QMGR_QUEST_CHAT								= 0x02,	// Quest available it shows a talk balloon.	| "No Mark"
-    // On 3.1.2 0x03 and 0x04 is some new status, so the old ones are now shifted by 2 (0x03->0x05 and so on).
-    QMGR_QUEST_REPEATABLE_FINISHED_LOWLEVEL		= 0x03,
-    QMGR_QUEST_REPEATABLE_LOWLEVEL				= 0x04,
-    QMGR_QUEST_NOT_FINISHED						= 0x05,	// Quest isn't finished yet.			| "Gray Question ? Mark"
-    QMGR_QUEST_REPEATABLE_FINISHED				= 0x06,
-    QMGR_QUEST_REPEATABLE						= 0x07,	// Quest repeatable				| "Blue Question ? Mark"
-    QMGR_QUEST_AVAILABLE						= 0x08,	// Quest available, and your level is enough	| "Yellow Quotation ! Mark"
-    QMGR_QUEST_FINISHED							= 0x0A,	// Quest has been finished.			| "Yellow Question  ? Mark" (7 has no minimap icon)
-    //QUEST_ITEM_UPDATE							= 0x06	// Yellow Question "?" Mark. //Unknown
+    QMGR_QUEST_NOT_AVAILABLE                    = 0x002,
+    QMGR_QUEST_AVAILABLELOW_LEVEL               = 0x004,
+    QMGR_QUEST_CHAT                             = 0x080, // ?
+    QMGR_QUEST_REPEATABLE_FINISHED_LOWLEVEL		= 0x00,
+    QMGR_QUEST_REPEATABLE_LOWLEVEL				= 0x00,
+    QMGR_QUEST_NOT_FINISHED                     = 0x020,
+    QMGR_QUEST_REPEATABLE_FINISHED				= 0x00,
+    QMGR_QUEST_REPEATABLE						= 0x00,
+    QMGR_QUEST_AVAILABLE                        = 0x100,
+    QMGR_QUEST_FINISHED                         = 0x400
 };
 
 enum QUESTGIVER_QUEST_TYPE
@@ -133,6 +119,8 @@ enum QUEST_SHARE
 #define MAX_REQUIRED_QUEST_ITEM 6
 #define QUEST_REWARD_CURRENCY_COUNT 4
 #define QUEST_REPUTATIONS_COUNT 5
+
+#define MAX_QUEST_OFFSET 15
 
 class QuestScript;
 #pragma pack(push,1)
@@ -383,7 +371,7 @@ class SERVER_DECL QuestLogEntry : public EventableObject
 
 		ARCEMU_INLINE uint32 GetBaseField(uint32 slot)
 		{
-			return PLAYER_QUEST_LOG_1_1 + (slot * 5);
+			return PLAYER_QUEST_LOG_1_1 + (slot * MAX_QUEST_OFFSET);
 		}
 		ARCEMU_INLINE int32 GetSlot() { return m_slot; }
 

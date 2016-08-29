@@ -106,8 +106,6 @@ void WorldSession::SendBattlegroundList(Creature* pCreature, uint32 mapid)
 
 void WorldSession::HandleBattleMasterHelloOpcode(WorldPacket & recv_data)
 {
-	CHECK_PACKET_SIZE(recv_data, 8);
-
 	CHECK_INWORLD_RETURN;
 
 	uint64 guid;
@@ -288,7 +286,6 @@ void WorldSession::HandleArenaJoinOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket & recv_data)
 {
-	CHECK_PACKET_SIZE(recv_data, 8);
 	CHECK_INWORLD_RETURN;
 
 	uint64 guid;
@@ -322,7 +319,6 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket & recv_data)
 
 void WorldSession::HandleInspectArenaStatsOpcode(WorldPacket & recv_data)
 {
-	CHECK_PACKET_SIZE(recv_data, 8);
 	CHECK_INWORLD_RETURN;
 
 	uint64 guid;

@@ -592,8 +592,6 @@ void WorldSession::HandleEmoteOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recv_data, 4);
-
 	if(!_player->isAlive())
 		return;
 
@@ -611,7 +609,6 @@ void WorldSession::HandleTextEmoteOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recv_data, 16);
 	if(!_player->isAlive())
 		return;
 
@@ -711,7 +708,6 @@ void WorldSession::HandleReportSpamOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recv_data, 1 + 8);
 	LOG_DEBUG("WORLD: CMSG_REPORT_SPAM");
 
 	uint8 spam_type;                                        // 0 - mail, 1 - chat
@@ -723,13 +719,11 @@ void WorldSession::HandleReportSpamOpcode(WorldPacket & recv_data)
 	switch(spam_type)
 	{
 		case 0:
-			CHECK_PACKET_SIZE(recv_data, recv_data.rpos() + 4 + 4 + 4);
 			recv_data >> unk1;                              // const 0
 			recv_data >> unk2;                              // probably mail id
 			recv_data >> unk3;                              // const 0
 			break;
 		case 1:
-			CHECK_PACKET_SIZE(recv_data, recv_data.rpos() + 4 + 4 + 4 + 4 + 1);
 			recv_data >> unk1;                              // probably language
 			recv_data >> unk2;                              // message type?
 			recv_data >> unk3;                              // probably channel id
@@ -751,8 +745,6 @@ void WorldSession::HandleReportSpamOpcode(WorldPacket & recv_data)
 void WorldSession::HandleChatIgnoredOpcode(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
-
-	CHECK_PACKET_SIZE(recvPacket, 8 + 1);
 
 	uint64 iguid;
 	uint8 unk;

@@ -1419,14 +1419,14 @@ Object* MapMgr::_GetObject(const uint64 & guid)
 	if(!guid)
 		return NULL;
 
-	switch(GET_TYPE_FROM_GUID(guid))
+	switch(GUID_HIPAR_TESTT(guid))
 	{
 		case	HIGHGUID_TYPE_GAMEOBJECT:
-			return GetGameObject(GET_LOWGUID_PART(guid));
+			return GetGameObject(GUID_LOPART_TEST(guid));
 			break;
 		case HIGHGUID_TYPE_UNIT:
 		case HIGHGUID_TYPE_VEHICLE:
-			return GetCreature(GET_LOWGUID_PART(guid));
+			return GetCreature(GUID_LOPART_TEST(guid));
 			break;
 		case	HIGHGUID_TYPE_DYNAMICOBJECT:
 			return GetDynamicObject((uint32)guid);

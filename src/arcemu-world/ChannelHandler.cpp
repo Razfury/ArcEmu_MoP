@@ -104,7 +104,6 @@ void WorldSession::HandleChannelPassword(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname, pass;
 	Channel* chn;
 
@@ -119,7 +118,6 @@ void WorldSession::HandleChannelSetOwner(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname, newp;
 	Channel* chn;
 	Player* plr;
@@ -137,7 +135,6 @@ void WorldSession::HandleChannelOwner(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname, pass;
 	Channel* chn;
 
@@ -151,7 +148,6 @@ void WorldSession::HandleChannelModerator(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname, newp;
 	Channel* chn;
 	Player* plr;
@@ -169,7 +165,6 @@ void WorldSession::HandleChannelUnmoderator(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname, newp;
 	Channel* chn;
 	Player* plr;
@@ -187,7 +182,6 @@ void WorldSession::HandleChannelMute(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname, newp;
 	Channel* chn;
 	Player* plr;
@@ -205,7 +199,6 @@ void WorldSession::HandleChannelUnmute(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname, newp;
 	Channel* chn;
 	Player* plr;
@@ -223,7 +216,6 @@ void WorldSession::HandleChannelInvite(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname, newp;
 	Channel* chn;
 	Player* plr;
@@ -240,7 +232,6 @@ void WorldSession::HandleChannelKick(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname, newp;
 	Channel* chn;
 	Player* plr;
@@ -258,7 +249,6 @@ void WorldSession::HandleChannelBan(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname, newp;
 	Channel* chn;
 	Player* plr;
@@ -276,7 +266,6 @@ void WorldSession::HandleChannelUnban(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname, newp;
 	Channel* chn;
 	PlayerInfo* plr;
@@ -294,7 +283,6 @@ void WorldSession::HandleChannelAnnounce(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname;
 	Channel* chn;
 	recvPacket >> channelname;
@@ -308,7 +296,6 @@ void WorldSession::HandleChannelModerate(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	CHECK_PACKET_SIZE(recvPacket, 1);
 	string channelname;
 	Channel* chn;
 	recvPacket >> channelname;

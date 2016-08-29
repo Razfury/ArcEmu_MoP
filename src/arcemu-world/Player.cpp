@@ -2252,7 +2252,7 @@ void Player::InitVisibleUpdateBits()
 
 	//VLack: we have to send our quest list to the members of our group all the time for quest sharing's "who's on that quest" feature to work (in the quest log this way a number will be shown before the quest's name).
 	//Unfortunately we don't have code for doing this only on our group's members, so everyone will receive it. The non-group member's client will do whatever it wants with it, probably wasting a few CPU cycles, but that's fine with me.
-	for (uint16 i = PLAYER_QUEST_LOG_1_1; i <= PLAYER_QUEST_LOG_1_1 + 0x4F; i += 5)
+	for (uint16 i = PLAYER_QUEST_LOG_1_1; i <= PLAYER_QUEST_LOG_1_1 + 83; i += 5) // @todo check this
 	{
 		Player::m_visibleUpdateMask.SetBit(i);
 	}
@@ -3532,13 +3532,13 @@ void Player::_LoadQuestLogEntry(QueryResult* result)
 	uint32 baseindex;
 
 	// clear all fields
-	for (int i = 0; i < 25; ++i)
+	for (uint8 i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
 	{
-		baseindex = PLAYER_QUEST_LOG_1_1 + (i * 5);
-		SetUInt32Value(baseindex + 0, 0);
-		SetUInt32Value(baseindex + 1, 0);
-		SetUInt64Value(baseindex + 2, 0);
-		SetUInt32Value(baseindex + 4, 0);
+		baseindex = PLAYER_QUEST_LOG_1_1 + (i * MAX_QUEST_OFFSET);
+        SetUInt32Value(baseindex + QUEST_ID_OFFSET, 0);
+        SetUInt32Value(baseindex + QUEST_STATE_OFFSET, 0);
+        SetUInt32Value(baseindex + QUEST_COUNTS_OFFSET, 0);
+        SetUInt32Value(baseindex + QUEST_TIME_OFFSET, 0);
 	}
 
 	int slot = 0;
@@ -3815,8 +3815,6 @@ void Player::RemoveFromWorld()
 	summonhandler.RemoveAllSummons();
 	DismissActivePets();
 	RemoveFieldSummon();
-
-
 
 	if (m_SummonedObject)
 	{
@@ -8349,9 +8347,9 @@ void Player::EndDuel(uint8 WinCondition)
 	// Announce winner
     // Do something with WinCondition
 	WorldPacket data(SMSG_DUEL_WINNER, 1 + 20);
-    data.WriteBit(1); // Duel type != DUEL_WON (0 = just won; 1 = fled)
-    data.WriteBits(strlen(DuelingWith->GetName()) + 1, 6);
-    data.WriteBits(strlen(GetName()) + 1, 6);
+    data.WriteBit(1); // Duel type != DUEL_WON (0 = just won; 1 = fled)applylevelinfo
+    data.WriteBits(strlen(DuelingWith->GetName()), 6);
+    data.WriteBits(strlen(GetName()), 6);
     data << uint32(1); // Realm id
     data.WriteString(DuelingWith->GetName());
     data << uint32(1); // Realm id
@@ -13467,7 +13465,7 @@ void Player::AcceptQuest(uint64 guid, uint32 quest_id)
 	bool bSkipLevelCheck = false;
 	Quest* qst = NULL;
 	Object* qst_giver = NULL;
-	uint32 guidtype = GET_TYPE_FROM_GUID(guid);
+	uint32 guidtype = GUID_HIPAR_TESTT(guid);
 
 	if (guidtype == HIGHGUID_TYPE_UNIT)
 	{
