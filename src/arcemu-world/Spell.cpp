@@ -180,8 +180,6 @@ Spell::Spell(Object* Caster, SpellEntry* info, bool triggered, Aura* aur)
 {
 	ARCEMU_ASSERT(Caster != NULL && info != NULL);
 
-    m_spellMisc = dbcSpellMiscEntry.LookupEntry(info->Id);
-
 	Caster->m_pendingSpells.insert(this);
 	m_overrideBasePoints = false;
 	m_overridenBasePoints[0] = 0xFFFFFFFF;
@@ -365,6 +363,7 @@ bool Spell::IsStealthSpell()
 	//check if aura name is some stealth aura
 	if(GetProto()->eff[0].EffectApplyAuraName == SPELL_AURA_MOD_STEALTH || GetProto()->eff[1].EffectApplyAuraName == SPELL_AURA_MOD_STEALTH || GetProto()->eff[2].EffectApplyAuraName == SPELL_AURA_MOD_STEALTH)
 		return true;
+
 	return false;
 }
 
@@ -923,8 +922,7 @@ uint8 Spell::prepare(SpellCastTargets* targets)
 		m_castTime = 0;
 	else
 	{
-        //m_castTime = GetCastTime(dbcSpellCastTime.LookupEntry(GetProto()->misc.CastingTimeIndex));
-        m_castTime = GetCastTime(dbcSpellCastTime.LookupEntry(m_spellMisc->CastingTimeIndex));
+        m_castTime = GetCastTime(dbcSpellCastTime.LookupEntry(GetProto()->misc.CastingTimeIndex));
 
 		if(m_castTime && GetProto()->SpellGroupType && u_caster != NULL)
 		{

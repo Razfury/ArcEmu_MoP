@@ -12564,7 +12564,6 @@ void Player::LearnTalent(uint32 talentid, uint32 rank, bool isPreviewed)
 			return;
 		}
 
-
 		// Check if we already have the talent with the same or higher rank
 		for (unsigned int i = rank; i < 5; ++i)
 			if (talentInfo->RankID[i] != 0 && HasSpell(talentInfo->RankID[i]))

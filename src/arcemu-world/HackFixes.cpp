@@ -44,17 +44,43 @@ void CreateDummySpell(uint32 id)
 
 void ApplyNormalFixes()
 {
-	//Updating spell.dbc
-
+	// Updating spell.dbc
 	Log.Success("World", "Processing %u spells...", dbcSpellEntry.GetNumRows());
 
-	//checking if the DBCs have been extracted from an english client, based on namehash of spell 4, the first with a different name in non-english DBCs
-	SpellEntry* sp = dbcSpellEntry.LookupEntry(4);
-	if(crc32((const unsigned char*)sp->Name, (unsigned int)strlen(sp->Name)) != SPELL_HASH_WORD_OF_RECALL_OTHER)
-	{
-		Log.LargeErrorMessage("You are using DBCs extracted from an unsupported client.", "ArcEmu supports only enUS and enGB!!!", NULL);
-		abort();
-	}
+    SpellEntry* sp;
+    
+    // This is so lame. But if we do not do it then our spell fixes will be doomed!
+    for (uint32 i = 0; i < dbcSpellEffect.GetNumRows(); ++i)
+    {
+        SpellEffectEntry* spee = dbcSpellEffect.LookupRow(i);
+        if (spee->EffectIndex > MAX_SPELL_EFFECT_COUNT)
+        {
+            LOG_ERROR("Warning spell has index greater than max index %u, skipping it", MAX_SPELL_EFFECT_COUNT);
+            continue;
+        }
+
+        SpellEntry* sp = dbcSpellEntry.LookupEntry(spee->EffectSpellId);
+        // Copy what we found into our spell entry
+        memcpy(&sp->eff[spee->EffectIndex], spee, sizeof(SpellEffectEntry));
+    }
+
+    for (uint32 i = 0; i < dbcSpellEntry.GetNumRows(); ++i)
+    {
+        sp = dbcSpellEntry.LookupRow(i);
+
+        // Get spell misc associated with the spell
+        SpellMiscEntry* misc = dbcSpellMiscEntry.LookupEntry(sp->SpellMiscId);
+
+        // Copy what we found into our spell entry
+        memcpy(&sp->misc, misc, sizeof(SpellMiscEntry));
+    }
+
+    for (uint32 i = 0; i < dbcSpellPower.GetNumRows(); ++i)
+    {
+        SpellPowerEntry* sp_power_entry = dbcSpellPower.LookupRow(i);
+        sp = dbcSpellEntry.LookupEntry(sp_power_entry->spellId);
+        memcpy(&sp->PowerEntry, sp_power_entry, sizeof(SpellPowerEntry));
+    }
 
 	uint32 cnt = dbcSpellEntry.GetNumRows();
 	uint32 effect;
@@ -63,6 +89,7 @@ void ApplyNormalFixes()
 	map<uint32, uint32> talentSpells;
 	map<uint32, uint32>::iterator talentSpellIterator;
 	uint32 i, j;
+    // @todo remove this when the talent system gets updated :)
 	for(i = 0; i < dbcTalent.GetNumRows(); ++i)
 	{
 		TalentEntry* tal = dbcTalent.LookupRow(i);
@@ -76,6 +103,137 @@ void ApplyNormalFixes()
 	{
 		// Read every SpellEntry row
 		sp = dbcSpellEntry.LookupRow(x);
+
+        ///////////////////////////////////
+        //let's fill in cached values
+        if (sp->SpellAuraOptionsId)
+        {
+            SpellAuraOptionsEntry *sao = dbcSpellAuraOptions.LookupEntry(sp->SpellAuraOptionsId);
+            if (sao)
+            {
+                sp->maxstack = sao->StackAmount;
+                sp->procChance = sao->procChance;
+                sp->procCharges = sao->procCharges;
+            }
+        }
+        if (sp->SpellInterruptsId)
+        {
+            SpellInterruptsEntry *sie = dbcSpellInterrupts.LookupEntry(sp->SpellInterruptsId);
+            if (sie)
+            {
+                sp->InterruptFlags = sie->InterruptFlags;
+                sp->AuraInterruptFlags = sie->AuraInterruptFlags;
+                sp->ChannelInterruptFlags = sie->ChannelInterruptFlags;
+            }
+        }
+        if (sp->SpellCooldownsId)
+        {
+            SpellCooldownsEntry *sce = dbcSpellCooldowns.LookupEntry(sp->SpellCooldownsId);
+            if (sce)
+            {
+                sp->CategoryRecoveryTime = sce->CategoryRecoveryTime;
+                sp->RecoveryTime = sce->RecoveryTime;
+                sp->StartRecoveryTime = sce->StartRecoveryTime;
+            }
+        }
+        if (sp->SpellCategoriesId)
+        {
+            SpellCategoriesEntry *sce = dbcSpellCategories.LookupEntry(sp->SpellCategoriesId);
+            if (sce)
+            {
+                sp->Category = sce->Category;
+                sp->StartRecoveryCategory = sce->StartRecoveryCategory;
+                sp->MechanicsType = sce->Mechanic;
+                sp->PreventionType = sce->PreventionType;
+                sp->Spell_Dmg_Type = sce->DmgClass;
+                if (sp->Spell_Dmg_Type == SPELL_DMG_TYPE_NONE)
+                    sp->Spell_Dmg_Type = SPELL_DMG_TYPE_MAGIC;
+                // @todo What is SPELL_DMG_TYPE_COUNT?
+                //if (sp->Spell_Dmg_Type >= SPELL_DMG_TYPE_COUNT)
+                //{
+                   // sLog.outDebug("Unhandled DMG type. Inspect this");
+                    //sp->dmg_type = SPELL_DMG_TYPE_MAGIC;
+                //}
+            }
+        }
+        sp->MechanicsTypeFlags = 0;
+        if (sp->MechanicsType > 0)
+            sp->MechanicsTypeFlags |= (1 << sp->MechanicsType);
+        for (uint32 k = 0; k<MAX_SPELL_EFFECT_COUNT; k++)
+        {
+            if (sp->eff[k].EffectMechanic > 0)
+                sp->MechanicsTypeFlags |= (1 << sp->eff[k].EffectMechanic);
+        }
+        /*		if( sp->SpellLevelsId )
+        {
+        SpellLevelsEntry *sle = dbcSpellLevels.LookupEntryForced( sp->SpellLevelsId );
+        if( sle )
+        sp->SpellLevel.spellLevel = sle->spellLevel;	//might be required to hack for trainers
+        } */
+        if (sp->SpellTargetRestrictionsId)
+        {
+            SpellCastingRequirementsEntry *str = dbcSpellCastingRequirements.LookupEntry(sp->SpellTargetRestrictionsId);
+            if (str)
+            {
+                sp->FacingCasterFlags = str->FacingCasterFlags;
+                sp->RequiredAreaId = str->Id;
+            }
+        }
+        if (sp->SpellShapeshiftId)
+        {
+            SpellShapeshiftEntry *ssse = dbcSpellShapeshift.LookupEntry(sp->SpellShapeshiftId);
+            if (ssse)
+                sp->RequiredShapeShift = ssse->Stances;
+        }
+        //! Fix this
+        if (sp->SpellClassOptionsId)
+        {
+            SpellClassOptionsEntry *sco = dbcSpellClassOptions.LookupEntry(sp->SpellClassOptionsId);
+            if (sco)
+            {
+             //   sp->SpellGroupType[0] = sco->SpellFamilyFlags[0];
+             //   sp->SpellGroupType[1] = sco->SpellFamilyFlags[1];
+             //   sp->SpellGroupType[2] = sco->SpellFamilyFlags[2];
+            }
+        }
+        if (sp->SpellScalingId)
+        {
+            SpellScalingEntry *ss = dbcSpellScaling.LookupEntry(sp->SpellScalingId);
+            if (ss)
+                memcpy(&sp->ss, ss, sizeof(SpellScalingEntry));
+        }
+        if (sp->SpellAuraRestrictionsId)
+        {
+            SpellAuraRestrictionsEntry *sar = dbcSpellAuraRestrictions.LookupEntry(sp->SpellAuraRestrictionsId);
+            if (sar)
+                memcpy(&sp->sar, sar, sizeof(SpellAuraRestrictionsEntry));
+        }
+        if (sp->SpellTargetRestrictionsId)
+        {
+            SpellTargetRestrictionsEntry *str = dbcSpellTargetRestrictions.LookupEntry(sp->SpellTargetRestrictionsId);
+            if (str)
+                sp->MaxAffectedTargets = str->MaxTargets;
+        }
+        if (sp->MaxAffectedTargets <= 0)
+            sp->MaxAffectedTargets = NO_MAX_TARGETS_DEFINED;
+        if (sp->SpellLevelsId)
+        {
+            SpellLevelsEntry *ss = dbcSpellLevels.LookupEntry(sp->SpellLevelsId);
+            if (ss)
+                memcpy(&sp->SpellLevel, ss, sizeof(SpellLevelsEntry));
+        }
+
+        //! Check this
+        //try to set spell skillines even recuresively
+        //for (int pclass = 1; pclass<12; pclass++)
+          //  for (int skill_trees = 0; skill_trees<4; skill_trees++)
+            //    if (sp->spell_skilline[0] == class_skillines[pclass][skill_trees])
+              //  {
+                //    sp->belongs_to_player_class = pclass;
+                 //   break;
+               // }
+
+        ///////////////////////////////////
 
 		uint32 rank = 0;
 		uint32 namehash = 0;

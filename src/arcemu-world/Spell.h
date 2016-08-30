@@ -1710,8 +1710,6 @@ class SERVER_DECL Spell : public EventableObject
 
 		int32 event_GetInstanceID() { return m_caster->GetInstanceID(); }
 
-        SpellMiscEntry* m_spellMisc;
-
 		bool m_overrideBasePoints;
 		uint32 m_overridenBasePoints[3];
 
