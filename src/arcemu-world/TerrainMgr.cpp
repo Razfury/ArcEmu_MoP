@@ -20,7 +20,7 @@
 #include "StdAfx.h"
 #include "TerrainMgr.h"
 
-#define BUILD_VERSION 18414 // Wow version
+#define BUILD_VERSION 18293 // Even though the current build is 18414, Blizzard kept this one
 
 TerrainTile* TerrainHolder::GetTile(float x, float y)
 {

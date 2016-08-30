@@ -21,11 +21,6 @@
 #ifndef _OPCODES_H
 #define _OPCODES_H
 
-/////////////////////////////////////////////////////////////////////////////
-/////                     Opcodes for Client Build:                    //////
-/////                            18414                                 //////
-/////////////////////////////////////////////////////////////////////////////
-
 enum Opcodes
 {
 	MSG_NULL_ACTION = 0x000,
@@ -126,14 +121,13 @@ enum Opcodes
 	CMSG_GUILD_QUERY = 0xBAD,
 	SMSG_GUILD_QUERY_RESPONSE = 0xBAD,
 
-
 	CMSG_ITEM_QUERY_SINGLE = 0xBAD,
 	CMSG_ITEM_QUERY_MULTIPLE = 0xBAD,
 	SMSG_ITEM_QUERY_SINGLE_RESPONSE = 0xBAD,
 	SMSG_ITEM_QUERY_MULTIPLE_RESPONSE = 0xBAD,
 
-	CMSG_PAGE_TEXT_QUERY = 0xBAD,
-	SMSG_PAGE_TEXT_QUERY_RESPONSE = 0xBAD,
+    CMSG_PAGE_TEXT_QUERY = 0x1022, // 18414
+    SMSG_PAGE_TEXT_QUERY_RESPONSE = 0x081E, // 18414
 	CMSG_QUEST_QUERY = 0x02D5, // 18414
 	SMSG_QUEST_QUERY_RESPONSE = 0x0276, // 18414
 
@@ -192,12 +186,12 @@ enum Opcodes
 	SMSG_GUILD_EVENT = 0xBAD,
 	SMSG_GUILD_COMMAND_RESULT = 0xBAD,
 	UMSG_UPDATE_GUILD = 0xBAD,
-    CMSG_JOIN_CHANNEL = 0x148E,	// 18414
+    CMSG_JOIN_CHANNEL = 0x148E, // 18414
     CMSG_LEAVE_CHANNEL = 0x042A, // 18414
-	SMSG_CHANNEL_NOTIFY = 0xBAD,	// implemented
+    SMSG_CHANNEL_NOTIFY = 0x0F06, // 18414
     CMSG_CHANNEL_LIST = 0x0C1B,	// 18414
-	SMSG_CHANNEL_LIST = 0xBAD,	// implemented
-	CMSG_CHANNEL_PASSWORD = 0xBAD,	// implemented
+	SMSG_CHANNEL_LIST = 0x0000, // Idk
+    CMSG_CHANNEL_PASSWORD = 0x0A1E, // 18414
 	CMSG_CHANNEL_SET_OWNER = 0xBAD,	// implemented
 	CMSG_CHANNEL_OWNER = 0xBAD,	// implemented
 	CMSG_CHANNEL_MODERATOR = 0xBAD,	// implemented
@@ -323,18 +317,18 @@ enum Opcodes
 	SMSG_OPEN_CONTAINER = 0xBAD,	/// TODO: implement
 	CMSG_INSPECT = 0xBAD,	// implemented
 	SMSG_INSPECT = 0xBAD,	// handled by client, but unused. Oo
-	CMSG_INITIATE_TRADE = 0xBAD,	// implemented
-	CMSG_BEGIN_TRADE = 0xBAD,	// implemented
-	CMSG_BUSY_TRADE = 0xBAD,	// implemented
-	CMSG_IGNORE_TRADE = 0xBAD,	// implemented
-	CMSG_ACCEPT_TRADE = 0xBAD,	// implemented
-	CMSG_UNACCEPT_TRADE = 0xBAD,	// implemented
-	CMSG_CANCEL_TRADE = 0xBAD,	// 15595
-	CMSG_SET_TRADE_ITEM = 0xBAD,	// implemented
-	CMSG_CLEAR_TRADE_ITEM = 0xBAD,	// implemented
+    CMSG_INITIATE_TRADE = 0x0267, // 18414
+    CMSG_BEGIN_TRADE = 0x1CE3, // 18414
+    CMSG_BUSY_TRADE = 0x0000,
+    CMSG_IGNORE_TRADE = 0x0276, // 18414
+    CMSG_ACCEPT_TRADE = 0x144D, // 18414
+    CMSG_UNACCEPT_TRADE = 0x0023, // 18414
+    CMSG_CANCEL_TRADE = 0x1941, // 18414
+    CMSG_SET_TRADE_ITEM = 0x03D5, // 18414 - @todo add currency
+    CMSG_CLEAR_TRADE_ITEM = 0x00A7, // 18414
 	CMSG_SET_TRADE_GOLD = 0xBAD,	// implemented
-	SMSG_TRADE_STATUS = 0xBAD,	// implemented
-	SMSG_TRADE_STATUS_EXTENDED = 0xBAD,	// implemented
+    SMSG_TRADE_STATUS = 0x1963, // 18414
+    SMSG_TRADE_STATUS_EXTENDED = 0x181E, // 18414
 	SMSG_INITIALIZE_FACTIONS = 0x0AAA,	// 5.4.8 18414
 	SMSG_SET_FACTION_VISIBLE = 0xBAD,	// implemented
 	SMSG_SET_FACTION_STANDING = 0xBAD,	// implemented
@@ -442,7 +436,7 @@ enum Opcodes
     CMSG_QUESTGIVER_COMPLETE_QUEST = 0x0659, // 18414
     SMSG_QUESTGIVER_REQUEST_ITEMS = 0x0277, // 18414
     CMSG_QUESTGIVER_REQUEST_REWARD = 0x0378, // 18414
-	SMSG_QUESTGIVER_OFFER_REWARD = 0x18D,	// implemented
+    SMSG_QUESTGIVER_OFFER_REWARD = 0x074F, // 18414
     CMSG_QUESTGIVER_CHOOSE_REWARD = 0x07CB, // 18414
 	SMSG_QUESTGIVER_QUEST_INVALID = 0x18F,	// implemented
 	CMSG_QUESTGIVER_CANCEL = 0x190,	// implemented
@@ -988,7 +982,7 @@ enum Opcodes
 	SMSG_DISMOUNT = 0x3AC,	/// TODO: implement
 	MSG_MOVE_UPDATE_CAN_FLY = 0x3AD,	/// TODO: investigate
 	MSG_RAID_READY_CHECK_CONFIRM = 0x3AE,	// implemented
-	CMSG_VOICE_SESSION_ENABLE = 0x3AF,	// implemented
+    CMSG_VOICE_SESSION_ENABLE = 0x15A9, // 18414
 	SMSG_VOICE_SESSION_ENABLE = 0x3B0,	// not used in client
 	SMSG_VOICE_PARENTAL_CONTROLS = 0x3B1,	/// TODO: implement
 	CMSG_GM_WHISPER = 0x3B2,	// GM client only

@@ -898,7 +898,7 @@ bool ChatHandler::HandleTriggerCommand(const char* args, WorldSession* m_session
 	}
 
 	m_session->GetPlayer()->SafeTeleport(entry->mapid, instance_id, LocationVector(entry->x, entry->y,
-	                                     entry->z, entry->o));
+	                                     entry->z, entry->radius));
 
 	BlueSystemMessage(m_session, "Teleported to trigger %u on [%u][%.2f][%.2f][%.2f]", entry->id,
 	                  entry->mapid, entry->x, entry->y, entry->z);

@@ -22,17 +22,33 @@
 #define QUEST_H
 
 using namespace std; // @todo get rid of all of these someday
+/*
+enum QUEST_STATUS
+{
+    QMGR_QUEST_NOT_AVAILABLE = 0x00,	// There aren't any quests available.		| "No Mark"
+    QMGR_QUEST_AVAILABLELOW_LEVEL = 0x01,	// Quest available, and your level isn't enough.| "Gray Quotation Mark !"
+    QMGR_QUEST_CHAT = 0x02,	// LOW LEVEL AVAILABLE
+    // On 3.1.2 0x03 and 0x04 is some new status, so the old ones are now shifted by 2 (0x03->0x05 and so on).
+    QMGR_QUEST_REPEATABLE_FINISHED_LOWLEVEL = 0x03, // REWARD REPEATABLE
+    QMGR_QUEST_REPEATABLE_LOWLEVEL = 0x04, // LOW_LEVEL_AVAILABLE_REP
+    QMGR_QUEST_NOT_FINISHED = 0x05,	// Quest isn't finished yet.			| "Gray Question ? Mark"
+    QMGR_QUEST_REPEATABLE_FINISHED = 0x06,
+    QMGR_QUEST_REPEATABLE = 0x07,	// Quest repeatable				| "Blue Question ? Mark"
+    QMGR_QUEST_AVAILABLE = 0x08,	// Quest available, and your level is enough	| "Yellow Quotation ! Mark"
+    QMGR_QUEST_FINISHED = 0x0A,	// Quest has been finished.			| "Yellow Question  ? Mark" (7 has no minimap icon)
+    //QUEST_ITEM_UPDATE							= 0x06	// Yellow Question "?" Mark. //Unknown
+};*/
 
 enum QuestStatus
 {
-    QMGR_QUEST_NOT_AVAILABLE                    = 0x002,
-    QMGR_QUEST_AVAILABLELOW_LEVEL               = 0x004,
-    QMGR_QUEST_CHAT                             = 0x080, // ?
-    QMGR_QUEST_REPEATABLE_FINISHED_LOWLEVEL		= 0x00,
-    QMGR_QUEST_REPEATABLE_LOWLEVEL				= 0x00,
-    QMGR_QUEST_NOT_FINISHED                     = 0x020,
-    QMGR_QUEST_REPEATABLE_FINISHED				= 0x00,
-    QMGR_QUEST_REPEATABLE						= 0x00,
+    QMGR_QUEST_NOT_AVAILABLE                    = 0x000, // None
+    QMGR_QUEST_AVAILABLELOW_LEVEL               = 0x002, // Unavailable
+    QMGR_QUEST_CHAT                             = 0x004, // Available low level
+    QMGR_QUEST_REPEATABLE_FINISHED_LOWLEVEL     = 0x008, // Low level reward rep
+    QMGR_QUEST_REPEATABLE_LOWLEVEL              = 0x010, // Low level available rep
+    QMGR_QUEST_NOT_FINISHED                     = 0x020, // Incomplete
+    QMGR_QUEST_REPEATABLE_FINISHED              = 0x040, // Reward rep?
+    QMGR_QUEST_REPEATABLE                       = 0x080, // Available rep?
     QMGR_QUEST_AVAILABLE                        = 0x100,
     QMGR_QUEST_FINISHED                         = 0x400
 };
@@ -119,6 +135,7 @@ enum QUEST_SHARE
 #define MAX_REQUIRED_QUEST_ITEM 6
 #define QUEST_REWARD_CURRENCY_COUNT 4
 #define QUEST_REPUTATIONS_COUNT 5
+#define QUEST_EMOTE_COUNT 4
 
 #define MAX_QUEST_OFFSET 15
 

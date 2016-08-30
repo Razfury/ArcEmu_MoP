@@ -28,7 +28,6 @@ Arcemu::Utility::TLSObject<MapMgr*> t_currentMapContext;
 
 #define Z_SEARCH_RANGE 2
 
-
 extern bool bServerShutdown;
 
 MapMgr::MapMgr(Map* map, uint32 mapId, uint32 instanceid) :

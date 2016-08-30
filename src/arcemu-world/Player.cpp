@@ -8076,54 +8076,113 @@ void Player::SendTradeUpdate()
 	if (!pTarget)
 		return;
 
-	WorldPacket data(SMSG_TRADE_STATUS_EXTENDED, 532);
+    uint8 count = 0;
+    for (uint8 i = 0; i < 7; ++i)
+        if (Item* item = mTradeItems[i])
+            ++count;
 
-	data << uint8(1);
-	data << uint32(0x19);
-	data << m_tradeSequence;
-	data << m_tradeSequence++;
-	data << mTradeGold;
-	data << uint32(0);
+    ByteBuffer itemData(7 * 2 + 7 * 4 + 3 * 4 + 3 * 4 + 1);
 
-	uint8 count = 0;
-	// Items
-	for (uint32 Index = 0; Index < 7; ++Index)
-	{
-		Item* pItem = mTradeItems[Index];
-		if (pItem != 0)
-		{
-			count++;
-			ItemPrototype* pProto = pItem->GetProto();
-			ARCEMU_ASSERT(pProto != NULL);
+    WorldPacket data(SMSG_TRADE_STATUS_EXTENDED, 4 * 6 + 8 + 1 + 3 + count * 70);
 
-			data << uint8(Index);
+    data << uint32(0);                                      // this value must be equal to value from TRADE_STATUS_INITIATED status packet (different value for different players to block multiple trades?)
+    data << uint32(0);                                      // unk 2
+    data << uint32(0);                                      // spell casted on lowest slot item // @todo?
+    data << uint8(1);                                       // 1 means traders data, 0 means own // Yeaa, idk
+    data << uint64(mTradeGold);                             // trader gold
+    data << uint32(7);                                      // trade slots count/number?, = next field in most cases // @todo define this
+    data << uint32(0);                                      // unk 5
+    data << uint32(7);                                      // trade slots count/number?, = prev field in most cases
+    data.WriteBits(count, 20);
 
-			data << uint32(pProto->ItemId);
-			data << uint32(pProto->DisplayInfoID);
-			data << uint32(pItem->GetStackCount());	// Amount		   OK
+    for (uint32 i = 0; i < 7; ++i)
+    {
+        if (Item* item = mTradeItems[i])
+        {
+            ItemPrototype* proto = item->GetProto();
+            ObjectGuid giftCreatorGuid = item->GetGiftCreatorGUID();
+            ObjectGuid creatorGuid = item->GetCreatorGUID();
 
-			// Enchantment stuff
-			data << uint32(0);											// unknown
-			data << uint64(pItem->GetGiftCreatorGUID());	// gift creator	 OK
-			data << uint32(pItem->GetEnchantmentId(0));	// Item Enchantment OK
-			for (uint8 i = 2; i < 5; i++)								// Gem enchantments
-			{
-				if (pItem->GetEnchantment(i) != NULL && pItem->GetEnchantment(i)->Enchantment != NULL)
-					data << uint32(pItem->GetEnchantment(i)->Enchantment->Id);
-				else
-					data << uint32(0);
-			}
-			data << uint64(pItem->GetCreatorGUID());		// item creator	 OK
-			data << uint32(pItem->GetCharges(0));	// Spell Charges	OK
-			data << uint32(pItem->GetItemRandomSuffixFactor());											// seems like time stamp or something like that
-			data << uint32(pItem->GetItemRandomPropertyId());
-			data << uint32(pProto->LockId);										// lock ID		  OK
-			data << uint32(pItem->GetDurabilityMax());
-			data << uint32(pItem->GetDurability());
-		}
-	}
-	data.resize(21 + count * 73);
-	pTarget->SendPacket(&data);
+            bool wrapped = false; // It is NOT wrapped @todo
+            data.WriteBit(!wrapped);
+            data.WriteBit(giftCreatorGuid[2]);
+
+            if (!wrapped)
+            {
+                data.WriteBit(creatorGuid[3]);
+                data.WriteBit(creatorGuid[5]);
+                data.WriteBit(creatorGuid[1]);
+                data.WriteBit(creatorGuid[6]);
+                data.WriteBit(creatorGuid[0]);
+                data.WriteBit(proto->LockId != 0);
+                data.WriteBit(creatorGuid[4]);
+                data.WriteBit(creatorGuid[7]);
+                data.WriteBit(creatorGuid[2]);
+
+                itemData.WriteByteSeq(creatorGuid[3]);
+
+                itemData << uint32(item->GetDurabilityMax());
+                itemData << uint32(0);
+                itemData << uint32(0); // item->GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0)
+
+                itemData.WriteByteSeq(creatorGuid[1]);
+                itemData.WriteByteSeq(creatorGuid[5]);
+                itemData.WriteByteSeq(creatorGuid[7]);
+                itemData.WriteByteSeq(creatorGuid[6]);
+                itemData.WriteByteSeq(creatorGuid[0]);
+
+                itemData << uint32(item->GetEnchantmentId(PERM_ENCHANTMENT_SLOT));
+                itemData << uint32(item->GetDurability());
+
+                itemData.WriteByteSeq(creatorGuid[2]);
+
+                for (uint8 i = 2; i < 5; i++)								// Gem enchantments
+                {
+                    if (item->GetEnchantment(i) != NULL && item->GetEnchantment(i)->Enchantment != NULL)
+                        itemData << uint32(item->GetEnchantment(i)->Enchantment->Id);
+                    else
+                        itemData << uint32(0);
+                }
+
+                itemData << uint32(item->GetItemRandomPropertyId());
+                itemData << uint32(item->GetCharges(0));
+                itemData << uint32(item->GetItemRandomSuffixFactor());
+
+                itemData.WriteByteSeq(creatorGuid[4]);
+            }
+
+            data.WriteBit(giftCreatorGuid[0]);
+            data.WriteBit(giftCreatorGuid[4]);
+            data.WriteBit(giftCreatorGuid[7]);
+            data.WriteBit(giftCreatorGuid[3]);
+            data.WriteBit(giftCreatorGuid[6]);
+            data.WriteBit(giftCreatorGuid[1]);
+            data.WriteBit(giftCreatorGuid[5]);
+
+            itemData.WriteByteSeq(giftCreatorGuid[4]);
+
+            itemData << uint8(i);
+
+            itemData.WriteByteSeq(giftCreatorGuid[5]);
+            itemData.WriteByteSeq(giftCreatorGuid[1]);
+            itemData.WriteByteSeq(giftCreatorGuid[2]);
+            itemData.WriteByteSeq(giftCreatorGuid[3]);
+
+            itemData << uint32(proto->ItemId);
+
+            itemData.WriteByteSeq(giftCreatorGuid[7]);
+            itemData.WriteByteSeq(giftCreatorGuid[0]);
+
+            itemData << uint32(item->GetStackCount()); // Amount
+
+            itemData.WriteByteSeq(giftCreatorGuid[6]);
+        }
+    }
+
+    data.FlushBits();
+    data.append(itemData);
+
+    pTarget->SendPacket(&data);
 }
 
 void Player::RequestDuel(Player* pTarget)

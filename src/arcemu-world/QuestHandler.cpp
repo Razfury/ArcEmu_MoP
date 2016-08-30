@@ -116,6 +116,7 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode(WorldPacket & recv_data)
 	data.WriteByteSeq(guid[2]);
 	data.WriteByteSeq(guid[0]);
 	data.WriteByteSeq(guid[3]);
+
 	SendPacket(&data);
 }
 
@@ -432,7 +433,7 @@ void WorldSession::HandleQuestgiverRequestRewardOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	LOG_DEBUG("WORLD: Received CMSG_QUESTGIVER_REQUESTREWARD_QUEST.");
+	LOG_DEBUG("WORLD: Received CMSG_QUESTGIVER_REQUEST_REWARD");
 
 	ObjectGuid guid;
 	uint32 questId;
@@ -564,7 +565,8 @@ void WorldSession::HandleQuestgiverCompleteQuestOpcode(WorldPacket & recvPacket)
 	Quest* qst = NULL;
 	Object* qst_giver = NULL;
 	uint32 status = 0;
-	uint32 guidtype = GET_TYPE_FROM_GUID(playerGuid);
+
+	uint32 guidtype = GUID_HIPAR_TESTT(playerGuid);
 
 	if(guidtype == HIGHGUID_TYPE_UNIT)
 	{
@@ -672,7 +674,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket & recvPacket)
 	bool bValid = false;
 	Quest* qst = NULL;
 	Object* qst_giver = NULL;
-	uint32 guidtype = GET_TYPE_FROM_GUID(guid); //! TODO
+	uint32 guidtype = GUID_HIPAR_TESTT(guid);
 
 	if(guidtype == HIGHGUID_TYPE_UNIT)
 	{

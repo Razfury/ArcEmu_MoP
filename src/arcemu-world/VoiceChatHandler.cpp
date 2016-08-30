@@ -23,7 +23,9 @@
 
 void WorldSession::HandleEnableMicrophoneOpcode(WorldPacket & recv_data)
 {
-
+    // uint8 isVoiceEnabled, uint8 isMicrophoneEnabled
+    recv_data.read<uint8>();
+    recv_data.read<uint8>();
 }
 
 void WorldSession::HandleChannelVoiceQueryOpcode(WorldPacket & recv_data)

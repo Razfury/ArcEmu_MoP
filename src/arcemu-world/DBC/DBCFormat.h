@@ -49,7 +49,6 @@ const char* summonpropertiesformat = "uuuuuu";
 
 const char* WorldMapOverlayStoreFormat = "nxiiiixxxxxxxxx";
 
-const char* wmoareaformat = "uiiixxxxxuuxxxx";
 const char* dbcWorldsafelocsfmt = "iifffs";
 const char* dbcMountCapabilityStorefmt = "iiixxiii";
 const char* dbcMountTypeStorefmt = "iiiiiiiiiiiiiiiiiixxxxxxx";
@@ -110,7 +109,7 @@ const char* spellrangeFormat = "uffffxxx";
 
 const char* randompropsFormat = "uxuuuxxx";
 
-const char* areatableFormat = "uuuuuxxxxxusuxxxxxxxxxxxxx";
+
 const char* itemextendedcostFormat = "uuuuuuuuuuuuuuuuuuuuuuuuuuuxxxx";
 const char* factiondbcFormat = "uiuuuuuuuuiiiiuuuuuxxxxsxx";
 const char* dbctaxinodeFormat = "uufffxuuuff";
@@ -123,7 +122,7 @@ const char* itemrandomsuffixformat = "uxxuuuuuuuuuu";
 const char* randompropopointsfmt = "iiiiiiiiiiiiiiii";
 const char* itemreforgeformat = "uufuu";
 const char* chatchannelformat = "uuxsx";
-const char* areatriggerformat = "uufffxxxxxxxx";
+
 const char* chartitleFormat = "uxsxux";
 const char* NameGenfmt = "dsii";
 
@@ -143,3 +142,6 @@ const char* SpellCategoriesEntryfmt = "xxxuuuuuux";
 const char* CombatRatingEntryFmt = "uf"; // gtClassLevelFloat
 const char* charclassFormat = "uuxsxxxuxuuuuxxxxx";
 const char* charraceFormat = "uxuxuuxuxxxxuxsxxxxxxxxxxxxxxxxxxxxx";
+const char* areatableFormat = "uuuuuxxxxxxxxusuxxxxxxxxxxxxxx";
+const char* wmoareaformat = "uuuuxxxxxuuxxxx";
+const char* areatriggerformat = "uufffxxxfffffxxx";

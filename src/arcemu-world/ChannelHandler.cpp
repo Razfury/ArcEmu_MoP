@@ -27,12 +27,12 @@ void WorldSession::HandleChannelJoin(WorldPacket & recvPacket)
 	CHECK_INWORLD_RETURN
 
 	string channelname, pass;
-	uint32 dbc_id = 0;
+    uint32 channelId;
 	uint32 i;
 	Channel* chn;
     uint32 channelLength, passLength;
 
-    recvPacket >> dbc_id;
+    recvPacket >> channelId;
     uint8 unknown1 = recvPacket.ReadBit();                  // unknown bit
     channelLength = recvPacket.ReadBits(7);
     passLength = recvPacket.ReadBits(7);
@@ -57,7 +57,7 @@ void WorldSession::HandleChannelJoin(WorldPacket & recvPacket)
 	if(sWorld.GmClientChannel.size() && !stricmp(sWorld.GmClientChannel.c_str(), channelname.c_str()) && !GetPermissionCount())
 		return;
 
-	chn = channelmgr.GetCreateChannel(channelname.c_str(), _player, dbc_id);
+	chn = channelmgr.GetCreateChannel(channelname.c_str(), _player, channelId);
 	if(chn == NULL)
 		return;
 
@@ -68,17 +68,15 @@ void WorldSession::HandleChannelJoin(WorldPacket & recvPacket)
 void WorldSession::HandleChannelLeave(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
-
-	string channelname;
-	uint32 code = 0;
 	Channel* chn;
 
-	recvPacket >> code;
-
+    uint32 unk;
+    std::string channelName;
+    recvPacket >> unk;                                      // channel id?
     uint32 length = recvPacket.ReadBits(7);
-    channelname = recvPacket.ReadString(length);
+    channelName = recvPacket.ReadString(length);
 
-	chn = channelmgr.GetChannel(channelname.c_str(), _player);
+    chn = channelmgr.GetChannel(channelName.c_str(), _player);
 	if(chn == NULL)
 		return;
 
@@ -104,14 +102,17 @@ void WorldSession::HandleChannelPassword(WorldPacket & recvPacket)
 {
 	CHECK_INWORLD_RETURN
 
-	string channelname, pass;
 	Channel* chn;
 
-	recvPacket >> channelname;
-	recvPacket >> pass;
-	chn = channelmgr.GetChannel(channelname.c_str(), _player);
+    uint32 nameLength = recvPacket.ReadBits(8);
+    uint32 passLength = recvPacket.ReadBits(7);
+
+    std::string channelName = recvPacket.ReadString(nameLength);
+    std::string password = recvPacket.ReadString(passLength);
+
+    chn = channelmgr.GetChannel(channelName.c_str(), _player);
 	if(chn)
-		chn->Password(_player, pass.c_str());
+        chn->Password(_player, password.c_str());
 }
 
 void WorldSession::HandleChannelSetOwner(WorldPacket & recvPacket)

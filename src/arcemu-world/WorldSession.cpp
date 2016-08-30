@@ -631,8 +631,7 @@ void WorldSession::InitPacketHandlerTable()
 	WorldPacketHandlers[CMSG_QUERY_TIME].handler = &WorldSession::HandleQueryTimeOpcode;
 	WorldPacketHandlers[CMSG_CREATURE_QUERY].handler = &WorldSession::HandleCreatureQueryOpcode;
 	WorldPacketHandlers[CMSG_GAMEOBJECT_QUERY].handler = &WorldSession::HandleGameObjectQueryOpcode;
-	WorldPacketHandlers[CMSG_PAGE_TEXT_QUERY].handler =
-	    &WorldSession::HandlePageTextQueryOpcode;
+	WorldPacketHandlers[CMSG_PAGE_TEXT_QUERY].handler = &WorldSession::HandlePageTextQueryOpcode;
 	WorldPacketHandlers[CMSG_ITEM_NAME_QUERY].handler =
 	    &WorldSession::HandleItemNameQueryOpcode;
 	WorldPacketHandlers[CMSG_QUERY_INSPECT_ACHIEVEMENTS].handler = &WorldSession::HandleAchievmentQueryOpcode;
@@ -824,14 +823,10 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_MESSAGECHAT_BATTLEGROUND].handler              = &WorldSession::HandleMessagechatOpcode;
 
 	// Channels
-	WorldPacketHandlers[CMSG_JOIN_CHANNEL].handler =
-	    &WorldSession::HandleChannelJoin;
-	WorldPacketHandlers[CMSG_LEAVE_CHANNEL].handler =
-	    &WorldSession::HandleChannelLeave;
-	WorldPacketHandlers[CMSG_CHANNEL_LIST].handler =
-	    &WorldSession::HandleChannelList;
-	WorldPacketHandlers[CMSG_CHANNEL_PASSWORD].handler =
-	    &WorldSession::HandleChannelPassword;
+	WorldPacketHandlers[CMSG_JOIN_CHANNEL].handler = &WorldSession::HandleChannelJoin;
+	WorldPacketHandlers[CMSG_LEAVE_CHANNEL].handler = &WorldSession::HandleChannelLeave;
+	WorldPacketHandlers[CMSG_CHANNEL_LIST].handler = &WorldSession::HandleChannelList;
+	WorldPacketHandlers[CMSG_CHANNEL_PASSWORD].handler = &WorldSession::HandleChannelPassword;
 	WorldPacketHandlers[CMSG_CHANNEL_SET_OWNER].handler =
 	    &WorldSession::HandleChannelSetOwner;
 	WorldPacketHandlers[CMSG_CHANNEL_OWNER].handler =
@@ -1032,26 +1027,16 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_DUEL_RESPONSE].handler = &WorldSession::HandleDuelResponse;
 
 	// Trade
-	WorldPacketHandlers[CMSG_INITIATE_TRADE].handler =
-	    &WorldSession::HandleInitiateTrade;
-	WorldPacketHandlers[CMSG_BEGIN_TRADE].handler =
-	    &WorldSession::HandleBeginTrade;
-	WorldPacketHandlers[CMSG_BUSY_TRADE].handler =
-	    &WorldSession::HandleBusyTrade;
-	WorldPacketHandlers[CMSG_IGNORE_TRADE].handler =
-	    &WorldSession::HandleIgnoreTrade;
-	WorldPacketHandlers[CMSG_ACCEPT_TRADE].handler =
-	    &WorldSession::HandleAcceptTrade;
-	WorldPacketHandlers[CMSG_UNACCEPT_TRADE].handler =
-	    &WorldSession::HandleUnacceptTrade;
-	WorldPacketHandlers[CMSG_CANCEL_TRADE].handler =
-	    &WorldSession::HandleCancelTrade;
-	WorldPacketHandlers[CMSG_SET_TRADE_ITEM].handler =
-	    &WorldSession::HandleSetTradeItem;
-	WorldPacketHandlers[CMSG_CLEAR_TRADE_ITEM].handler =
-	    &WorldSession::HandleClearTradeItem;
-	WorldPacketHandlers[CMSG_SET_TRADE_GOLD].handler =
-	    &WorldSession::HandleSetTradeGold;
+	WorldPacketHandlers[CMSG_INITIATE_TRADE].handler = &WorldSession::HandleInitiateTrade;
+	WorldPacketHandlers[CMSG_BEGIN_TRADE].handler = &WorldSession::HandleBeginTrade;
+	//WorldPacketHandlers[CMSG_BUSY_TRADE].handler = &WorldSession::HandleBusyTrade; // ?
+	WorldPacketHandlers[CMSG_IGNORE_TRADE].handler = &WorldSession::HandleIgnoreTrade;
+	WorldPacketHandlers[CMSG_ACCEPT_TRADE].handler = &WorldSession::HandleAcceptTrade;
+	WorldPacketHandlers[CMSG_UNACCEPT_TRADE].handler = &WorldSession::HandleUnacceptTrade;
+	WorldPacketHandlers[CMSG_CANCEL_TRADE].handler = &WorldSession::HandleCancelTrade;
+	WorldPacketHandlers[CMSG_SET_TRADE_ITEM].handler = &WorldSession::HandleSetTradeItem;
+	WorldPacketHandlers[CMSG_CLEAR_TRADE_ITEM].handler = &WorldSession::HandleClearTradeItem;
+	WorldPacketHandlers[CMSG_SET_TRADE_GOLD].handler = &WorldSession::HandleSetTradeGold;
 
 	// Quest System
 	WorldPacketHandlers[CMSG_QUESTGIVER_STATUS_MULTIPLE_QUERY].handler = &WorldSession::HandleInrangeQuestgiverQuery;
@@ -1349,8 +1334,7 @@ void WorldSession::InitPacketHandlerTable()
 	    &WorldSession::HandleWorldportOpcode;
 
 	// voicechat
-	WorldPacketHandlers[CMSG_VOICE_SESSION_ENABLE].handler =
-	    &WorldSession::HandleEnableMicrophoneOpcode;
+	WorldPacketHandlers[CMSG_VOICE_SESSION_ENABLE].handler = &WorldSession::HandleEnableMicrophoneOpcode;
 	WorldPacketHandlers[CMSG_SET_ACTIVE_VOICE_CHANNEL].handler =
 	    &WorldSession::HandleVoiceChatQueryOpcode;
 	WorldPacketHandlers[0x03AF].handler =
@@ -1359,8 +1343,6 @@ void WorldSession::InitPacketHandlerTable()
 	// &WorldSession::HandleChannelVoiceQueryOpcode;
 	WorldPacketHandlers[CMSG_OPT_OUT_OF_LOOT].handler =
 	    &WorldSession::HandleSetAutoLootPassOpcode;
-	WorldPacketHandlers[CMSG_QUESTGIVER_STATUS_MULTIPLE_QUERY].handler =
-	    &WorldSession::HandleInrangeQuestgiverQuery;
 	WorldPacketHandlers[CMSG_REMOVE_GLYPH].handler =
 	    &WorldSession::HandleRemoveGlyph;
 	WorldPacketHandlers[CMSG_ALTER_APPEARANCE].handler =

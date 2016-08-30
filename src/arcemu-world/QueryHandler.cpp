@@ -164,7 +164,6 @@ void WorldSession::HandleQueryTimeOpcode(WorldPacket & recv_data)
 	data << (uint32)UNIXTIME;
 	data << (uint32)0;
 	SendPacket(&data);
-
 }
 
 //////////////////////////////////////////////////////////////
@@ -420,25 +419,47 @@ void WorldSession::HandlePageTextQueryOpcode(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	uint32 pageid = 0;
-	recv_data >> pageid;
+    uint32 pageId;
+    ObjectGuid guid;
 
-	while(pageid)
+    recv_data >> pageId;
+
+    guid[2] = recv_data.ReadBit();
+    guid[1] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    guid[6] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
+    guid[5] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[3]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[2]);
+
+	while(pageId)
 	{
-		ItemPage* page = ItemPageStorage.LookupEntry(pageid);
+        ItemPage* page = ItemPageStorage.LookupEntry(pageId);
 		if(!page)
 			return;
 
-		LocalizedItemPage* lpi = (language > 0) ? sLocalizationMgr.GetLocalizedItemPage(pageid, language) : NULL;
+        LocalizedItemPage* lpi = (language > 0) ? sLocalizationMgr.GetLocalizedItemPage(pageId, language) : NULL;
 		WorldPacket data(SMSG_PAGE_TEXT_QUERY_RESPONSE, 1000);
-		data << pageid;
+        data << uint32(pageId);
+
 		if(lpi)
 			data << lpi->Text;
 		else
 			data << page->text;
 
-		data << page->next_page;
-		pageid = page->next_page;
+		data << uint32(page->next_page);
+        pageId = page->next_page;
+
 		SendPacket(&data);
 	}
 }

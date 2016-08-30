@@ -654,6 +654,7 @@ class SERVER_DECL WorldSession
 		void HandleDuelResponse(WorldPacket & recv_data);
 
 		// Trade
+        WorldPacket* SendTradeStatus(uint8 status);
 		void HandleInitiateTrade(WorldPacket & recv_data);
 		void HandleBeginTrade(WorldPacket & recv_data);
 		void HandleBusyTrade(WorldPacket & recv_data);

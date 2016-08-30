@@ -124,9 +124,7 @@ uint32 QuestMgr::PlayerMeetsReqs(Player* plr, Quest* qst, bool skiplevelcheck)
 
 uint32 QuestMgr::CalcQuestStatus(Object* quest_giver, Player* plr, Quest* qst, uint8 type, bool skiplevelcheck)
 {
-	QuestLogEntry* qle;
-
-	qle = plr->GetQuestLogForEntry(qst->id);
+	QuestLogEntry* qle = plr->GetQuestLogForEntry(qst->id);
 
 	if(!qle)
 	{
@@ -180,7 +178,6 @@ uint32 QuestMgr::CalcQuestStatus(Player* plr, uint32 qst)
 
 	return QMGR_QUEST_NOT_AVAILABLE;
 }
-
 
 uint32 QuestMgr::CalcStatus(Object* quest_giver, Player* plr)
 {
@@ -286,7 +283,7 @@ uint32 QuestMgr::ActiveQuestsCount(Object* quest_giver, Player* plr)
 
 	for(itr = q_begin; itr != q_end; ++itr)
 	{
-        if (CalcQuestStatus(quest_giver, plr, *itr) >= QMGR_QUEST_AVAILABLELOW_LEVEL)
+        if (CalcQuestStatus(quest_giver, plr, *itr) >= QMGR_QUEST_CHAT)
 		{
 			if(tmp_map.find((*itr)->qst->id) == tmp_map.end())
 			{
@@ -302,89 +299,150 @@ uint32 QuestMgr::ActiveQuestsCount(Object* quest_giver, Player* plr)
 void QuestMgr::BuildOfferReward(WorldPacket* data, Quest* qst, Object* qst_giver, uint32 menutype, uint32 language, Player* plr)
 {
 	LocalizedQuest* lq = (language > 0) ? sLocalizationMgr.GetLocalizedQuest(qst->id, language) : NULL;
-	ItemPrototype* it;
-	uint32 i = 0;
+    ItemPrototype* ip;
+
+    std::string questTitle = lq ? lq->Title : qst->title;
+    std::string questOfferRewardText = lq ? lq->CompletionText : qst->completiontext;
+    std::string questGiverTextWindow = qst->QuestGiverTextWindow;
+    std::string questGiverTargetName = qst->QuestGiverTargetName;
+    std::string questTurnTextWindow = qst->QuestTurnTextWindow;
+    std::string questTurnTargetName = qst->QuestTurnTargetName;
+
+    uint32 RewardItemDisplayId[6];
+    uint32 RewardChoiceItemDisplayId[6];
+
+    for (uint8 i = 0; i < 6; ++i)
+    {
+        ip = ItemPrototypeStorage.LookupEntry(qst->reward_item[i]);
+        RewardItemDisplayId[i] = ip ? ip->DisplayInfoID : 0;
+    }
+
+    for (uint8 i = 0; i < 6; ++i)
+    {
+        ip = ItemPrototypeStorage.LookupEntry(qst->reward_choiceitem[i]);
+        RewardChoiceItemDisplayId[i] = ip ? ip->DisplayInfoID : 0;
+    }
+
+    uint8 RewardEmoteCount = 0;
+    for (uint8 i = 0; i < 4; ++i) // QUEST_EMOTE_COUNT
+    {
+        if (qst->completionemote[i] <= 0)
+            break;
+
+        ++RewardEmoteCount;
+    }
+
+    bool enableNext = true; // ?
+
+
+    ObjectGuid guid = qst_giver->GetGUID();
+
 	data->SetOpcode(SMSG_QUESTGIVER_OFFER_REWARD);
-	*data << uint64(qst_giver->GetGUID());
-	*data << uint32(qst->id);
+    
+    *data << uint32(qst->reward_itemcount[2]);
+    *data << uint32(qst->id); // Quest id
+    *data << uint32(qst->reward_item[3]);
+    *data << uint32(RewardChoiceItemDisplayId[2]);
 
-	if(lq)
-	{
-		*data << lq->Title;
-		*data << lq->CompletionText;
-	}
-	else
-	{
-		*data << qst->title;
-		*data << qst->completiontext;
-	}
+    for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
+    {
+        *data << uint32(qst->reward_repfaction[i]);
+        *data << uint32(qst->reward_repvalue[i]);
+        *data << uint32(0); // Rep limit?
+    }
 
-	//uint32 a = 0, b = 0, c = 1, d = 0, e = 1;
+    *data << uint32(qst->reward_itemcount[0]);
+    *data << uint32(qst->reward_itemcount[3]);
+    *data << uint32(RewardItemDisplayId[3]);
+    *data << uint32(qst->reward_item[1]);
+    *data << uint32(qst->reward_choiceitem[3]);
+    *data << uint32(RewardChoiceItemDisplayId[3]);
+    *data << uint32(qst->count_reward_choiceitem);
+    *data << uint32(qst->reward_spell); // Or effect on player?
+    *data << uint32(RewardItemDisplayId[1]);
+    *data << uint32(qst->reward_choiceitemcount[5]);
+    *data << uint32(RewardChoiceItemDisplayId[4]);
+    *data << uint32(qst->reward_choiceitemcount[1]);
+    *data << uint32(RewardChoiceItemDisplayId[0]);
+    *data << uint32(RewardItemDisplayId[0]);
+    *data << uint32(qst->RewardPackageItemId);
+    *data << uint32(0); // Model id
+    *data << uint32(qst->reward_itemcount[1]);
+    *data << uint32(0);
+    *data << uint32(qst->reward_choiceitem[0]);
+    *data << uint32(qst->reward_choiceitemcount[3]);
+    *data << uint32(qst->reward_choiceitemcount[4]);
+    *data << uint32(qst->reward_choiceitem[1]);
+    *data << uint32(qst->rewardtalents); // Bonus talents
+    *data << uint32(0);
 
-	*data << (qst->next_quest_id ? uint8(1) : uint8(0));  // next quest shit
-	*data << qst->quest_flags;
-	*data << qst->suggestedplayers;
+    for (uint8 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
+    {
+        *data << uint32(qst->RewardCurrencyId[i]);
+        *data << uint32(qst->RewardCurrencyCount[i]);
+    }
 
-	*data << qst->completionemotecount;
-	for(i = 0; i < qst->completionemotecount; i++)
-	{
-		*data << qst->completionemote[i];
-		*data << qst->completionemotedelay[i];
-	}
+    *data << uint32(qst->quest_flags);
+    *data << uint32(qst->Flags2);
+    *data << uint32(GenerateQuestXP(plr, qst));
+    *data << uint32(qst->rewardtitleid);
+    *data << uint32(qst->reward_choiceitem[2]);
+    *data << uint32(qst->count_reward_item);
+    *data << uint32(0);
+    *data << uint32(qst->reward_choiceitem[4]);
+    *data << uint32(0);                                      // Ender NPC or GO entry
+    *data << uint32(qst->reward_item[2]);
+    *data << uint32(qst->reward_choiceitemcount[0]);
+    *data << uint32(0);
+    *data << uint32(0);
+    *data << uint32(GenerateRewardMoney(plr, qst));
+    *data << uint32(qst->reward_choiceitem[5]);
+    *data << uint32(RewardChoiceItemDisplayId[1]);
+    *data << uint32(qst->reward_choiceitemcount[2]);
+    *data << uint32(RewardItemDisplayId[2]);
+    *data << uint32(0);
+    *data << uint32(qst->reward_item[0]);
+    *data << uint32(RewardChoiceItemDisplayId[5]);
 
-	*data << qst->count_reward_choiceitem;
-	if(qst->count_reward_choiceitem)
-	{
-		for(i = 0; i < 6; ++i)
-		{
-			if(qst->reward_choiceitem[i])
-			{
-				*data << qst->reward_choiceitem[i];
-				*data << qst->reward_choiceitemcount[i];
-				it = ItemPrototypeStorage.LookupEntry(qst->reward_choiceitem[i]);
-				*data << (it ? it->DisplayInfoID : uint32(0));
-			}
-		}
-	}
+    data->WriteBits(questTurnTextWindow.size(), 10);
+    data->WriteBits(questGiverTargetName.size(), 8);
+    data->WriteBit(guid[6]);
+    data->WriteBits(RewardEmoteCount, 21);
+    data->WriteBit(guid[3]);
+    data->WriteBit(guid[7]);
+    data->WriteBits(questTitle.size(), 9);
+    data->WriteBit(guid[4]);
+    data->WriteBits(questTurnTargetName.size(), 8);
+    data->WriteBits(questGiverTextWindow.size(), 10);
+    data->WriteBits(questOfferRewardText.size(), 12);
+    data->WriteBit(guid[1]);
+    data->WriteBit(guid[2]);
+    data->WriteBit(guid[0]);
+    data->WriteBit(guid[5]);
+    data->WriteBit(enableNext);
+    data->FlushBits();
 
-	*data << qst->count_reward_item;
-	if(qst->count_reward_item)
-	{
-		for(i = 0; i < 4; ++i)
-		{
-			if(qst->reward_item[i])
-			{
-				*data << qst->reward_item[i];
-				*data << qst->reward_itemcount[i];
-				it = ItemPrototypeStorage.LookupEntry(qst->reward_item[i]);
-				*data << (it ? it->DisplayInfoID : uint32(0));
-			}
-		}
-	}
+    data->WriteString(questGiverTargetName);
+    data->WriteString(questTitle);
 
-	*data << uint32(0);
-	uint32 xp = 0;
-	if(plr->getLevel() < plr->GetMaxLevel())
-	{
-		xp = float2int32(GenerateQuestXP(plr, qst) * sWorld.getRate(RATE_QUESTXP));
-	}
-	*data << uint32(xp); //VLack: The quest will give you this amount of XP
+    for (uint8 i = 0; i < RewardEmoteCount; ++i)
+    {
+        *data << uint32(qst->completionemotedelay[i]);
+        *data << uint32(qst->completionemote[i]);
+    }
 
-	*data << (qst->bonushonor * 10);
-	*data << float(0);
-	*data << uint32(0);
-	*data << qst->reward_spell;
-	*data << qst->effect_on_player;
-	*data << qst->rewardtitleid;
-	*data << qst->rewardtalents;
-	*data << qst->bonusarenapoints;
-	*data << uint32(0);
-	for(i = 0; i < 5; ++i)              // reward factions ids
-		*data << uint32(0);
-	for(i = 0; i < 5; ++i)              // columnid in QuestFactionReward.dbc (zero based)?
-		*data << uint32(0);
-	for(i = 0; i < 5; ++i)              // reward reputation override?
-		*data << uint32(0);
+    data->WriteByteSeq(guid[2]);
+    data->WriteString(questOfferRewardText);
+    data->WriteString(questTurnTextWindow);
+    data->WriteString(questTurnTargetName);
+    data->WriteByteSeq(guid[5]);
+    data->WriteByteSeq(guid[1]);
+    data->WriteString(questGiverTextWindow);
+    data->WriteByteSeq(guid[0]);
+    data->WriteByteSeq(guid[7]);
+    data->WriteByteSeq(guid[6]);
+    data->WriteByteSeq(guid[4]);
+    data->WriteByteSeq(guid[3]);
 }
 
 void QuestMgr::BuildQuestDetails(WorldPacket* data, Quest* qst, Object* qst_giver, uint32 menutype, uint32 language, Player* plr)
@@ -485,7 +543,7 @@ void QuestMgr::BuildQuestDetails(WorldPacket* data, Quest* qst, Object* qst_give
     data->WriteBit(0); // Unknown
     data->WriteBit(guid[2]);
     data->WriteBits(strlen(qst->title), 9);
-    data->WriteBits(4, 21); // Quest emote count
+    data->WriteBits(QUEST_EMOTE_COUNT, 21); // @ todo recheck this
     data->WriteBit(guid[0]);
     data->WriteBit(guid2[6]);
     data->WriteBit(guid2[5]);
@@ -525,9 +583,9 @@ void QuestMgr::BuildQuestDetails(WorldPacket* data, Quest* qst, Object* qst_give
     data->WriteByteSeq(guid2[3]);
     data->WriteByteSeq(guid2[0]);
 
-    for (uint8 i = 0; i < 4; i++) // 4 = QUEST_EMOTE_COUNT
+    for (uint8 i = 0; i < QUEST_EMOTE_COUNT; ++i)
     {
-        *data << uint32(qst->detailemotedelay[i]); // DetailsEmoteDelay (in ms)
+        *data << uint32(qst->detailemotedelay[i]); // In milliseconds
         *data << uint32(qst->detailemote[i]);
     }
 
@@ -665,7 +723,7 @@ void QuestMgr::BuildRequestItems(WorldPacket* data, Quest* qst, Object* qst_give
     data->WriteBits(requestItemsText.size(), 12);
     data->WriteBit(guid[6]);
     data->WriteBit(guid[0]);
-    data->WriteBits(qst->count_required_item, 20); // Item counter
+    data->WriteBits(0, 20); // Item counter (qst->count_required_item)
     data->WriteBit(guid[4]);
     data->WriteBit(guid[7]);
     data->WriteBit(guid[3]);
@@ -785,7 +843,7 @@ void QuestMgr::BuildQuestList(WorldPacket* data, Object* qst_giver, Player* plr,
 	for(it = st; it != ed; ++it)
 	{
 		status = sQuestMgr.CalcQuestStatus(qst_giver, plr, *it);
-        if (status > QMGR_QUEST_AVAILABLELOW_LEVEL)
+        if (status >= QMGR_QUEST_CHAT)
 		{
 			if(tmp_map.find((*it)->qst->id) == tmp_map.end())
 			{
@@ -1027,7 +1085,7 @@ void QuestMgr::_OnPlayerKill(Player* plr, uint32 entry, bool IsGroupKill)
 						gplr = (*gitr)->m_loggedInPlayer;
 						if(gplr && gplr != plr && plr->isInRange(gplr, 300) && gplr->HasQuestMob(entry)) // don't double kills also don't give kills to party members at another side of the world
 						{
-							for(i = 0; i < 25; ++i)
+							for(i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
 							{
 								qle = gplr->GetQuestLogInSlot(i);
 								if(qle != NULL)
@@ -1607,7 +1665,7 @@ void QuestMgr::OnQuestFinished(Player* plr, Quest* qst, Object* qst_giver, uint3
 }
 
 /////////////////////////////////////
-//		Quest Management		 //
+//		Quest Management		   //
 /////////////////////////////////////
 
 void QuestMgr::LoadNPCQuests(Creature* qst_giver)
@@ -1674,8 +1732,6 @@ template <class T> void QuestMgr::_AddQuest(uint32 entryid, Quest* qst, uint8 ty
 		ptr->type |= type;
 	}
 }
-
-
 
 void QuestMgr::_CleanLine(std::string* str)
 {
@@ -1994,10 +2050,11 @@ bool QuestMgr::OnActivateQuestGiver(Object* qst_giver, Player* plr)
 		}
 
 		for(itr = q_begin; itr != q_end; ++itr)
-            if (sQuestMgr.CalcQuestStatus(qst_giver, plr, *itr) > QMGR_QUEST_AVAILABLELOW_LEVEL)
+            if (sQuestMgr.CalcQuestStatus(qst_giver, plr, *itr) >= QMGR_QUEST_CHAT)
 				break;
 
-		if(sQuestMgr.CalcStatus(qst_giver, plr) < QMGR_QUEST_CHAT)
+        // @todo there's more to be added here
+        if (sQuestMgr.CalcStatus(qst_giver, plr) < QMGR_QUEST_CHAT)
 			return false;
 
 		ARCEMU_ASSERT(itr != q_end);
@@ -2017,12 +2074,12 @@ bool QuestMgr::OnActivateQuestGiver(Object* qst_giver, Player* plr)
 		{
 			sQuestMgr.BuildOfferReward(&data, (*itr)->qst, qst_giver, 1, plr->GetSession()->language, plr);
 			plr->GetSession()->SendPacket(&data);
-			//ss
 			LOG_DEBUG("WORLD: Sent SMSG_QUESTGIVER_OFFER_REWARD.");
 		}
 		else if(status == QMGR_QUEST_NOT_FINISHED)
 		{
 			sQuestMgr.BuildRequestItems(&data, (*itr)->qst, qst_giver, status, plr->GetSession()->language);
+            plr->GetSession()->SendPacket(&data);
 			LOG_DEBUG("WORLD: Sent SMSG_QUESTGIVER_REQUEST_ITEMS.");
 		}
 	}
@@ -2689,6 +2746,10 @@ void QuestMgr::FillQuestMenu(Creature* giver, Player* plr, Arcemu::Gossip::Menu 
 					case QMGR_QUEST_FINISHED:
 						icon = QMGR_QUEST_REPEATABLE_LOWLEVEL;
 						break;
+
+                    case QMGR_QUEST_CHAT:
+                        icon = QMGR_QUEST_AVAILABLE;
+                        break;
 
 					default:
 						icon = (uint8)status;

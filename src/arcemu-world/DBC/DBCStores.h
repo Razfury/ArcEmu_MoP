@@ -265,7 +265,6 @@ struct WorldMapOverlay
     uint32 Flags;                                           // 9	
 };
 
-
 struct BattlemasterListEntry
 {
     uint32	bg_index;
@@ -2032,14 +2031,30 @@ struct AreaTable
     uint32  ZoneId;                                         // 2 if 0 then it's zone, else it's zone id of this area
     uint32  explorationFlag;                                // 3, main index
     uint32  AreaFlags;                                      // 4, unknown value but 312 for all cities
-    int32   level;                                          // 10
-    char    *name;                                          // 11
-    uint32  category;                                           // 12 (teamflags)
+    // unk
+    //uint32 unk1;                                          // 6, Pandaria
+    //uint32 soundPreferences;                              // 7,
+    //uint32 SoundPreferencesUnderwater;                    // 8,
+    //uint32 SoundAmbience;                                 // 9,
+    //char*   areaName2;                                    // 10, without whitespaces
+    //uint32 ZoneMusic;                                     // 11,
+    //uint32 ZoneIntroMusicTable;                           // 12
+    uint32 level;
+    char*  name;
+    uint32  category;
     // not using these (currently at least):
-    uint32  LiquidTypeOverride[4];                          // 13-16 liquid override by type
-    float   MaxDepth;                                       // 17,
-    float   AmbientMultiplier;                              // 18 client only?
-    uint32  LightId;                                        // 19
+    //uint32  LiquidTypeOverride[4];                          // 13-16 liquid override by type
+    //float   MaxDepth;                                       // 17,
+    //float   AmbientMultiplier;                              // 18 client only?
+    //uint32  LightId;                                        // 19
+    //uint32 unk20;                                         // 23 4.0.0 - Mounting related
+    //uint32 unk21;                                         // 24 4.0.0
+    //uint32 unk22;                                         // 25 4.0.0
+    //uint32 unk23;                                         // 26 4.0.0
+    //uint32 unk24;                                         // 27 - worldStateId
+    //uint32 unk25;                                         // 28, Pandaria
+    //uint32 unk26;                                         // 29, Pandaria
+
     uint32 GetTeam()
     {
         if (category == AREATEAM_ALLY)
@@ -2292,11 +2307,17 @@ struct AreaTriggerEntry
     float     x;				// 2
     float     y;				// 3
     float     z;				// 4
-    float     o; // shouldnt't be here?
-    float     box_x;			// 6 extent x edge
-    float     box_y;			// 7 extent y edge
-    float     box_z;			// 8 extent z edge
-    float     box_o;			// 9 extent rotation by about z axis
+    //uint32                    // 5
+    //uint32                    // 6
+    //uint32                    // 7
+    float     radius;           // 8
+    float     box_x;			// 9 extent x edge
+    float     box_y;			// 10 extent y edge
+    float     box_z;			// 11 extent z edge
+    float     box_o;			// 12 extent rotation by about z axis
+    //uint32  unk1;             // 13 - Pandaria
+    //uint32  unk2;             // 14 - Pandaria
+    //uint32  unk3;             // 15 - Pandaria
 };
 
 struct QuestXPEntry
@@ -2412,8 +2433,17 @@ struct WMOAreaTableEntry
     int32 rootId; // 1
     int32 adtId; // 2
     int32 groupId; // 3
-    uint32 flags; // 9
-    uint32 areaId; // 10  ref -> AreaTableEntry
+    //uint32 field4;
+    //uint32 field5;
+    //uint32 field6;
+    //uint32 field7;
+    //uint32 field8;
+    uint32 flags;                                           // 9 used for indoor/outdoor determination
+    uint32 areaId;                                          // 10 link to AreaTableEntry.ID
+    //char *Name;                                           // 11       m_AreaName_lang
+    //uint32 field12;                                       // 12
+    //uint32 field13;                                       // 13
+    //uint32 field14;                                       // 14
 };
 
 struct NameGenEntry

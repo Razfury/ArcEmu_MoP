@@ -20,22 +20,80 @@
 
 #include "StdAfx.h"
 
+// @todo change the name to BuildTradeStatus
+WorldPacket* WorldSession::SendTradeStatus(uint8 status)
+{
+    WorldPacket* data = new WorldPacket(SMSG_TRADE_STATUS, 1 + 4 + 4);
+
+    data->WriteBit(0); // unk bit, usually 0
+    data->WriteBits(status, 5);
+
+    switch (status)
+    {
+    case TRADE_STATUS_PROPOSED:
+        data->WriteBits(0, 8); // Zero guid
+        data->FlushBits();
+        break;
+    case TRADE_STATUS_INITIATED:
+        data->FlushBits();
+        *data << uint32(0); // unk
+        break;
+    case TRADE_STATUS_FAILED:
+        data->WriteBit(0); // unk
+        data->FlushBits();
+        *data << uint32(0); // unk
+        *data << uint32(0); // unk
+        break;
+    case TRADE_STATUS_WRONG_REALM: // Not implemented
+    case TRADE_STATUS_NOT_ON_TAPLIST: // Not implemented
+        data->FlushBits();
+        *data << uint8(0); // unk
+        break;
+    case TRADE_STATUS_NOT_ENOUGH_CURRENCY: // Not implemented
+    case TRADE_STATUS_CURRENCY_NOT_TRADABLE: // Not implemented
+        data->FlushBits();
+        *data << uint32(0); // unk
+        *data << uint32(0); // unk
+    default:
+        data->FlushBits();
+        break;
+    }
+
+    return data;
+}
+
 void WorldSession::HandleInitiateTrade(WorldPacket & recv_data)
 {
 	CHECK_INWORLD_RETURN
 
-	uint64 guid;
-	recv_data >> guid;
+    ObjectGuid guid;
+
+    guid[5] = recv_data.ReadBit();
+    guid[1] = recv_data.ReadBit();
+    guid[4] = recv_data.ReadBit();
+    guid[2] = recv_data.ReadBit();
+    guid[3] = recv_data.ReadBit();
+    guid[7] = recv_data.ReadBit();
+    guid[0] = recv_data.ReadBit();
+    guid[6] = recv_data.ReadBit();
+
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[3]);
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[1]);
+
 	Player* pTarget = _player->GetMapMgr()->GetPlayer((uint32)guid);
 	uint32 TradeStatus = TRADE_STATUS_PROPOSED;
-	WorldPacket data(SMSG_TRADE_STATUS, 12);
 
 	if(pTarget == 0)
 	{
-
-		TradeStatus = TRADE_STATUS_PLAYER_NOT_FOUND;
-
-		OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
+        //SendTradeStatus(pTarget, TRADE_STATUS_PLAYER_NOT_FOUND); // Target is NULL
+        WorldPacket* data = SendTradeStatus(TRADE_STATUS_PLAYER_NOT_FOUND);
+        SendPacket(data);
 		return;
 	}
 
@@ -49,8 +107,6 @@ void WorldSession::HandleInitiateTrade(WorldPacket & recv_data)
 	else if(pTarget->GetTeam() != _player->GetTeam() && GetPermissionCount() == 0 && !sWorld.interfaction_trade)
 		TradeStatus = TRADE_STATUS_WRONG_FACTION;
 
-	data << TradeStatus;
-
 	if(TradeStatus == TRADE_STATUS_PROPOSED)
 	{
 		_player->ResetTradeVariables();
@@ -61,11 +117,33 @@ void WorldSession::HandleInitiateTrade(WorldPacket & recv_data)
 
 		pTarget->mTradeStatus = TradeStatus;
 		_player->mTradeStatus = TradeStatus;
-
-		data << _player->GetGUID();
 	}
 
-	pTarget->m_session->SendPacket(&data);
+    ObjectGuid playerGuid = _player->GetGUID();
+
+    WorldPacket data(SMSG_TRADE_STATUS, 2 + 7);
+    data.WriteBit(0); // Unknown bit, usually 0
+    data.WriteBits(TRADE_STATUS_PROPOSED, 5);
+
+    data.WriteBit(playerGuid[6]);
+    data.WriteBit(playerGuid[2]);
+    data.WriteBit(playerGuid[1]);
+    data.WriteBit(playerGuid[4]);
+    data.WriteBit(playerGuid[7]);
+    data.WriteBit(playerGuid[3]);
+    data.WriteBit(playerGuid[0]);
+    data.WriteBit(playerGuid[5]);
+
+    data.WriteByteSeq(playerGuid[6]);
+    data.WriteByteSeq(playerGuid[2]);
+    data.WriteByteSeq(playerGuid[1]);
+    data.WriteByteSeq(playerGuid[7]);
+    data.WriteByteSeq(playerGuid[5]);
+    data.WriteByteSeq(playerGuid[4]);
+    data.WriteByteSeq(playerGuid[0]);
+    data.WriteByteSeq(playerGuid[3]);
+
+    pTarget->GetSession()->SendPacket(&data);
 }
 
 void WorldSession::HandleBeginTrade(WorldPacket & recv_data)
@@ -77,24 +155,17 @@ void WorldSession::HandleBeginTrade(WorldPacket & recv_data)
 	Player* plr = _player->GetTradeTarget();
 	if(_player->mTradeTarget == 0 || plr == 0)
 	{
-
 		TradeStatus = TRADE_STATUS_PLAYER_NOT_FOUND;
-
-		OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
+        WorldPacket* data = SendTradeStatus(TradeStatus);
 		return;
 	}
 	// We're too far from target now?
 	if(_player->CalcDistance(objmgr.GetPlayer(_player->mTradeTarget)) > 10.0f)
 		TradeStatus = TRADE_STATUS_TOO_FAR_AWAY;
 
-	WorldPacket data(SMSG_TRADE_STATUS, 8);
-
-	data << uint32(TradeStatus);
-	data << uint32(0x19);
-
-	plr->m_session->SendPacket(&data);
-
-	SendPacket(&data);
+    WorldPacket* data = SendTradeStatus(TradeStatus);
+    plr->m_session->SendPacket(data);
+    SendPacket(data);
 
 	plr->mTradeStatus = TradeStatus;
 	_player->mTradeStatus = TradeStatus;
@@ -115,7 +186,6 @@ void WorldSession::HandleBusyTrade(WorldPacket & recv_data)
 		OutPacket(TRADE_STATUS_PLAYER_NOT_FOUND, 4, &TradeStatus);
 		return;
 	}
-
 
 	OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
 	plr->m_session->OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
@@ -138,12 +208,14 @@ void WorldSession::HandleIgnoreTrade(WorldPacket & recv_data)
 	{
 		TradeStatus = TRADE_STATUS_PLAYER_NOT_FOUND;
 
-		OutPacket(TRADE_STATUS_PLAYER_NOT_FOUND, 4, &TradeStatus);
+        WorldPacket* data = SendTradeStatus(TradeStatus);
+        SendPacket(data);
 		return;
 	}
 
-	OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
-	plr->m_session->OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
+    WorldPacket* data = SendTradeStatus(TradeStatus);
+    SendPacket(data);
+	plr->m_session->SendPacket(data);
 
 	plr->mTradeStatus = TradeStatus;
 	_player->mTradeStatus = TradeStatus;
@@ -161,13 +233,14 @@ void WorldSession::HandleCancelTrade(WorldPacket & recv_data)
 
 	uint32 TradeStatus = TRADE_STATUS_CANCELLED;
 
-	OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
+    WorldPacket* data = SendTradeStatus(TradeStatus);
+    SendPacket(data);
 
 	Player* plr = _player->GetTradeTarget();
 	if(plr)
 	{
-		if(plr->m_session && plr->m_session->GetSocket())
-			plr->m_session->OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
+        if (plr->m_session && plr->m_session->GetSocket())
+            plr->m_session->SendPacket(data);
 
 		plr->ResetTradeVariables();
 	}
@@ -187,19 +260,18 @@ void WorldSession::HandleUnacceptTrade(WorldPacket & recv_data)
 
 	uint32 TradeStatus = TRADE_STATUS_UNACCEPTED;
 
-	OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
-	plr->m_session->OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
-
-
+    WorldPacket* data = SendTradeStatus(TradeStatus);
+    SendPacket(data);
+    plr->m_session->SendPacket(data);
 
 	TradeStatus = TRADE_STATUS_STATE_CHANGED;
 
-	OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
-	plr->m_session->OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
+    data = SendTradeStatus(TradeStatus);
+    SendPacket(data);
+    plr->m_session->SendPacket(data);
 
 	plr->mTradeStatus = TradeStatus;
 	_player->mTradeStatus = TradeStatus;
-
 }
 
 void WorldSession::HandleSetTradeItem(WorldPacket & recv_data)
@@ -209,9 +281,14 @@ void WorldSession::HandleSetTradeItem(WorldPacket & recv_data)
 	if(_player->mTradeTarget == 0)
 		return;
 
-	uint8 TradeSlot = recv_data.contents()[0];
-	uint8 SourceBag = recv_data.contents()[1];
-	uint8 SourceSlot = recv_data.contents()[2];
+    uint8 TradeSlot;
+    uint8 SourceBag;
+    uint8 SourceSlot;
+
+    recv_data >> TradeSlot;
+    recv_data >> SourceSlot;
+    recv_data >> SourceBag;
+
 	Player* pTarget = _player->GetMapMgr()->GetPlayer(_player->mTradeTarget);
 
 	Item* pItem = _player->GetItemInterface()->GetInventoryItem(SourceBag, SourceSlot);
@@ -232,14 +309,15 @@ void WorldSession::HandleSetTradeItem(WorldPacket & recv_data)
 
 	uint32 TradeStatus = TRADE_STATUS_STATE_CHANGED;
 	Player* plr = _player->GetTradeTarget();
-	if(!plr) return;
+	if(!plr)
+        return;
 
-	OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
-	plr->m_session->OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
+    WorldPacket* data = SendTradeStatus(TradeStatus);
+    SendPacket(data);
+    plr->m_session->SendPacket(data);
 
 	plr->mTradeStatus = TradeStatus;
 	_player->mTradeStatus = TradeStatus;
-
 
 	if(pItem->IsContainer())
 	{
@@ -250,11 +328,12 @@ void WorldSession::HandleSetTradeItem(WorldPacket & recv_data)
 			//--trade cancel
 
 			TradeStatus = TRADE_STATUS_CANCELLED;
+            data = SendTradeStatus(TradeStatus);
 
-			OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
+            SendPacket(data);
 			_player->ResetTradeVariables();
 
-			plr->m_session->OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
+            plr->m_session->SendPacket(data);
 			plr->ResetTradeVariables();
 
 			return;
@@ -296,16 +375,17 @@ void WorldSession::HandleSetTradeGold(WorldPacket & recv_data)
 	// cebernic: TradeGold sameway.
 	uint32 TradeStatus = TRADE_STATUS_STATE_CHANGED;
 	Player* plr = _player->GetTradeTarget();
-	if(!plr) return;
+	if(!plr)
+        return;
 
-	OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
-	plr->m_session->OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
+    WorldPacket* data = SendTradeStatus(TradeStatus);
+    SendPacket(data);
+    plr->m_session->SendPacket(data);
 
 	plr->mTradeStatus = TradeStatus;
 	_player->mTradeStatus = TradeStatus;
 
-
-	uint32 Gold;
+	uint64 Gold;
 	recv_data >> Gold;
 
 	if(_player->mTradeGold != Gold)
@@ -322,22 +402,26 @@ void WorldSession::HandleClearTradeItem(WorldPacket & recv_data)
 	if(_player->mTradeTarget == 0)
 		return;
 
-	uint8 TradeSlot = recv_data.contents()[0];
+    uint8 TradeSlot;
+    recv_data >> TradeSlot;
+
 	if(TradeSlot > 6)
 		return;
 
 	// clean status
 	Player* plr = _player->GetTradeTarget();
-	if(!plr) return;
+	if(!plr)
+        return;
 
 	uint32 TradeStatus = TRADE_STATUS_STATE_CHANGED;
 
-	OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
-	plr->m_session->OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
+    WorldPacket* data = SendTradeStatus(TradeStatus);
+
+    SendPacket(data);
+    plr->m_session->SendPacket(data);
 
 	plr->mTradeStatus = TradeStatus;
 	_player->mTradeStatus = TradeStatus;
-
 
 	_player->mTradeItems[TradeSlot] = 0;
 	_player->SendTradeUpdate();
@@ -354,7 +438,8 @@ void WorldSession::HandleAcceptTrade(WorldPacket & recv_data)
 	uint32 TradeStatus = TRADE_STATUS_ACCEPTED;
 
 	// Tell the other player we're green.
-	plr->m_session->OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
+    WorldPacket* data = SendTradeStatus(TradeStatus);
+    plr->m_session->SendPacket(data);
 	_player->mTradeStatus = TradeStatus;
 
 	if(plr->mTradeStatus == TRADE_STATUS_ACCEPTED)
@@ -405,8 +490,6 @@ void WorldSession::HandleAcceptTrade(WorldPacket & recv_data)
 			//if(_player->mTradeItems[Index] != 0)	++ItemCount;
 			//if(pTarget->mTradeItems[Index] != 0)	++TargetItemCount;
 		}
-
-
 
 		if((_player->m_ItemInterface->CalculateFreeSlots(NULL) + ItemCount) < TargetItemCount ||
 		        (pTarget->m_ItemInterface->CalculateFreeSlots(NULL) + TargetItemCount) < ItemCount ||
@@ -505,13 +588,13 @@ void WorldSession::HandleAcceptTrade(WorldPacket & recv_data)
 				}
 			}
 
-			// Close Window
+			// Close trade window
 			TradeStatus = TRADE_STATUS_COMPLETE;
-
 		}
 
-		OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
-		plr->m_session->OutPacket(SMSG_TRADE_STATUS, 4, &TradeStatus);
+        WorldPacket* data = SendTradeStatus(TradeStatus);
+        SendPacket(data);
+        plr->m_session->SendPacket(data);
 
 		_player->mTradeStatus = TRADE_STATUS_COMPLETE;
 		plr->mTradeStatus = TRADE_STATUS_COMPLETE;
