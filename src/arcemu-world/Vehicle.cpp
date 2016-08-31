@@ -189,10 +189,10 @@ void Vehicle::AddPassengerToSeat( Unit *passenger, uint32 seatid )
 	freeseats--;
 
 	// remove spellclick flag if full
-	if( !HasEmptySeat() ){
+	if( !HasEmptySeat() )
+    {
 		owner->RemoveFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK );
 		owner->RemoveFlag( UNIT_NPC_FLAGS, UNIT_NPC_FLAG_PLAYER_VEHICLE );
-
 	}
 
 	if( passenger->IsCreature() ){

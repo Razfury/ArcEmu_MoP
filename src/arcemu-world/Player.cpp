@@ -2158,7 +2158,6 @@ void Player::_SetUpdateBits(UpdateMask* updateMask, Player* target) const
 	}
 }
 
-
 void Player::InitVisibleUpdateBits()
 {
 	Player::m_visibleUpdateMask.SetCount(PLAYER_END);
@@ -6672,10 +6671,8 @@ void Player::CalcResistance(uint32 type)
 	}
 }
 
-
 void Player::UpdateNearbyGameObjects()
 {
-
 	for (Object::InRangeSet::iterator itr = m_objectsInRange.begin(); itr != m_objectsInRange.end(); ++itr)
 	{
 		Object* obj = (*itr);
@@ -9258,7 +9255,7 @@ void Player::CompleteLoading()
 		//if ( !(*i).positive ) // do we need this? - vojta
 		//	aura->SetNegative();
 
-		for (uint32 x = 0; x < 3; x++)
+		for (uint32 x = 0; x < 3; x++) // Max spell effects here, not 3
 		{
 			if (sp->eff[x].Effect == SPELL_EFFECT_APPLY_AURA)
 			{

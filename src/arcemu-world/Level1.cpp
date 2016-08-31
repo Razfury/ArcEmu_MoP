@@ -807,8 +807,6 @@ bool ChatHandler::HandleEmoteCommand(const char* args, WorldSession* m_session)
 
 bool ChatHandler::HandleModifyGoldCommand(const char* args, WorldSession* m_session)
 {
-//	WorldPacket data;
-
 	if(*args == 0)
 		return false;
 

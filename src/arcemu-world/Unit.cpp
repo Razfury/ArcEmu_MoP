@@ -5819,8 +5819,6 @@ void Unit::UpdateSpeed()
 		m_runSpeed += (m_speedModifier < 0) ? (m_base_runSpeed * ((float)m_speedModifier) / 100.0f) : 0;
 	}
 
-
-
 	m_flySpeed = PLAYER_NORMAL_FLIGHT_SPEED * (1.0f + ((float)m_flyspeedModifier) / 100.0f);
 
 	// Limit speed due to effects such as http://www.wowhead.com/?spell=31896 [Judgement of Justice]

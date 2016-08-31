@@ -115,7 +115,7 @@ struct MailMessage
 	uint32 checked_flag;
 	bool deleted_flag;
 
-	bool AddMessageDataToPacket(WorldPacket & data);
+	bool AddMessageDataToPacket(WorldPacket & data, ByteBuffer& mailData);
 };
 
 typedef map<uint32, MailMessage> MessageMap;

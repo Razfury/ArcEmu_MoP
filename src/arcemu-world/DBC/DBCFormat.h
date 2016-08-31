@@ -32,8 +32,8 @@ const char* GlyphPropertiesFormat = "niii";
 const char* GlyphSlotFormat = "nii";
 const char* LockFormat = "uuuuuuxxxuuuuuxxxuuuuuxxxxxxxxxxx";
 
-const char* spellradiusFormat = "ufxf";
-const char* spelldurationFormat = "uuuu";
+
+
 const char* factiontemplatedbcFormat = "uuuuuuuuuuuuuu";
 const char* creaturespelldataFormat = "uuuuuuuuu";
 const char* durabilityqualityFormat = "uf";
@@ -60,21 +60,19 @@ const char* ItemArmorTotalfmt = "niffff";
 const char* ItemDamagefmt = "nfffffffi";
 const char* SpellShapeshiftFormfmt = "uxxiixiiixxiiiiiiiixx";
 const char* SpellShapeshiftEntryfmt = "uixixx";
-const char* SpellCastingRequirementsEntryfmt = "uixxixi";
-
-const char* SpellClassOptionsEntryfmt = "uxiiiix";
 
 
-const char* SpellEquippedItemsEntryfmt = "uiii";
-const char* SpellInterruptsEntryfmt = "uixixi";
-const char* SpellLevelsEntryfmt = "uiii";
+
+
+
+
 
 const char* SpellReagentsEntryfmt = "uiiiiiiiiiiiiiiii";
-const char* SpellScalingEntryfmt = "uiiiiffffffffffi";
+
 const char* SpellTargetRestrictionsEntryfmt = "uixiii";
 const char* SpellTotemsEntryfmt = "uiiii";
 
-const char* classSpellScalefmt = "uf";
+
 const char* LFGDungeonFormat = "nxxuuuuuuuxuxxuxuxxxx";
 const char* WorldMapZoneFormat = "uuusffffxxxxxx";
 const char* VehicleSeatEntryFormat = "uuiffffffffffiiiiiifffffffiiifffiiiiiiiffiiiiixxxxxxxxxxxxxxxxxxxx";
@@ -126,6 +124,8 @@ const char* chatchannelformat = "uuxsx";
 const char* chartitleFormat = "uxsxux";
 const char* NameGenfmt = "dsii";
 
+const char* classSpellScalefmt = "uf";
+
 ////////////////////////////////////////
 // Updated DBC formats
 const char* SkillLineFmt = "uusxxxxxx";
@@ -145,3 +145,11 @@ const char* charraceFormat = "uxuxuuxuxxxxuxsxxxxxxxxxxxxxxxxxxxxx";
 const char* areatableFormat = "uuuuuxxxxxxxxusuxxxxxxxxxxxxxx";
 const char* wmoareaformat = "uuuuxxxxxuuxxxx";
 const char* areatriggerformat = "uufffxxxfffffxxx";
+const char* SpellCastingRequirementsEntryfmt = "uuxxuxu";
+const char* SpellScalingEntryfmt = "uuuuufuxx";
+const char* spelldurationFormat = "uuuu";
+const char* SpellLevelsEntryfmt = "uuxuuu";
+const char* spellradiusFormat = "uffxf";
+const char* SpellInterruptsEntryfmt = "xuxuxuxu";
+const char* SpellEquippedItemsEntryfmt = "xuxuuu";
+const char* SpellClassOptionsEntryfmt = "xxuuuuu"; // @todo check this

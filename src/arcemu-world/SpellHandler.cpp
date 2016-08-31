@@ -602,12 +602,31 @@ void WorldSession::HandleSpellClick(WorldPacket & recvPacket)
 	if(_player->getDeathState() == CORPSE)
 		return;
 
-	uint64 target_guid; // this will store the guid of the object we are going to use it's spell. There must be a dbc that indicates what spells a unit has
+    ObjectGuid guid;
 
-	recvPacket >> target_guid;
+    guid[7] = recvPacket.ReadBit();
+    guid[4] = recvPacket.ReadBit();
+    guid[0] = recvPacket.ReadBit();
+    guid[3] = recvPacket.ReadBit();
+    guid[6] = recvPacket.ReadBit();
+    guid[5] = recvPacket.ReadBit();
+
+    uint8 unk = recvPacket.ReadBit();
+
+    guid[1] = recvPacket.ReadBit();
+    guid[2] = recvPacket.ReadBit();
+
+    recvPacket.ReadByteSeq(guid[6]);
+    recvPacket.ReadByteSeq(guid[1]);
+    recvPacket.ReadByteSeq(guid[5]);
+    recvPacket.ReadByteSeq(guid[4]);
+    recvPacket.ReadByteSeq(guid[7]);
+    recvPacket.ReadByteSeq(guid[2]);
+    recvPacket.ReadByteSeq(guid[3]);
+    recvPacket.ReadByteSeq(guid[0]);
 
 	//we have only 1 example atm for entry : 28605
-	Unit* target_unit = _player->GetMapMgr()->GetUnit(target_guid);
+    Unit* target_unit = _player->GetMapMgr()->GetUnit(guid);
 
 	if(!target_unit)
 		return;
@@ -667,7 +686,7 @@ void WorldSession::HandleSpellClick(WorldPacket & recvPacket)
 	if(spellInfo == NULL)
 		return;
 	Spell* spell = sSpellFactoryMgr.NewSpell(_player, spellInfo, false, NULL);
-	SpellCastTargets targets(target_guid);
+    SpellCastTargets targets(guid);
 	spell->prepare(&targets);
 }
 

@@ -1055,7 +1055,7 @@ enum Opcodes
 	SMSG_GOGOGO_OBSOLETE = 0x3F5,	// not used in client
 	SMSG_ECHO_PARTY_SQUELCH = 0x3F6,	/// TODO: implement
 	CMSG_SET_TITLE_SUFFIX = 0x3F7,	// not used in client
-	CMSG_SPELLCLICK = 0x3F8,	// implemented
+    CMSG_SPELLCLICK = 0x067A, // 18414
 	SMSG_LOOT_LIST = 0x3F9,	/// TODO: investigate
 	CMSG_GM_CHARACTER_RESTORE = 0x3FA,	// GM client only
 	CMSG_GM_CHARACTER_SAVE = 0x3FB,	// GM client only

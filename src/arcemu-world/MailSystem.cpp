@@ -65,7 +65,8 @@ WorldPacket* Mailbox::BuildMailboxListingPacket()
 	uint32 count = 0;
 	uint32 t = (uint32)UNIXTIME;
 
-    WorldPacket* data = new WorldPacket(SMSG_MAIL_LIST_RESULT, 200);
+    ByteBuffer* mailData = new ByteBuffer;
+    WorldPacket* data = new WorldPacket(SMSG_MAIL_LIST_RESULT, 1000);
     *data << uint32(0); // Placeholder
 
     size_t mailCountPos = data->bitwpos();
@@ -85,12 +86,15 @@ WorldPacket* Mailbox::BuildMailboxListingPacket()
 			continue;
 		}
 
-		if(itr->second.AddMessageDataToPacket(*data))
+		if(itr->second.AddMessageDataToPacket(*data, *mailData))
 		{
 			++count;
 			++realcount;
 		}
 	}
+
+    data->FlushBits();
+    data->append(mailData);
 
     data->put<uint32>(0, realcount);
     data->PutBits(mailCountPos, count, 18);
@@ -115,13 +119,12 @@ void Mailbox::CleanupExpiredMessages()
 	}
 }
 
-bool MailMessage::AddMessageDataToPacket(WorldPacket & data)
+bool MailMessage::AddMessageDataToPacket(WorldPacket & data, ByteBuffer& mailData)
 {
 	uint8 i = 0;
 	uint32 j;
 	vector<uint32>::iterator itr;
 	Item* pItem;
-    ByteBuffer mailData;
 
 	// add stuff
 	if(deleted_flag)
@@ -132,12 +135,10 @@ bool MailMessage::AddMessageDataToPacket(WorldPacket & data)
 		guidsize = 8;
 	else
 		guidsize = 4;
-
-	size_t msize = 2 + 4 + 1 + guidsize + 7 * 4 + (subject.size() + 1) + (body.size() + 1) + 1 + (items.size() * (1 + 2 * 4 + 7 * (3 * 4) + 6 * 4 + 1));
     
     data.WriteBit(message_type != MAIL_NORMAL ? 1 : 0);
     data.WriteBits(subject.size(), 8);
-    data.WriteBits(body.size() , 13);
+    data.WriteBits(body.size(), 13);
     data.WriteBit(0);
     data.WriteBit(0);
 
@@ -156,35 +157,40 @@ bool MailMessage::AddMessageDataToPacket(WorldPacket & data)
     data.WriteBit(guid[1]);
     data.WriteBit(guid[4]);
 
-    for (itr = items.begin(); itr != items.end(); ++itr)
+    if (!items.empty())
     {
-        pItem = objmgr.LoadItem(*itr);
-        if (pItem == NULL)
-            continue;
-
-        data.WriteBit(0);
-
-        mailData << uint32(pItem->GetLowGUID());
-        mailData << uint32(4); // Unknown
-        mailData << uint32(pItem->GetChargesLeft());
-        mailData << uint32(pItem->GetDurability());
-        mailData << uint32(0); // Unknown
-
-        for (j = 0; j < 7; ++j) // 7 or 8?
+        for (itr = items.begin(); itr != items.end(); ++itr)
         {
-            mailData << uint32(pItem->GetEnchantmentCharges(j));
-            mailData << uint32(pItem->GetEnchantmentDuration(j));
-            mailData << uint32(pItem->GetEnchantmentId(j));
+            pItem = objmgr.LoadItem(*itr);
+            if (pItem == NULL)
+                continue;
+
+            data.WriteBit(0);
+
+            mailData << uint32(pItem->GetLowGUID());
+            mailData << uint32(4); // Unknown
+            mailData << uint32(pItem->GetChargesLeft()); // Or total spell charges?
+            mailData << uint32(pItem->GetDurability());
+            mailData << uint32(0); // Unknown
+
+            for (j = 0; j < 7; ++j) // 7 or 8?
+            {
+                mailData << uint32(pItem->GetEnchantmentCharges(j));
+                mailData << uint32(pItem->GetEnchantmentDuration(j));
+                mailData << uint32(pItem->GetEnchantmentId(j));
+            }
+
+            mailData << uint32(0) << uint32(0) << uint32(0); // Look up, it must be < 8
+
+            mailData << uint32(pItem->GetItemRandomSuffixFactor());
+            mailData << int32(pItem->GetItemRandomPropertyId());
+            mailData << uint32(pItem->GetDurabilityMax());
+            mailData << uint32(pItem->GetStackCount());
+            mailData << uint8(i++);
+            mailData << uint32(pItem->GetEntry());
+
+            delete pItem;
         }
-
-        mailData << uint32(pItem->GetItemRandomSuffixFactor());
-        mailData << uint32(pItem->GetItemRandomPropertyId());
-        mailData << uint32(pItem->GetDurabilityMax());
-        mailData << uint32(pItem->GetStackCount());
-        mailData << uint32(i++);
-        mailData << uint32(pItem->GetEntry());
-
-        delete pItem;
     }
 
     data.PutBits(itemCountPos, items.size(), 17);
@@ -212,9 +218,6 @@ bool MailMessage::AddMessageDataToPacket(WorldPacket & data)
 
     mailData << uint8(message_type);
     mailData << uint32(0); // Unknown
-
-    data.FlushBits();
-    data.append(mailData);
 
 	return true;
 }
