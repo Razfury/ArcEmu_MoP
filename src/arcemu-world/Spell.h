@@ -1314,6 +1314,12 @@ class SpellCastTargets
             m_elevation = elevation;
             m_missileSpeed = missileSpeed;
             m_targetString = targetString;
+
+            // Set the old vars too
+            m_unitTarget = targetGuid;
+            m_itemTarget = itemTargetGuid;
+            m_strTarget = targetString;
+            
         }
 
 		SpellCastTargets & operator=(const SpellCastTargets & target)
@@ -1354,7 +1360,7 @@ class SpellCastTargets
         float m_missileSpeed;
         std::string m_targetString;
 
-		uint16 m_targetMaskExtended;			// this could be a 32 also
+        uint16 m_targetMaskExtended;
 		uint64 m_unitTarget;
 		uint64 m_itemTarget;
 
@@ -1362,7 +1368,7 @@ class SpellCastTargets
 		float m_srcX, m_srcY, m_srcZ;
 		uint64 unkuint64_2;
 		float m_destX, m_destY, m_destZ;
-		string m_strTarget;
+		std::string m_strTarget;
 };
 
 enum SpellState

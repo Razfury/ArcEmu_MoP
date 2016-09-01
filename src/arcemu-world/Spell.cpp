@@ -262,7 +262,7 @@ Spell::Spell(Object* Caster, SpellEntry* info, bool triggered, Aura* aur)
 			break;
 
 		default:
-			LOG_DEBUG("[DEBUG][SPELL] Incompatible object type, please report this to the dev's");
+			LOG_DEBUG("[DEBUG][SPELL] Incompatible object type, please report this to the devs");
 			break;
 	}
 
@@ -1987,6 +1987,9 @@ void Spell::SendSpellStart()
     if (GetType() == SPELL_DMG_TYPE_RANGED)
         castFlags |= 0x20;
 
+    if (p_caster != NULL && GetProto()->PowerEntry.powerType != POWER_TYPE_HEALTH)
+        castFlags |= SPELL_GO_FLAGS_POWER_UPDATE;
+
     //! TODO the other spell for night elves' death (they get another death spell)
     // hacky yeaaaa
     if (GetProto()->Id == 8326)   // death
@@ -2003,7 +2006,7 @@ void Spell::SendSpellStart()
 	//if (m_spellInfo->RuneCostID && m_spellInfo->powerType == POWER_TYPE_RUNES)
 	//	castFlags |= CAST_FLAG_UNKNOWN_19;
 
-    ObjectGuid casterGuid = i_caster ? i_caster->GetGUID() : u_caster->GetGUID();
+    ObjectGuid casterGuid = p_caster->GetGUID();
     ObjectGuid casterUnitGuid = u_caster->GetGUID();
     ObjectGuid targetGuid = m_targets.m_unitTarget;
     ObjectGuid itemTargetGuid = m_targets.m_itemTarget;
@@ -2017,7 +2020,7 @@ void Spell::SendSpellStart()
     bool hasCastImmunities = castFlags & CAST_FLAG_IMMUNITY;
     bool hasCastSchoolImmunities = castFlags & CAST_FLAG_IMMUNITY;
     bool hasElevation = castFlags & CAST_FLAG_ADJUST_MISSILE;
-    bool hasVisualChain = false; // castFlags & CAST_FLAG_VISUAL_CHAIN;
+    bool hasVisualChain = castFlags & CAST_FLAG_VISUAL_CHAIN;
     bool hasAmmoDisplayId = GetType() == SPELL_DMG_TYPE_RANGED ? true : false;
     bool hasAmmoInventoryType = hasAmmoDisplayId;
     uint8 runeCooldownPassedCount = false; // FOR NOW (castFlags & CAST_FLAG_RUNE_LIST) && u_caster->GetTypeId() == TYPEID_PLAYER ? MAX_RUNES : 0;
@@ -2439,7 +2442,7 @@ void Spell::SendSpellGo()
     if (GetProto()->Id == 8326)   // death
         castFlags = SPELL_GO_FLAGS_ITEM_CASTER | 0x0D;
 
-    ObjectGuid casterGuid = i_caster ? i_caster->GetGUID() : u_caster->GetGUID();
+    ObjectGuid casterGuid = p_caster->GetGUID();
     ObjectGuid casterUnitGuid = u_caster->GetGUID();
     ObjectGuid targetGuid = m_targets.m_unitTarget;
     ObjectGuid itemTargetGuid = m_targets.m_itemTarget;
@@ -2455,7 +2458,7 @@ void Spell::SendSpellGo()
     bool hasCastSchoolImmunities = castFlags & CAST_FLAG_IMMUNITY;
     bool hasElevation = castFlags & CAST_FLAG_ADJUST_MISSILE;
     bool hasDelayTime = hasElevation;
-    bool hasVisualChain = false; // castFlags & CAST_FLAG_VISUAL_CHAIN;
+    bool hasVisualChain = castFlags & CAST_FLAG_VISUAL_CHAIN;
     bool hasAmmoDisplayId = GetType() == SPELL_DMG_TYPE_RANGED ? true : false;
     bool hasAmmoInventoryType = hasAmmoDisplayId;
     uint8 runeCooldownPassedCount = false; // FOR NOW (castFlags & CAST_FLAG_RUNE_LIST) && u_caster->GetTypeId() == TYPEID_PLAYER ? MAX_RUNES : 0;
@@ -2468,20 +2471,18 @@ void Spell::SendSpellGo()
     data.WriteBit(hasSourceLocation);
     data.WriteBit(casterGuid[2]);
 
-    /*
     if (hasSourceLocation)
     {
-    ObjectGuid srcTransportGuid = m_targets.GetSrc()->_transportGUID;
-    data.WriteBit(srcTransportGuid[3]);
-    data.WriteBit(srcTransportGuid[7]);
-    data.WriteBit(srcTransportGuid[4]);
-    data.WriteBit(srcTransportGuid[2]);
-    data.WriteBit(srcTransportGuid[0]);
-    data.WriteBit(srcTransportGuid[6]);
-    data.WriteBit(srcTransportGuid[1]);
-    data.WriteBit(srcTransportGuid[5]);
+        ObjectGuid srcTransportGuid = m_targets.m_srcTransportGuid;
+        data.WriteBit(srcTransportGuid[3]);
+        data.WriteBit(srcTransportGuid[7]);
+        data.WriteBit(srcTransportGuid[4]);
+        data.WriteBit(srcTransportGuid[2]);
+        data.WriteBit(srcTransportGuid[0]);
+        data.WriteBit(srcTransportGuid[6]);
+        data.WriteBit(srcTransportGuid[1]);
+        data.WriteBit(srcTransportGuid[5]);
     }
-    */
 
     data.WriteBit(casterGuid[6]);
     data.WriteBit(!hasDestUnkByte);
@@ -2499,32 +2500,32 @@ void Spell::SendSpellGo()
     data.WriteBits(0, 13); // Unknown bits
 
     uint32 missCount = 0;
-    /*
+
     if (castFlags & SPELL_GO_FLAGS_EXTRA_MESSAGE) // miss
     {
-    for (SpellTargetsList::iterator i = ModeratedTargets.begin(); i != ModeratedTargets.end(); ++i)
-    {
-    ObjectGuid missGuid = (*i).TargetGuid;
-    data.WriteBit(missGuid[1]);
-    data.WriteBit(missGuid[3]);
-    data.WriteBit(missGuid[6]);
-    data.WriteBit(missGuid[4]);
-    data.WriteBit(missGuid[5]);
-    data.WriteBit(missGuid[2]);
-    data.WriteBit(missGuid[0]);
-    data.WriteBit(missGuid[7]);
+        for (SpellTargetsList::iterator i = ModeratedTargets.begin(); i != ModeratedTargets.end(); ++i)
+        {
+            ObjectGuid missGuid = (*i).TargetGuid;
+            data.WriteBit(missGuid[1]);
+            data.WriteBit(missGuid[3]);
+            data.WriteBit(missGuid[6]);
+            data.WriteBit(missGuid[4]);
+            data.WriteBit(missGuid[5]);
+            data.WriteBit(missGuid[2]);
+            data.WriteBit(missGuid[0]);
+            data.WriteBit(missGuid[7]);
 
-    ++missCount;
-    Unit* target = u_caster->GetMapMgr()->GetUnit((*i).TargetGuid);
-    if (u_caster && u_caster->isAlive() && target && target->isAlive())
-    {
-    u_caster->HandleProc(PROC_ON_RESIST_VICTIM, target, GetProto());
-    target->CombatStatusHandler_ResetPvPTimeout(); // aaa
-    u_caster->CombatStatusHandler_ResetPvPTimeout(); // bbb
+            ++missCount;
+            Unit* target = u_caster->GetMapMgr()->GetUnit((*i).TargetGuid);
+            if (u_caster && u_caster->isAlive() && target && target->isAlive())
+            {
+                u_caster->HandleProc(PROC_ON_RESIST_VICTIM, target, GetProto());
+                target->CombatStatusHandler_ResetPvPTimeout(); // aaa
+                u_caster->CombatStatusHandler_ResetPvPTimeout(); // bbb
+            }
+        }
     }
-    }
-    }
-    */
+
 
     //for (uint32 i = 0; i < extraTargetCount; ++i)
     //{
@@ -2587,19 +2588,18 @@ void Spell::SendSpellGo()
     data.WriteBit(casterUnitGuid[0]);
 
     uint32 missTypeCount = 0;
-    /*
+
     if (castFlags & SPELL_GO_FLAGS_EXTRA_MESSAGE) // miss
     {
-    for (SpellTargetsList::iterator i = ModeratedTargets.begin(); i != ModeratedTargets.end(); ++i)
-    {
-    data.WriteBits((*i).TargetModType, 4); // I guess
-    // We don't really support reflected spells :P
-    //if (spell is reflected)
-    //data.WriteBits(reflectResult, 4);
-    ++missTypeCount;
+        for (SpellTargetsList::iterator i = ModeratedTargets.begin(); i != ModeratedTargets.end(); ++i)
+        {
+            data.WriteBits((*i).TargetModType, 4); // I guess
+            // We don't really support reflected spells :P
+            //if (spell is reflected)
+            //data.WriteBits(reflectResult, 4);
+            ++missTypeCount;
+        }
     }
-    }
-    */
 
     if (hasTargetMask)
         data.WriteBits(m_targets.m_targetMask, 20);
@@ -2614,55 +2614,50 @@ void Spell::SendSpellGo()
     size_t hitCountPos = data.bitwpos();
     data.WriteBits(0, 24); // Hit Count
 
-    /*
     if (hasDestLocation)
     {
-    ObjectGuid destTransportGuid = m_targets.GetDst()->_transportGUID;
-    data.WriteBit(destTransportGuid[0]);
-    data.WriteBit(destTransportGuid[3]);
-    data.WriteBit(destTransportGuid[2]);
-    data.WriteBit(destTransportGuid[1]);
-    data.WriteBit(destTransportGuid[4]);
-    data.WriteBit(destTransportGuid[5]);
-    data.WriteBit(destTransportGuid[6]);
-    data.WriteBit(destTransportGuid[7]);
+        ObjectGuid destTransportGuid = m_targets.m_destTransportGuid;
+        data.WriteBit(destTransportGuid[0]);
+        data.WriteBit(destTransportGuid[3]);
+        data.WriteBit(destTransportGuid[2]);
+        data.WriteBit(destTransportGuid[1]);
+        data.WriteBit(destTransportGuid[4]);
+        data.WriteBit(destTransportGuid[5]);
+        data.WriteBit(destTransportGuid[6]);
+        data.WriteBit(destTransportGuid[7]);
     }
-    */
 
     data.WriteBit(casterUnitGuid[4]);
 
     uint32 hitCount = 0;
-    /*
+    
     for (TargetsList::iterator i = UniqueTargets.begin(); i != UniqueTargets.end(); ++i)
     {
-    ObjectGuid hitGuid = (*i);
-    data.WriteBit(hitGuid[2]);
-    data.WriteBit(hitGuid[7]);
-    data.WriteBit(hitGuid[1]);
-    data.WriteBit(hitGuid[6]);
-    data.WriteBit(hitGuid[4]);
-    data.WriteBit(hitGuid[5]);
-    data.WriteBit(hitGuid[0]);
-    data.WriteBit(hitGuid[3]);
-    ++hitCount;
+        ObjectGuid hitGuid = (*i);
+        data.WriteBit(hitGuid[2]);
+        data.WriteBit(hitGuid[7]);
+        data.WriteBit(hitGuid[1]);
+        data.WriteBit(hitGuid[6]);
+        data.WriteBit(hitGuid[4]);
+        data.WriteBit(hitGuid[5]);
+        data.WriteBit(hitGuid[0]);
+        data.WriteBit(hitGuid[3]);
+        ++hitCount;
     }
-    */
 
-    /*
     for (TargetsList::iterator i = UniqueTargets.begin(); i != UniqueTargets.end(); ++i)
     {
-    ObjectGuid hitGuid = (*i);
-    data.WriteBit(hitGuid[2]);
-    data.WriteBit(hitGuid[7]);
-    data.WriteBit(hitGuid[1]);
-    data.WriteBit(hitGuid[6]);
-    data.WriteBit(hitGuid[4]);
-    data.WriteBit(hitGuid[5]);
-    data.WriteBit(hitGuid[0]);
-    data.WriteBit(hitGuid[3]);
-    ++hitCount;
+        ObjectGuid hitGuid = (*i);
+        data.WriteBit(hitGuid[2]);
+        data.WriteBit(hitGuid[7]);
+        data.WriteBit(hitGuid[1]);
+        data.WriteBit(hitGuid[6]);
+        data.WriteBit(hitGuid[4]);
+        data.WriteBit(hitGuid[5]);
+        data.WriteBit(hitGuid[0]);
+        data.WriteBit(hitGuid[3]);
+        ++hitCount;
     }
-    */
 
     data.WriteBit(casterGuid[3]);
     data.FlushBits();
@@ -2695,35 +2690,31 @@ void Spell::SendSpellGo()
     //{
     //}
 
-    /*
     for (TargetsList::iterator i = UniqueTargets.begin(); i != UniqueTargets.end(); ++i)
     {
-    ObjectGuid hitGuid = (*i);
-    data.WriteByteSeq(hitGuid[0]);
-    data.WriteByteSeq(hitGuid[6]);
-    data.WriteByteSeq(hitGuid[2]);
-    data.WriteByteSeq(hitGuid[7]);
-    data.WriteByteSeq(hitGuid[5]);
-    data.WriteByteSeq(hitGuid[4]);
-    data.WriteByteSeq(hitGuid[3]);
-    data.WriteByteSeq(hitGuid[1]);
+        ObjectGuid hitGuid = (*i);
+        data.WriteByteSeq(hitGuid[0]);
+        data.WriteByteSeq(hitGuid[6]);
+        data.WriteByteSeq(hitGuid[2]);
+        data.WriteByteSeq(hitGuid[7]);
+        data.WriteByteSeq(hitGuid[5]);
+        data.WriteByteSeq(hitGuid[4]);
+        data.WriteByteSeq(hitGuid[3]);
+        data.WriteByteSeq(hitGuid[1]);
     }
-    */
 
-    /*
     for (TargetsList::iterator i = UniqueTargets.begin(); i != UniqueTargets.end(); ++i)
     {
-    ObjectGuid hitGuid = (*i);
-    data.WriteByteSeq(hitGuid[0]);
-    data.WriteByteSeq(hitGuid[6]);
-    data.WriteByteSeq(hitGuid[2]);
-    data.WriteByteSeq(hitGuid[7]);
-    data.WriteByteSeq(hitGuid[5]);
-    data.WriteByteSeq(hitGuid[4]);
-    data.WriteByteSeq(hitGuid[3]);
-    data.WriteByteSeq(hitGuid[1]);
+        ObjectGuid hitGuid = (*i);
+        data.WriteByteSeq(hitGuid[0]);
+        data.WriteByteSeq(hitGuid[6]);
+        data.WriteByteSeq(hitGuid[2]);
+        data.WriteByteSeq(hitGuid[7]);
+        data.WriteByteSeq(hitGuid[5]);
+        data.WriteByteSeq(hitGuid[4]);
+        data.WriteByteSeq(hitGuid[3]);
+        data.WriteByteSeq(hitGuid[1]);
     }
-    */
 
     data.WriteByteSeq(unkGuid[6]);
     data.WriteByteSeq(unkGuid[2]);
@@ -2739,45 +2730,47 @@ void Spell::SendSpellGo()
 
     data << uint32(getMSTime());
 
-    /*
     if (castFlags & SPELL_GO_FLAGS_EXTRA_MESSAGE) // miss
     {
-    for (SpellTargetsList::iterator i = ModeratedTargets.begin(); i != ModeratedTargets.end(); ++i)
-    {
-    ObjectGuid missGuid = (*i).TargetGuid;
-    data.WriteByteSeq(missGuid[4]);
-    data.WriteByteSeq(missGuid[2]);
-    data.WriteByteSeq(missGuid[0]);
-    data.WriteByteSeq(missGuid[6]);
-    data.WriteByteSeq(missGuid[7]);
-    data.WriteByteSeq(missGuid[5]);
-    data.WriteByteSeq(missGuid[1]);
-    data.WriteByteSeq(missGuid[3]);
+        for (SpellTargetsList::iterator i = ModeratedTargets.begin(); i != ModeratedTargets.end(); ++i)
+        {
+            ObjectGuid missGuid = (*i).TargetGuid;
+            data.WriteByteSeq(missGuid[4]);
+            data.WriteByteSeq(missGuid[2]);
+            data.WriteByteSeq(missGuid[0]);
+            data.WriteByteSeq(missGuid[6]);
+            data.WriteByteSeq(missGuid[7]);
+            data.WriteByteSeq(missGuid[5]);
+            data.WriteByteSeq(missGuid[1]);
+            data.WriteByteSeq(missGuid[3]);
+        }
     }
-    }
-    */
 
-    /*
     if (hasDestLocation)
     {
-    float x, y, z;
-    ObjectGuid destTransportGuid = m_targets.GetDst()->_transportGUID;
-    if (destTransportGuid)
-    m_targets.GetDst()->_transportOffset.GetPosition(x, y, z);
-    else
-    m_targets.GetDst()->_position.GetPosition(x, y, z);
-    data << z;
-    data << y;
-    data.WriteByteSeq(destTransportGuid[4]);
-    data.WriteByteSeq(destTransportGuid[5]);
-    data.WriteByteSeq(destTransportGuid[7]);
-    data.WriteByteSeq(destTransportGuid[6]);
-    data.WriteByteSeq(destTransportGuid[1]);
-    data.WriteByteSeq(destTransportGuid[2]);
-    data << x;
-    data.WriteByteSeq(destTransportGuid[0]);
-    data.WriteByteSeq(destTransportGuid[3]);
-    }*/
+        float x, y, z;
+        x = y = z = 0;
+        ObjectGuid destTransportGuid = m_targets.m_destTransportGuid;
+        if (destTransportGuid)
+        {
+            x = m_targets.m_destPos.m_positionX;
+            y = m_targets.m_destPos.m_positionY;
+            z = m_targets.m_destPos.m_positionZ;
+        }
+        //else
+          //  m_targets.GetDst()->_position.GetPosition(x, y, z);
+        data << z;
+        data << y;
+        data.WriteByteSeq(destTransportGuid[4]);
+        data.WriteByteSeq(destTransportGuid[5]);
+        data.WriteByteSeq(destTransportGuid[7]);
+        data.WriteByteSeq(destTransportGuid[6]);
+        data.WriteByteSeq(destTransportGuid[1]);
+        data.WriteByteSeq(destTransportGuid[2]);
+        data << x;
+        data.WriteByteSeq(destTransportGuid[0]);
+        data.WriteByteSeq(destTransportGuid[3]);
+    }
 
     data.WriteByteSeq(casterGuid[6]);
     data.WriteByteSeq(casterUnitGuid[7]);
@@ -2791,27 +2784,32 @@ void Spell::SendSpellGo()
 
     data << uint32(castFlags);
 
-    /*
     if (hasSourceLocation)
     {
-    float x, y, z;
-    ObjectGuid srcTransportGuid = m_targets.GetSrc()->_transportGUID;
-    if (srcTransportGuid)
-    m_targets.GetSrc()->_transportOffset.GetPosition(x, y, z);
-    else
-    m_targets.GetSrc()->_position.GetPosition(x, y, z);
-    data.WriteByteSeq(srcTransportGuid[2]);
-    data << y;
-    data << x;
-    data.WriteByteSeq(srcTransportGuid[6]);
-    data.WriteByteSeq(srcTransportGuid[5]);
-    data.WriteByteSeq(srcTransportGuid[1]);
-    data.WriteByteSeq(srcTransportGuid[7]);
-    data << z;
-    data.WriteByteSeq(srcTransportGuid[3]);
-    data.WriteByteSeq(srcTransportGuid[0]);
-    data.WriteByteSeq(srcTransportGuid[4]);
-    }*/
+        float x, y, z;
+        x = y = z = 0;
+        ObjectGuid srcTransportGuid = m_targets.m_srcTransportGuid;
+        if (srcTransportGuid)
+        {
+            x = m_targets.m_srcPos.m_positionX;
+            y = m_targets.m_srcPos.m_positionY;
+            z = m_targets.m_srcPos.m_positionZ;
+        }
+        //else
+        //  m_targets.GetSrc()->_position.GetPosition(x, y, z);
+
+        data.WriteByteSeq(srcTransportGuid[2]);
+        data << y;
+        data << x;
+        data.WriteByteSeq(srcTransportGuid[6]);
+        data.WriteByteSeq(srcTransportGuid[5]);
+        data.WriteByteSeq(srcTransportGuid[1]);
+        data.WriteByteSeq(srcTransportGuid[7]);
+        data << z;
+        data.WriteByteSeq(srcTransportGuid[3]);
+        data.WriteByteSeq(srcTransportGuid[0]);
+        data.WriteByteSeq(srcTransportGuid[4]);
+    }
 
     data.WriteByteSeq(casterUnitGuid[6]);
 
@@ -2829,7 +2827,7 @@ void Spell::SendSpellGo()
         //    data << uint8(powerType);
         //}
 
-        data << uint8(GetProto()->PowerEntry.powerType);
+        data << int32(GetProto()->PowerEntry.powerType);
         data << int32(p_caster->GetPowerType());
         //data << int32(p_caster->GetPower(GetProto()->PowerEntry.powerType)); // I think?
         //data << int32(m_caster->GetPower((Powers)m_spellInfo->PowerType));

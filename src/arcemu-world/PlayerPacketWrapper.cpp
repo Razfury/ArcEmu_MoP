@@ -184,7 +184,6 @@ void Player::SendSpellModifier(uint8 spellgroup, uint8 spelltype, int32 v, bool 
 
 void Player::SendItemPushResult(bool created, bool recieved, bool sendtoset, bool newitem, uint8 destbagslot, uint32 destslot, uint32 count, uint32 entry, uint32 suffix, uint32 randomprop, uint32 stack)
 {
-
 	WorldPacket data(SMSG_ITEM_PUSH_RESULT, 8 + 4 + 4 + 4 + 1 + 4 + 4 + 4 + 4 + 4 + 4);
 
 	data << uint64(GetGUID());
